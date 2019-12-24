@@ -1,0 +1,7 @@
+#DS_Store
+.DS_Store
+
+# Build and statics
+docs/_build
+docs/_static
+docs/_templates

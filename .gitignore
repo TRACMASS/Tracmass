@@ -5,3 +5,12 @@
 docs/_build
 docs/_static
 docs/_templates
+
+
+# ---------- TO ERASE LATER --------------
+
+# Makefiles and src files
+src/Makefile
+src/*.fun
+
+

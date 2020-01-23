@@ -12,5 +12,5 @@ docs/_templates
 # Makefiles and src files
 src/Makefile
 src/*.fun
-
+src/_tests
 

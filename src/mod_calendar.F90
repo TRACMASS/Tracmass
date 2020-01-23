@@ -1,5 +1,5 @@
 MODULE mod_calendar
-   
+
    USE mod_precdef
    USE mod_time
    USE mod_param

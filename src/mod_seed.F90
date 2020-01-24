@@ -10,6 +10,8 @@ MODULE mod_seed
     !!               - init_seed
     !!               - seed
     !!
+    !!               - split_grid (PRIVATE)
+    !!
     !!------------------------------------------------------------------------------
 
     USE mod_log,  only      : log_level
@@ -46,6 +48,8 @@ MODULE mod_seed
     CHARACTER(LEN=*), PARAMETER                :: ijkform = "(6i6)"
 
     LOGICAL                                    :: fileexists
+
+    PRIVATE :: split_grid
 
     CONTAINS
 
@@ -358,8 +362,20 @@ MODULE mod_seed
                   IF (num == 0)  num = 1
 
                   ! Subvol definition
-                  ijt    = NINT (SQRT (FLOAT(num)) )
-                  ikt    = NINT (FLOAT (num) / FLOAT (ijt))
+                  IF (num == 1) THEN
+                      ijt = 1
+                      ikt = 1
+                  ELSE IF (num > 30) THEN
+                      PRINT *, ' num is above the limit!!'
+                      PRINT *, '    num :', num
+
+                      STOP
+                      !ijt    = NINT (SQRT (FLOAT(num)) )
+                      !ikt    = NINT (FLOAT (num) / FLOAT (ijt))
+                  ELSE
+                      CALL split_grid()
+                  END IF
+
                   subvol = vol / DBLE (ijt*ikt)
 
                   IF (subvol == 0.d0) THEN
@@ -480,6 +496,71 @@ MODULE mod_seed
               END IF
 
         END SUBROUTINE
+
+        SUBROUTINE split_grid()
+        ! --------------------------------------------------
+        !
+        ! Purpose:
+        ! Splits the grid in equal parts
+        !
+        !
+        ! Method:
+        ! Maximises the number of parts the grid can be splitted
+        ! It divides in exact parts (no approximation)
+        !
+        ! --------------------------------------------------
+
+        !-------------------------------------------------------------------------
+
+            ! First 10 prime numbers
+            INTEGER, DIMENSION(10)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29/)
+            INTEGER    :: nsg, isg, jsg, numloop
+
+            LOGICAL :: l_square = .FALSE.
+
+            DO nsg = 1, num
+
+              ! Is num a square number?
+              IF (FLOAT(INT(SQRT(FLOAT(num)))) == SQRT(FLOAT(num))) THEN
+                  ijt    = INT (SQRT (FLOAT(num)) )
+                  ikt    = ijt
+
+                  l_square = .TRUE.
+              END IF
+
+              IF (l_square .EQV. .FALSE.) THEN
+                DO isg = 1, 10
+
+                    ! Is num a prime number?
+                    IF (num == num_prime(isg)) THEN
+                        ijt = num
+                        ikt = 1
+                        EXIT
+
+                    ! Integer factorisation of num
+                    ELSE
+                        ijt = INT (SQRT (FLOAT(num)) )
+                        ikt = NINT (FLOAT (num) / FLOAT (ijt))
+
+                        IF (ijt*ikt /= num) THEN
+                            DO jsg = 1, 10
+                                ijt = num_prime(jsg)
+                                ikt = num/ijt
+
+                                IF (ijt*ikt == num) EXIT
+                            END DO
+                        END IF
+
+                    END IF
+                END DO
+              END IF
+
+            END DO
+
+        END SUBROUTINE
+
+
+
         !-------------------------------------------------------------------------
 
 END MODULE mod_seed

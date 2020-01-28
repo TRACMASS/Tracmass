@@ -20,6 +20,7 @@ MODULE mod_seed
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_traj
     USE mod_loopvars, only  : subvol
+    USE mod_vertvel
 
     IMPLICIT NONE
 
@@ -257,7 +258,7 @@ MODULE mod_seed
         !
         !
         ! Method:
-        ! Populate the position seeding array in trj and nrj
+        ! Populate the position seeding array in trj and nrj.
         !
         ! --------------------------------------------------
 
@@ -329,16 +330,15 @@ MODULE mod_seed
                   CASE (3)  ! Through upper zonal-meridional surface
                      vol = 1.
 
-                     ! VERTICAL VELOCITIES GO HERE [ADD!]
-                     ! ****************  CALL VERTVEL *****************
-
-                     !CALL vertvel (ib,ibm,jb,kb)
-                     !#if defined explicit_w || full_wflux
-                     !      vol = wflux(ib,jb,kb,nsm)
-                     !#elif twodim
-                     !      vol = 1.
-                     !#else
-                     !      vol = ;*wflux(kb,nsm)
+                     ! Vertical
+                     CALL vertvel (ib,ibm,jb,kb)
+#if defined w_3D || wflux
+                           vol = wflux(ib,jb,kb,nsm)
+#elif w_2D
+                           vol = 1.
+#else
+                           vol = wflux(kb,nsm)
+#endif
 
                   END SELECT
 
@@ -365,7 +365,7 @@ MODULE mod_seed
                   IF (num == 1) THEN
                       ijt = 1
                       ikt = 1
-                  ELSE IF (num > 30) THEN
+                  ELSE IF (num > 100) THEN
                       PRINT *, ' num is above the limit!!'
                       PRINT *, '    num :', num
 
@@ -501,19 +501,19 @@ MODULE mod_seed
         ! --------------------------------------------------
         !
         ! Purpose:
-        ! Splits the grid in equal parts
+        ! Splits the grid in equal parts.
         !
         !
         ! Method:
-        ! Maximises the number of parts the grid can be splitted
-        ! It divides in exact parts (no approximation)
+        ! It divides in quasi-exact parts (no approximation).
         !
         ! --------------------------------------------------
 
         !-------------------------------------------------------------------------
 
             ! First 10 prime numbers
-            INTEGER, DIMENSION(10)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29/)
+            INTEGER, DIMENSION(25)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29,31, &
+                                    & 37,41,43,47,53,59,61,67,71, 73, 79, 83, 89, 97/)
             INTEGER    :: nsg, isg, jsg, numloop
 
             LOGICAL :: l_square = .FALSE.

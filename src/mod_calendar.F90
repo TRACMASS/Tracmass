@@ -110,6 +110,9 @@ MODULE mod_calendar
         ! ngcm
         ngcm = currStep / (60*60) ! hours
 
+        ! ncgcm_seconds
+        tseas= dble(currStep)
+
         IF (log_level >=5 ) THEN
            PRINT*,' Done initialising calendar. ngcm = ',ngcm
            PRINT*,' leaving init_calendar '
@@ -117,6 +120,31 @@ MODULE mod_calendar
 
      RETURN
      END SUBROUTINE init_calendar
+
+     SUBROUTINE end_calendar
+     ! --------------------------------------------------
+     !
+     ! Purpose:
+     ! Compute the final date in TRACMASS.
+     !
+     ! --------------------------------------------------
+
+        INTEGER :: nt
+
+        DO nt = 1, intmax
+          CALL update_calendar
+        END DO
+
+        endYear = currYear
+        endMon  = currMon
+        endDay = currDay
+        endHour = currHour
+        endMin  = currMin
+        endSec  = currSec
+
+        CALL init_calendar
+
+     END SUBROUTINE end_calendar
 
      SUBROUTINE update_calendar
      ! ---------------------------------------------------

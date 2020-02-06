@@ -16,7 +16,7 @@ MODULE mod_seed
 
     USE mod_log,  only      : log_level
     USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dz, dzt
-    USE mod_time, only      : ntime, ints, tseas, partQuant
+    USE mod_time, only      : ints, tseas, partQuant
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_traj
     USE mod_loopvars, only  : subvol
@@ -25,7 +25,7 @@ MODULE mod_seed
     IMPLICIT NONE
 
     INTEGER                                    :: isec, idir
-    INTEGER                                    :: nqua, num, nsdMax
+    INTEGER                                    :: nqua, num
     INTEGER                                    :: seedType, seedTime
     INTEGER                                    :: ist1, ist2, jst1, jst2
     INTEGER                                    :: kst1, kst2, tst1, tst2
@@ -34,7 +34,7 @@ MODULE mod_seed
     INTEGER                                    :: ji, jj, jk, jsd
     INTEGER                                    :: filestat
     INTEGER                                    :: numsd, landsd=0
-    INTEGER                                    :: nsdTim
+    INTEGER                                    :: nsdTim, nsdMax, ntracmax
     INTEGER                                    :: loneparticle
     INTEGER*8                                  :: itim
 
@@ -247,6 +247,24 @@ MODULE mod_seed
 
             END SELECT
 
+            ! Allocate trajectories
+            ntracmax = nsdMax*nsdTim
+
+            ALLOCATE ( trajectories(ntracmax) )
+            trajectories(:)%x1 = 0.
+            trajectories(:)%y1 = 0.
+            trajectories(:)%z1 = 0.
+            trajectories(:)%tt = 0.
+            trajectories(:)%t0 = 0.
+            trajectories(:)%subvol = 0.
+            trajectories(:)%ib = 0.
+            trajectories(:)%jb = 0.
+            trajectories(:)%kb = 0.
+            trajectories(:)%nts = 0.
+            trajectories(:)%niter = 0.
+            trajectories(:)%icycle = 0.
+            trajectories(:)%active = .true.
+
         END SUBROUTINE
 
 
@@ -270,10 +288,10 @@ MODULE mod_seed
               END IF
 
               findTime: DO jsd=1,nsdTim
-                 IF (seed_tim(jsd) == ntime) THEN
+                 IF (seed_tim(jsd) == ints) THEN
                     itim = seed_tim(jsd)
                     EXIT findTime
-                 ELSE IF (seed_tim(jsd) /= ntime .AND. jsd == nsdTim) THEN
+                 ELSE IF (seed_tim(jsd) /= ints .AND. jsd == nsdTim) THEN
                     itim = -1
                     RETURN
                  END IF
@@ -287,7 +305,8 @@ MODULE mod_seed
                  !itim  = seed_tim (jsd)
 
                  IF ( (seedTime == 1 .OR. seedTime == 2) .AND. &
-                 &    (ntime /= itim) ) THEN
+                 &    (ints /= itim) ) THEN
+
                       CYCLE startLoop
                  ELSE IF (seedTime /= 1 .AND. seedTime /= 2) THEN
                       PRINT*,'timeStart =',seedTime,' is not a valid configuration!'
@@ -322,10 +341,10 @@ MODULE mod_seed
                  SELECT CASE(isec)
 
                  CASE(1) ! Through eastern meridional-vertical surface
-                    vol = uflux (iist,ijst,ikst,nsm)
+                     vol = uflux (iist,ijst,ikst,nsm)
 
                  CASE (2)  ! Through northern zonal-vertical surface
-                    vol = vflux (iist,ijst,ikst,nsm)
+                     vol = vflux (iist,ijst,ikst,nsm)
 
                   CASE (3)  ! Through upper zonal-meridional surface
                      vol = 1.

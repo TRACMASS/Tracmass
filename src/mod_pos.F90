@@ -16,8 +16,9 @@ MODULE mod_pos
     USE mod_precdef
     USE mod_loopvars
     USE mod_vertvel
+    USE mod_traj
 
-    USE mod_grid, only: undef, imt, jmt, km, nsm, nsp
+    USE mod_grid, only: undef, imt, jmt, km, nsm, nsp, nperio
     USE mod_vel, only: uflux, vflux, wflux
     USE mod_time, only: dtreg, intrpr, intrpg
 
@@ -26,7 +27,7 @@ MODULE mod_pos
     REAL(DP)                                   :: r0, r1
     REAL(DP)                                   :: uu, um, vv, vm
     REAL(DP)                                   :: ba, sp, sn
-    INTEGER                                    :: ijk, ia, ja, ka, ii, im
+    INTEGER                                    :: ijk, ii, im
 
     CONTAINS
 
@@ -62,6 +63,7 @@ MODULE mod_pos
         um = (intrpg*vflux(ia,ja-1,ka,nsp) + intrpr*vflux(ia,ja-1,ka,nsm))
 
     ELSEIF (ijk .EQ. 3) THEN
+
         ii=ka
 #if defined  threedim_w
         uu = wflux(ia ,ja ,ka   ,nsm)
@@ -153,11 +155,11 @@ MODULE mod_pos
    ELSE IF (ijk .EQ. 3) THEN
        ii = ka
 #if defined threedim_w
-       uu = (intrpg * wflux(ia ,ja, ka  , nsp) + intrpr * wflux(ia, ja, ka  , nsm))!*ff
-       um = (intrpg * wflux(ia, ja, ka-1, nsp) + intrpr * wflux(ia, ja, ka-1, nsm))!*ff
+       uu = (intrpg * wflux(ia ,ja, ka  , nsp) + intrpr * wflux(ia, ja, ka  , nsm))
+       um = (intrpg * wflux(ia, ja, ka-1, nsp) + intrpr * wflux(ia, ja, ka-1, nsm))
 #else
-       uu = (intrpg * wflux(ka  ,nsp) + intrpr * wflux(ka  ,nsm))!*ff
-       um = (intrpg * wflux(ka-1,nsp) + intrpr * wflux(ka-1,nsm))!*ff
+       uu = (intrpg * wflux(ka  ,nsp) + intrpr * wflux(ka  ,nsm))
+       um = (intrpg * wflux(ka-1,nsp) + intrpr * wflux(ka-1,nsm))
 #endif
 
    END IF
@@ -307,6 +309,15 @@ MODULE mod_pos
        CALL calc_pos(2,ia,ja,ka,y0,y1,ds) ! merid. crossing
        CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vert. crossing
 
+    END IF
+
+    !  East-west cyclic
+    IF (nperio /= 0) THEN
+        IF (x1 <  0.d0) THEN
+            x1 = x1 + DBLE(IMT)
+        ELSE IF (x1 > DBLE(IMT)) THEN
+            x1 = x1 - DBLE(IMT)
+        END IF
     END IF
 
     END SUBROUTINE update_traj

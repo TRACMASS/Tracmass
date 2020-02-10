@@ -16,7 +16,7 @@ MODULE mod_seed
 
     USE mod_log,  only      : log_level
     USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dz, dzt
-    USE mod_time, only      : ints, tseas, partQuant
+    USE mod_time, only      : ints, tseas, partQuant, tt, ts
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_traj
     USE mod_loopvars, only  : subvol
@@ -280,7 +280,6 @@ MODULE mod_seed
         !
         ! --------------------------------------------------
 
-              REAL(DP)            :: tfraction, trelative
               REAL(DP)            :: vol
 
               IF (log_level >= 5) THEN
@@ -469,10 +468,10 @@ MODULE mod_seed
                           CYCLE kkkLoop
                         END IF
 
-                        ! tfraction - time, fractions of ints
-                        ! trelative - time [s] rel to start
-                        tfraction = DBLE (ints)
-                        trelative = tfraction * tseas
+                        ! tt - time, fractions of ints
+                        ! ts - time [s] rel to start
+                        tt = DBLE (ints-1)
+                        ts = tt * tseas
 
                         ! Put the new particle into the vectors trj and nrj ---
                         ! ---------------------------------------------------------
@@ -483,15 +482,15 @@ MODULE mod_seed
                         trajectories(ntrac)%x1 = x1
                         trajectories(ntrac)%y1 = y1
                         trajectories(ntrac)%z1 = z1
-                        trajectories(ntrac)%tt = trelative
+                        trajectories(ntrac)%tt = tt
                         trajectories(ntrac)%subvol = subvol
-                        trajectories(ntrac)%t0 = trelative
+                        trajectories(ntrac)%t0 = tt
 
                         trajectories(ntrac)%ib = ib
                         trajectories(ntrac)%jb = jb
                         trajectories(ntrac)%kb = kb
                         trajectories(ntrac)%niter = 0
-                        trajectories(ntrac)%nts = IDINT(tfraction)
+                        trajectories(ntrac)%nts = IDINT(ts)
                         trajectories(ntrac)%icycle = 1
 
                         ! LAPLACIAN GOES HERE [ADD!]

@@ -16,13 +16,15 @@ Let us consider a simulation forward in time, where the start year (**StartYear*
     :alt: Example of a forward and backward calendar
 .. warning::  Note than in backward simulations in time, **loopStartYear>loopEndYear**. The start year (**StartYear**) is always larger or equal to the current year (**currYear**) - unless **loopYears** is activated.  If **loopYears** is activated, the calendar is corrected in similar way to the forward simulations (see Figure above).
 
-This module contains two subroutines:
+This module contains three subroutines:
 
 .. f:autosubroutine:: init_calendar
 
 .. note::  init_calendar should be called in readfield if ints == intstart and also each time step.
 
 .. f:autosubroutine:: update_calendar
+
+.. f:autosubroutine:: end_calendar
 
 mod_seed
 --------
@@ -83,3 +85,121 @@ This module contains two public subroutines:
 and a private subroutine:
 
 .. f:autosubroutine:: split_grid
+
+mod_pos
+--------
+
+The module **mod_pos** calculates the new position of a trajectory and the time it will take to cross a wall in the gridbox. This module contains three subroutines: **cross_time**, **calc_pos**, and **update_traj**.
+
+* The subroutine **cross_time** computes the time it will take to cross any of the faces determined by the variable **ijk**. The possible values of **ijk** are (1) for the east/west faces, (2) for the north/south faces, and (3) for the up/down faces. For simplicity, let us consider the case of **ijk** =1 with an eastward zonal flow **uflux**.
+
+  .. image:: figs/fig_boxpos.png
+      :width: 300px
+      :align: center
+      :height: 300px
+      :alt: Description of mod_pos
+
+  This is how the module works:
+
+  1 - First, the interpolated values of the zonal flow **uflux** in the east wall (**uu**) and in the west wall (**um**) are computed. A linear interpolation is used to obtained the values for **uu** and **um**:
+
+  .. math::
+
+     U_i(t) = \frac{(t-t_0) \ U_i(t_1) + (t_1-t) \ U_i(t_0)}{t_1-t_0} \quad \text{where} \quad t_0 \le t \le t_1.
+
+  In this case :math:`t_0` and :math:`t_1` represent the *n* and *n+1* time step.
+
+  2 - If **uu** is positive the subroutine computes the crossing time through the eastern wall :math:`t_E` (**sp**).
+
+  2.1 - If  **uu** = **um**, the time it will take to the trajectory to cross the east wall is:
+
+  .. math::
+
+     t_{E} = \frac{x_E-x}{U_i(t)}.
+
+  2.2 - If **uu** :math:`\neq` **um**, the velocity field inside the box is linearly interpolated:
+
+  .. math::
+
+     U(x) = (x-x_W)(U(x_E)-U(x_W)) + U(x_W) \quad \text{where} \quad x_W \le x \le x_E,
+
+  where **iam** represents the index for the western wall (:math:`x_W`) and **ia** represents the eastern wall (:math:`x_E`). If :math:`U(x)>0` at the starting position of the particle, the time to reach the eastern wall is given by:
+
+  .. math::
+
+     t_{E} = \frac{1}{U(x_W)-U(x_E)}\log\left(\frac{U(x)}{U_E} \right).
+
+  2.3 - If none of the above conditions is fulfilled the subroutine returns the value **UNDEF** for **sp**.
+
+  3 - Following a similar procedure, the subroutine computes the crossing time through the western wall (**sn**).
+
+.. note:: In the computation **sn** the equations used to compute the crossing time considers a different spatial interpolation of :math:`U(x)`. The crossing time through the western wall is given by the following equation :math:`t_{W} = \frac{1}{U(x_W)-U(x_E)}\log\left(\frac{U(x)}{U_W} \right)`.
+
+* The subroutine **calc_pos** computes the new position of the trajectory after time **ds** in the direction given by **ijk**. This subroutine works in the following way (let us consider the same case as in the previous example for **cross_time**):
+
+  1 - First, the interpolated values of the zonal flow **uflux** in the east wall (**uu**) and in the west wall (**um**) are computed. A linear interpolation is used to obtained the values for **uu** and **um**.
+
+  2.1 - If  **uu** = **um**, the new position of the trajectory is given by:
+
+  .. math::
+
+     x_1 = x_0 + U(x_E)ds
+
+  2.2 - On the other hand, if **uu** :math:`\neq` **um** the new position is:
+
+  .. math::
+     x_1 = \left(x_0 - x_W + \frac{U(x_W)}{U(x_E)-U(x_W)} \right) \exp((U(x_E)-U(x_W))ds) + x_W - \frac{U(x_W)}{U(x_E)-U(x_W)}.
+
+.. warning:: If the trajectory is placed at :math:`U(x)=0` in a divergent field, **calc_pos** is not able to determine the new position (unstable equilibrium).
+
+* The subroutine **update_traj** updates the position of the trajectory after a time step given by **ds** and computes the new values for **x1**, **y1**, and **z1**. The subroutines check if any of the crossing values given by **cross_time** corresponds to the value of **ds** to determine the new position.
+
+                        +---------+----------+---------+--------+----------------+
+                        | **ds**  |  **ib**  | **jb**  | **kb** | Crossing wall  |
+                        +=========+==========+=========+========+================+
+                        |   dse   |  ia + 1  |         |        | Eastern wall   |
+                        +---------+----------+---------+--------+----------------+
+                        |   dsw   |  ia - 1  |         |        | Western wall   |
+                        +---------+----------+---------+--------+----------------+
+                        |   dsn   |          |  ja + 1 |        | Northern wall  |
+                        +---------+----------+---------+--------+----------------+
+                        |   dss   |          |  ja - 1 |        | Northern wall  |
+                        +---------+----------+---------+--------+----------------+
+                        |   dsu   |          |         | ka + 1 | Upper wall     |
+                        +---------+----------+---------+--------+----------------+
+                        |   dsd   |          |         | ka - 1 | Lower wall     |
+                        +---------+----------+---------+--------+----------------+
+
+If **ds** is smaller than any of the crossing times and equal to the time stepping, or if the trajectory is inside a convergence zone where all the crossing times are **UNDEF**. The trajectory remains inside the box.
+
+This module contains three subroutines:
+
+.. f:autosubroutine:: cross_time
+
+.. f:autosubroutine:: calc_pos
+
+.. f:autosubroutine:: update_traj
+
+
+mod_time
+--------
+
+The module **mod_time** calculates the new time step referenced to the initial time step. This module contains one subroutine **update_time**.
+
+.. image:: figs/fig_time.png
+    :width: 500px
+    :align: center
+    :height: 225px
+    :alt: Description of mod_time
+
+The subroutine updates **tt** and **ts** based on the value of **ds**. This is transform to a time step in seconds **dt** by multiplying **ds** with the volume **dxyz**. The subroutine chooses between the smallest of three different time steps:
+
+1 - **dtmin** which is the time step between two time subcycles :math:`t_{min} = \frac{\Delta t}{iter}` where **iter** is the number of subcycles.
+
+2 - **dtreg** which is the time step to the next time subcycle.
+
+3 - And the time step corresponding to the smallest wall crossing time computed with **cross_time**.
+
+After updating the values of **tt** and **ts**, the new values of **intrpb** and **intrpr** are computed.
+
+.. f:autosubroutine:: update_time

@@ -18,8 +18,10 @@ MODULE mod_seed
     USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dz, dzt
     USE mod_time, only      : ints, tseas, partQuant, tt, ts
     USE mod_vel,  only      : uflux, vflux, wflux
-    USE mod_traj
     USE mod_loopvars, only  : subvol
+    USE mod_write, only     : write_data
+
+    USE mod_traj
     USE mod_vertvel
 
     IMPLICIT NONE
@@ -66,7 +68,6 @@ MODULE mod_seed
     !
     ! --------------------------------------------------
 
-    !-------------------------------------------------------------------------
         IF (log_level>0) PRINT *, ' '
 
         SELECT CASE (seedType) ! Seeding type: from selection or file
@@ -350,9 +351,9 @@ MODULE mod_seed
 
                      ! Vertical
                      CALL vertvel (ib,ibm,jb,kb)
-#if defined w_3D || wflux
+#if defined w_3dim || wflux_full
                            vol = wflux(ib,jb,kb,nsm)
-#elif w_2D
+#elif w_2dim
                            vol = 1.
 #else
                            vol = wflux(kb,nsm)
@@ -470,8 +471,8 @@ MODULE mod_seed
 
                         ! tt - time, fractions of ints
                         ! ts - time [s] rel to start
-                        tt = DBLE (ints-1)
-                        ts = tt * tseas
+                        ts = DBLE (ints-1)
+                        tt = ts * tseas
 
                         ! Put the new particle into the vectors trj and nrj ---
                         ! ---------------------------------------------------------
@@ -501,9 +502,7 @@ MODULE mod_seed
                            PRINT*,' write initial trajectory position '
                         END IF
 
-                        ! WRITE DATA GOES HERE [ADD!]
-                        ! ****************** call writedata **************
-                        ! CALL writedata(10)
+                        CALL write_data('ini')
 
                       END DO kkkLoop
                     END DO ijjLoop
@@ -526,8 +525,6 @@ MODULE mod_seed
         ! It divides in quasi-exact parts (no approximation).
         !
         ! --------------------------------------------------
-
-        !-------------------------------------------------------------------------
 
             ! First 10 prime numbers
             INTEGER, DIMENSION(25)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29,31, &
@@ -576,9 +573,5 @@ MODULE mod_seed
             END DO
 
         END SUBROUTINE
-
-
-
-        !-------------------------------------------------------------------------
-
+        
 END MODULE mod_seed

@@ -120,7 +120,8 @@ MODULE mod_calendar
            PRINT*,' leaving init_calendar '
         END IF
 
-     RETURN
+        RETURN
+
      END SUBROUTINE init_calendar
 
      SUBROUTINE end_calendar
@@ -159,139 +160,140 @@ MODULE mod_calendar
      !
      ! ---------------------------------------------------
 
-     INTEGER                            :: currStep
+         INTEGER                            :: currStep
 
-     IF(log_level >= 5) THEN
-        PRINT*,' entering update_calendar '
-     END IF
+         IF(log_level >= 5) THEN
+            PRINT*,' entering update_calendar '
+         END IF
 
-     ! see comment for init_calendar for explanation of the following lines
-     ! iyear is corrected if loopYear is True
-     IF (nff > 0) THEN
-        imon  = currMon
-        iyear = currYear - startYear + 1 + loopIndex*(loopEndYear - loopStartYear + 1)
-     ELSE IF (nff < 0) THEN
-        imon = currMon - 1
-        IF (imon <= 0) THEN
-            imon = 12
-        END IF
-        iyear = startYear - currYear + 1 + loopIndex*(loopStartYear - loopEndYear + 1)
-     END IF
+         ! see comment for init_calendar for explanation of the following lines
+         ! iyear is corrected if loopYear is True
+         IF (nff > 0) THEN
+            imon  = currMon
+            iyear = currYear - startYear + 1 + loopIndex*(loopEndYear - loopStartYear + 1)
+         ELSE IF (nff < 0) THEN
+            imon = currMon - 1
+            IF (imon <= 0) THEN
+                imon = 12
+            END IF
+            iyear = startYear - currYear + 1 + loopIndex*(loopStartYear - loopEndYear + 1)
+         END IF
 
-     IF (log_level >= 3) THEN
-        print*,'b4 update calendar',currYear,currMon,currDay,iyear,imon
-     END IF
+         IF (log_level >= 3) THEN
+            print*,'b4 update calendar',currYear,currMon,currDay,iyear,imon
+         END IF
 
-     ! Find number of minutes to add
-     IF (ngcm_unit == 1) THEN ! sec
-        currStep = ngcm_step
-     ELSE IF (ngcm_unit == 2) THEN ! min
-        currStep = ngcm_step * 60
-     ELSE IF (ngcm_unit == 3) THEN ! hour
-        currStep = ngcm_step * 60 * 60
-     ELSE IF (ngcm_unit == 4) THEN ! days
-        currStep = ngcm_step * 24 * 60 * 60
-     ELSE IF (ngcm_unit == 5) THEN ! months
-        currStep = daysInMonth(currYear,imon) * 24 * 60 * 60
-     ELSE IF (ngcm_unit == 6) THEN ! years
-        currStep = SUM(daysInMonth(currYear,:)) * 24 * 60 * 60
-     ELSE
-        PRINT*," The ngcm_unit ",ngcm_unit," is not recognised "
-        PRINT*," Valid units are 1 (second), 2 (minute), 3 (hour) "
-        PRINT*," 4 (day), 5 (month), 6 (year) "
-        PRINT*," You can also code new units in calendar.f95"
-        PRINT*," For now, I stop "
-        STOP
-     END IF
+         ! Find number of minutes to add
+         IF (ngcm_unit == 1) THEN ! sec
+            currStep = ngcm_step
+         ELSE IF (ngcm_unit == 2) THEN ! min
+            currStep = ngcm_step * 60
+         ELSE IF (ngcm_unit == 3) THEN ! hour
+            currStep = ngcm_step * 60 * 60
+         ELSE IF (ngcm_unit == 4) THEN ! days
+            currStep = ngcm_step * 24 * 60 * 60
+         ELSE IF (ngcm_unit == 5) THEN ! months
+            currStep = daysInMonth(currYear,imon) * 24 * 60 * 60
+         ELSE IF (ngcm_unit == 6) THEN ! years
+            currStep = SUM(daysInMonth(currYear,:)) * 24 * 60 * 60
+         ELSE
+            PRINT*," The ngcm_unit ",ngcm_unit," is not recognised "
+            PRINT*," Valid units are 1 (second), 2 (minute), 3 (hour) "
+            PRINT*," 4 (day), 5 (month), 6 (year) "
+            PRINT*," You can also code new units in calendar.f95"
+            PRINT*," For now, I stop "
+            STOP
+         END IF
 
-     ! ngcm
-     ngcm = currStep / (60*60) ! hours
+         ! ngcm
+         ngcm = currStep / (60*60) ! hours
 
-     ! Now update the time and date
-     currSec  = currSec + currStep * nff
+         ! Now update the time and date
+         currSec  = currSec + currStep * nff
 
-     IF (log_level >= 3) THEN
-        PRINT*,' set up currStep, ngcm ',currStep,ngcm
-     END IF
+         IF (log_level >= 3) THEN
+            PRINT*,' set up currStep, ngcm ',currStep,ngcm
+         END IF
 
-     ! If currSec > 60 we update the minutes,
-     ! and hours etc until we have currSec < 60 again
-     DO WHILE (currSec >= 60)
+         ! If currSec > 60 we update the minutes,
+         ! and hours etc until we have currSec < 60 again
+         DO WHILE (currSec >= 60)
 
-        currSec = currSec - 60
-        currMin = currMin + 1
-        IF (currMin >= 60) THEN
-           currMin = currMin - 60
-           currHour = currHour + 1
-           IF (currHour >= 24) THEN
-              currHour = currHour - 24
-              currDay  = currDay + 1
-              IF (currDay > daysInMonth(currYear,currMon)) THEN
-                 currDay = currDay - daysInMonth(currYear,currMon)
-                 currMon = currMon + 1
-                 IF (currMon > 12) THEN
-                    currMon = currMon - 12
-                    currYear = currYear + 1
-                    iyear = iyear + 1
-                 END IF
-              END IF
-           END IF
-        END IF
+            currSec = currSec - 60
+            currMin = currMin + 1
+            IF (currMin >= 60) THEN
+               currMin = currMin - 60
+               currHour = currHour + 1
+               IF (currHour >= 24) THEN
+                  currHour = currHour - 24
+                  currDay  = currDay + 1
+                  IF (currDay > daysInMonth(currYear,currMon)) THEN
+                     currDay = currDay - daysInMonth(currYear,currMon)
+                     currMon = currMon + 1
+                     IF (currMon > 12) THEN
+                        currMon = currMon - 12
+                        currYear = currYear + 1
+                        iyear = iyear + 1
+                     END IF
+                  END IF
+               END IF
+            END IF
 
-     END DO
+         END DO
 
-     IF (loopYears) THEN
-        IF (currYear > loopEndYear .and. nff > 0) THEN
-           IF (log_level >= 3) THEN
-              PRINT*,' currYear > loopEndYear. Going back to loopStartYear '
-           END IF
-           currYear = loopStartYear
-           loopIndex = loopIndex + 1
-        END IF
-     END IF
+         IF (loopYears) THEN
+            IF (currYear > loopEndYear .and. nff > 0) THEN
+               IF (log_level >= 3) THEN
+                  PRINT*,' currYear > loopEndYear. Going back to loopStartYear '
+               END IF
+               currYear = loopStartYear
+               loopIndex = loopIndex + 1
+            END IF
+         END IF
 
-     ! If currSec < 0 (backward trajs) we update the minutes,
-     ! and hours etc until we have currSec >= 0 again
-     DO WHILE (currSec < 0)
-        currSec = currSec + 60
-        currMin = currMin - 1
-        IF (currMin < 0) THEN
-           currMin = currMin + 60
-           currHour = currHour - 1
-           IF (currHour < 0) THEN
-              currHour = currHour + 24
-              currDay  = currDay - 1
-              IF (currDay <= 0) THEN
-                 currMon = currMon - 1
-                 IF (currMon <= 0) THEN
-                    currMon = currMon + 12
-                    currYear = currYear - 1
-                    iyear = iyear + 1
-                 END IF
-                 currDay = currDay + daysInMonth(currYear,currMon)
-              END IF
-           END IF
-        END IF
-     END DO
+         ! If currSec < 0 (backward trajs) we update the minutes,
+         ! and hours etc until we have currSec >= 0 again
+         DO WHILE (currSec < 0)
+            currSec = currSec + 60
+            currMin = currMin - 1
+            IF (currMin < 0) THEN
+               currMin = currMin + 60
+               currHour = currHour - 1
+               IF (currHour < 0) THEN
+                  currHour = currHour + 24
+                  currDay  = currDay - 1
+                  IF (currDay <= 0) THEN
+                     currMon = currMon - 1
+                     IF (currMon <= 0) THEN
+                        currMon = currMon + 12
+                        currYear = currYear - 1
+                        iyear = iyear + 1
+                     END IF
+                     currDay = currDay + daysInMonth(currYear,currMon)
+                  END IF
+               END IF
+            END IF
+         END DO
 
-     IF (loopYears) THEN
-        IF (currYear < loopEndYear .and. nff < 0) THEN
-           IF (log_level >= 3) THEN
-              PRINT*,' currYear < loopEndYear. Going back to loopStartYear '
-           END IF
-           currYear = loopStartYear
-           loopIndex = loopIndex + 1
-        END IF
-     END IF
+         IF (loopYears) THEN
+            IF (currYear < loopEndYear .and. nff < 0) THEN
+               IF (log_level >= 3) THEN
+                  PRINT*,' currYear < loopEndYear. Going back to loopStartYear '
+               END IF
+               currYear = loopStartYear
+               loopIndex = loopIndex + 1
+            END IF
+         END IF
 
-     IF (log_level >= 3) THEN
-        print*,'af update calendar',currYear,currMon,currDay,iyear
-     END IF
+         IF (log_level >= 3) THEN
+            print*,'af update calendar',currYear,currMon,currDay,iyear
+         END IF
 
-     IF (log_level >= 5) THEN
-        PRINT*,' leaving update_calendar '
-     END IF
-     RETURN
+         IF (log_level >= 5) THEN
+            PRINT*,' leaving update_calendar '
+         END IF
+
+         RETURN
 
      END SUBROUTINE update_calendar
 
@@ -306,75 +308,75 @@ MODULE mod_calendar
      !
      ! ---------------------------------------------------
 
-     ! Now update the time and date
-     dateSec   = tt
-     dateMin   = startMin
-     dateHour  = startHour
-     dateDay   = startDay
-     dateMon   = startMon
-     dateYear  = startYear
+         ! Now update the time and date
+         dateSec   = tt
+         dateMin   = startMin
+         dateHour  = startHour
+         dateDay   = startDay
+         dateMon   = startMon
+         dateYear  = startYear
 
-     ! If dateSec > 60 we update the minutes,
-     ! and hours etc until we have dateSec < 60 again
-     DO WHILE (dateSec >= 60)
+         ! If dateSec > 60 we update the minutes,
+         ! and hours etc until we have dateSec < 60 again
+         DO WHILE (dateSec >= 60)
 
-        dateSec = dateSec - 60
-        dateMin = dateMin + 1
-        IF (dateMin >= 60) THEN
-           dateMin = dateMin - 60
-           dateHour = dateHour + 1
-           IF (dateHour >= 24) THEN
-              dateHour = dateHour - 24
-              dateDay  = dateDay + 1
-              IF (dateDay > daysInMonth(dateYear,dateMon)) THEN
-                 dateDay = dateDay - daysInMonth(dateYear,dateMon)
-                 dateMon = dateMon + 1
-                 IF (dateMon > 12) THEN
-                    dateMon = dateMon - 12
-                    dateYear = dateYear + 1
-                 END IF
-              END IF
-           END IF
-        END IF
+            dateSec = dateSec - 60
+            dateMin = dateMin + 1
+            IF (dateMin >= 60) THEN
+               dateMin = dateMin - 60
+               dateHour = dateHour + 1
+               IF (dateHour >= 24) THEN
+                  dateHour = dateHour - 24
+                  dateDay  = dateDay + 1
+                  IF (dateDay > daysInMonth(dateYear,dateMon)) THEN
+                     dateDay = dateDay - daysInMonth(dateYear,dateMon)
+                     dateMon = dateMon + 1
+                     IF (dateMon > 12) THEN
+                        dateMon = dateMon - 12
+                        dateYear = dateYear + 1
+                     END IF
+                  END IF
+               END IF
+            END IF
 
-     END DO
+         END DO
 
-     IF (loopYears) THEN
-        IF (dateYear > loopEndYear .and. nff > 0) THEN
-           dateYear = loopStartYear
-        END IF
-     END IF
+         IF (loopYears) THEN
+            IF (dateYear > loopEndYear .and. nff > 0) THEN
+               dateYear = loopStartYear
+            END IF
+         END IF
 
-     ! If dateSec < 0 (backward trajs) we update the minutes,
-     ! and hours etc until we have dateSec >= 0 again
-     DO WHILE (dateSec < 0)
-        dateSec = dateSec + 60
-        dateMin = dateMin - 1
-        IF (dateMin < 0) THEN
-           dateMin = dateMin + 60
-           dateHour = dateHour - 1
-           IF (dateHour < 0) THEN
-              dateHour = dateHour + 24
-              dateDay  = dateDay - 1
-              IF (dateDay <= 0) THEN
-                 dateMon = dateMon - 1
-                 IF (dateMon <= 0) THEN
-                    dateMon = dateMon + 12
-                    dateYear = dateYear - 1
-                 END IF
-                 dateDay = dateDay + daysInMonth(dateYear,dateMon)
-              END IF
-           END IF
-        END IF
-     END DO
+         ! If dateSec < 0 (backward trajs) we update the minutes,
+         ! and hours etc until we have dateSec >= 0 again
+         DO WHILE (dateSec < 0)
+            dateSec = dateSec + 60
+            dateMin = dateMin - 1
+            IF (dateMin < 0) THEN
+               dateMin = dateMin + 60
+               dateHour = dateHour - 1
+               IF (dateHour < 0) THEN
+                  dateHour = dateHour + 24
+                  dateDay  = dateDay - 1
+                  IF (dateDay <= 0) THEN
+                     dateMon = dateMon - 1
+                     IF (dateMon <= 0) THEN
+                        dateMon = dateMon + 12
+                        dateYear = dateYear - 1
+                     END IF
+                     dateDay = dateDay + daysInMonth(dateYear,dateMon)
+                  END IF
+               END IF
+            END IF
+         END DO
 
-     IF (loopYears) THEN
-        IF (dateYear < loopEndYear .and. nff < 0) THEN
-           dateYear = loopStartYear
-        END IF
-     END IF
+         IF (loopYears) THEN
+            IF (dateYear < loopEndYear .and. nff < 0) THEN
+               dateYear = loopStartYear
+            END IF
+         END IF
 
-     RETURN
+         RETURN
 
      END SUBROUTINE tt_calendar
 

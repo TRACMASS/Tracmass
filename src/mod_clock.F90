@@ -19,13 +19,13 @@ MODULE mod_clock
 
    CONTAINS
 
-     SUBROUTINE update_time
-     ! --------------------------------------------------
-     !
-     ! Purpose:
-     ! updates the value of tt, ts, and intrpg  and intrpr
-     !
-     ! --------------------------------------------------
+   SUBROUTINE update_time
+   ! --------------------------------------------------
+   !
+   ! Purpose:
+   ! updates the value of tt, ts, and intrpg  and intrpr
+   !
+   ! --------------------------------------------------
 
      ! Transform ds to dt in seconds
      IF (ds /= dsmin) dt = ds * dxyz

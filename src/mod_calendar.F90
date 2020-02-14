@@ -7,7 +7,9 @@ MODULE mod_calendar
    !!
    !!          Subroutines included:
    !!               - init_calendar
+   !!               - end_calendar
    !!               - update_calendar
+   !!               - tt_calendar
    !!
    !!------------------------------------------------------------------------------
 
@@ -290,6 +292,90 @@ MODULE mod_calendar
         PRINT*,' leaving update_calendar '
      END IF
      RETURN
+
      END SUBROUTINE update_calendar
+
+     SUBROUTINE tt_calendar
+     ! ---------------------------------------------------
+     !
+     ! Purpose:
+     ! Transforms tt into a date YYYY MM DD HH:MM:SS
+     !
+     ! Method:
+     ! Using the starting date and tt calculates the corresponding date
+     !
+     ! ---------------------------------------------------
+
+     ! Now update the time and date
+     dateSec   = tt
+     dateMin   = startMin
+     dateHour  = startHour
+     dateDay   = startDay
+     dateMon   = startMon
+     dateYear  = startYear
+
+     ! If dateSec > 60 we update the minutes,
+     ! and hours etc until we have dateSec < 60 again
+     DO WHILE (dateSec >= 60)
+
+        dateSec = dateSec - 60
+        dateMin = dateMin + 1
+        IF (dateMin >= 60) THEN
+           dateMin = dateMin - 60
+           dateHour = dateHour + 1
+           IF (dateHour >= 24) THEN
+              dateHour = dateHour - 24
+              dateDay  = dateDay + 1
+              IF (dateDay > daysInMonth(dateYear,dateMon)) THEN
+                 dateDay = dateDay - daysInMonth(dateYear,dateMon)
+                 dateMon = dateMon + 1
+                 IF (dateMon > 12) THEN
+                    dateMon = dateMon - 12
+                    dateYear = dateYear + 1
+                 END IF
+              END IF
+           END IF
+        END IF
+
+     END DO
+
+     IF (loopYears) THEN
+        IF (dateYear > loopEndYear .and. nff > 0) THEN
+           dateYear = loopStartYear
+        END IF
+     END IF
+
+     ! If dateSec < 0 (backward trajs) we update the minutes,
+     ! and hours etc until we have dateSec >= 0 again
+     DO WHILE (dateSec < 0)
+        dateSec = dateSec + 60
+        dateMin = dateMin - 1
+        IF (dateMin < 0) THEN
+           dateMin = dateMin + 60
+           dateHour = dateHour - 1
+           IF (dateHour < 0) THEN
+              dateHour = dateHour + 24
+              dateDay  = dateDay - 1
+              IF (dateDay <= 0) THEN
+                 dateMon = dateMon - 1
+                 IF (dateMon <= 0) THEN
+                    dateMon = dateMon + 12
+                    dateYear = dateYear - 1
+                 END IF
+                 dateDay = dateDay + daysInMonth(dateYear,dateMon)
+              END IF
+           END IF
+        END IF
+     END DO
+
+     IF (loopYears) THEN
+        IF (dateYear < loopEndYear .and. nff < 0) THEN
+           dateYear = loopStartYear
+        END IF
+     END IF
+
+     RETURN
+
+     END SUBROUTINE tt_calendar
 
 END MODULE mod_calendar

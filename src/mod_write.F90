@@ -90,7 +90,8 @@ MODULE mod_write
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar
-                WRITE(50,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol, dateYear, dateMon, dateDay, dateHour
+                WRITE(50,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol, &
+                      dateYear, dateMon, dateDay, dateHour
                 RETURN
 
             END SELECT
@@ -117,7 +118,8 @@ MODULE mod_write
                     CASE(2)
                     ! Include time - YYYY MM DD HH MM SS
                     CALL tt_calendar
-                    WRITE(51,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol, dateYear, dateMon, dateDay, dateHour
+                    WRITE(51,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol,  &
+                        dateYear, dateMon, dateDay, dateHour
                     RETURN
 
                 END SELECT

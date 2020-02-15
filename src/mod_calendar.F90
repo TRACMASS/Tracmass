@@ -134,7 +134,7 @@ MODULE mod_calendar
 
         INTEGER :: nt
 
-        DO nt = 1, intmax
+        DO nt = 1, intrun
           CALL update_calendar
         END DO
 

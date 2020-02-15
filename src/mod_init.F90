@@ -36,7 +36,7 @@ MODULE mod_init
                                          tGridName, uGridName, vGridName, &
                                          fileSuffix, ssh_name, ueul_name, veul_name
         namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio
-        namelist /INIT_GRID_TIME/        ngcm_step, ngcm_unit, iter, intmax
+        namelist /INIT_GRID_TIME/        ngcm_step, ngcm_unit, iter
         namelist /INIT_START_DATE/       startSec, startMin, startHour,           &
                                          startDay, startMon, startYear,           &
                                          noleap
@@ -61,8 +61,6 @@ MODULE mod_init
         READ (8,nml=INIT_SEEDING)
         READ (8,nml=INIT_KILLZONES)
         CLOSE(8)
-
-        km = 1; kst1 = 1; kst2 = 1
 
     END SUBROUTINE init_namelist
 

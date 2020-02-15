@@ -16,7 +16,7 @@ MODULE mod_seed
 
     USE mod_log,  only      : log_level
     USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dz, dzt
-    USE mod_time, only      : ints, tseas, partQuant, tt, ts
+    USE mod_time, only      : ints, tseas, tt, ts
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_loopvars, only  : subvol
     USE mod_write, only     : write_data
@@ -42,6 +42,8 @@ MODULE mod_seed
 
     INTEGER, ALLOCATABLE, DIMENSION(:,:)       :: seed_ijk, seed_set
     INTEGER, ALLOCATABLE, DIMENSION(:)         :: seed_tim
+
+    REAL(DP)                                   :: partQuant
 
     CHARACTER(LEN=200)                         :: seedDir, seedFile
     CHARACTER(LEN=200)                         :: timeFile
@@ -573,5 +575,5 @@ MODULE mod_seed
             END DO
 
         END SUBROUTINE
-        
+
 END MODULE mod_seed

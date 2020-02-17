@@ -1,90 +1,110 @@
-Modules
-=======
+Main modules
+============
 .. _md_program:
 
 mod_calendar
 ------------
 
-The module **mod_calendar** corrects the calendar of the simulation using the given time step and the initial date. The calendar is computed for both forward and backward simulations in time.
+The module **mod_calendar** contains all the subroutines that initialise and update the calendar of the simulation. This module contains four subroutines: **init_calendar**, **update_calendar**, **end_calendar** and **tt_calendar**.
 
-Let us consider a simulation forward in time, where the start year (**StartYear**) is set to 2000 and the current year (**currYear**) is 2004. The variable **iyear** describes the number of simulation years. If **loopYears** is activated, after reaching the year set as **loopEndYear** (2010 in this case) the calendar is set back to the **loopStartYear** (2000). **iyear** is not altered by this correction.
+* The subroutine **init_calendar** defines the starting date of the calendar as well as the time step of the simulation **tseas**.
 
-.. image:: figs/fig_calendar.png
+* **update_calendar** updated the calendar using the given time step and the initial date. The calendar is computed for both forward and backward simulations in time. Let us consider a simulation forward in time, where the start year (**StartYear**) is set to 2000 and the current year (**currYear**) is 2004. The variable **iyear** describes the number of simulation years. If **loopYears** is activated, after reaching the year set as **loopEndYear** (2010 in this case) the calendar is set back to the **loopStartYear** (2000). **iyear** is not altered by this correction.
+
+  .. image:: figs/fig_calendar.png
     :width: 700px
     :align: center
     :height: 600px
     :alt: Example of a forward and backward calendar
-.. warning::  Note than in backward simulations in time, **loopStartYear>loopEndYear**. The start year (**StartYear**) is always larger or equal to the current year (**currYear**) - unless **loopYears** is activated.  If **loopYears** is activated, the calendar is corrected in similar way to the forward simulations (see Figure above).
 
-This module contains three subroutines:
+  .. warning::  Note than in backward simulations in time, **loopStartYear>loopEndYear**. The start year (**StartYear**) is always larger or equal to the current year (**currYear**) - unless **loopYears** is activated.  If **loopYears** is activated, the calendar is corrected in similar way to the forward simulations (see Figure above).
+
+* **end_calendar** computes the final date of simulation defined by the time step **intrun**
+
+* **tt_calendar** uses the starting date as a reference and translates the time step **tt** into a date (year, month, day) and time (hour, minute, second).
+
+This module contains four subroutines:
 
 .. f:autosubroutine:: init_calendar
-
-.. note::  init_calendar should be called in readfield if ints == intstart and also each time step.
 
 .. f:autosubroutine:: update_calendar
 
 .. f:autosubroutine:: end_calendar
 
-mod_seed
+.. f:autofunction:: tt_calendar
+
+mod_clock
 --------
 
-The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and a private subroutine (split_grid)
+The module **mod_clock** calculates the new time step referenced to the initial time step. This module contains one subroutine **update_time**.
 
-The subroutine **init_seed** defines the grid points and the time steps where the particles are going to be initialised, the wall of the grid where they are going to be placed (**isec**), and their direction (**idir**). There are three options for **isec**: (1) on the east wall of the grid cell, (2) on the north wall of the grid cell, and (3) on the top wall of the grid cell. idir selects the initial direction of the trajectories eastward/northward/upward (**idir = 1**) or westward/southward/downward (**idir = -1**).
-
-.. image:: figs/fig_isec.png
-    :width: 389px
-    :align: center
-    :height: 300px
-    :alt: Description of isec on the grid cell
-
-.. note:: If the simulation is backward in time (**nff = -1**), idir represents the last direction of the trajectory to follow. For example, let us consider a eastward flow field. A simulation with **nff = -1** and **idir = 1** will follow trajectories back in time that initially are moving eastward.
-
-The initial seeding location, time, and direction can be defined directly in the namelist or read from a file. This is control by **seedType** and **seedTime**.
-
-* **seedType**: (1) the seeding location is defined by the grid points within the volume described by **(ist2-ist1+1)x(jst2-jst1+1)x(kst2-kst1+1)**, all these trajectories will shared the **idir** and **isec** defined in the namelist, or (2) the seeding location and the direction is read from an external file **seedDir/seedfile**.
-
-* **seedTime**: (1) the seeding happens in the time interval defined between **tst2** and **tst1**, or (2) it is read from a external file **seedDir/timeFile**.
-
-
-The **seed** subroutine populates the **trajectory** array that contains the position of the trajectories as well as their corresponding volume/mass transport. This module works this way:
-
-1 - The subroutine checks if the current time **ntime** corresponds to a seeding time.
-
-2 - **num**, the number of trajectories per grid point, is defined. There are different options based on **nqua**: (1) the number of trajectories is defined by **partQuant**, or (2) the particles transport a specific volume/mass transport defined by **partQuant**, the number of particles in the grid is then defined dividing the total volume/mass transport by **partQuant**.
-
-.. image:: figs/fig_nqua.png
-    :width: 600px
-    :align: center
-    :height: 450px
-    :alt: Description of nqua
-
-3 - The grid is split in equal parts using the private subroutine **split_grid**. If **num** is a square number the grid cell is divided in equal squares, if **num** is a prime number the grid is split in equal rectangles along one axis (see figure below). For other cases, **split_grid** will divide the square in equal rectangles with similar side lengths.
-
-.. image:: figs/fig_num.png
+.. image:: figs/fig_time.png
     :width: 500px
     :align: center
-    :height: 200px
-    :alt: Description of nqua
+    :height: 225px
+    :alt: Description of mod_time
 
-4 - The specific volume/mass transport of a trajectory **subvol** is computed from **num**.
+The subroutine updates **tt** and **ts** based on the value of **ds**. This is transform to a time step in seconds **dt** by multiplying **ds** with the volume **dxyz**. The subroutine chooses between the smallest of three different time steps:
 
-5 - The trajectories are placed in the middle of each of the rectangles. This initial position is given by **x1, y1, z1**.
+1 - **dtmin** which is the time step between two time subcycles :math:`t_{min} = \frac{\Delta t}{iter}` where **iter** is the number of subcycles.
 
-.. warning:: **x1, y1, z1** are computed using the gridbox as a reference.
+2 - **dtreg** which is the time step to the next time subcycle.
 
-6 - The position of the trajectory in the gridbox reference system, the trajectory number **ntrac**, the corresponding position index and the mass/volume transported by it is stored in the array **trajectories**.
+3 - And the time step corresponding to the smallest wall crossing time computed with **cross_time**.
 
-This module contains two public subroutines:
+After updating the values of **tt** and **ts**, the new values of **intrpb** and **intrpr** are computed.
 
-.. f:autosubroutine:: init_seed
+.. f:autosubroutine:: update_time
 
-.. f:autosubroutine:: seed
+mod_error
+---------
 
-and a private subroutine:
+The module **mod_error** check for possible errors in the simulation. If any error is found a diagnostic file with a summary of the error is created. This module contains two subroutines and a private function: **errorCheck**, **write_error** and **errorType**.
 
-.. f:autosubroutine:: split_grid
+* **errorCheck** check for a possible error defined by **teststr**. The possible errors are listed below:
+
+    +-------------------+---------------+--------------------------------------------------------+
+    | **teststr**       |  **errCode**  |  Description                                           |
+    +===================+===============+========================================================+
+    |  *infLoopError*   |        1      |  Trajectory trapped in an **infinite loop**            |
+    +-------------------+---------------+--------------------------------------------------------+
+    |  *dxyzError*      |        2      |  The volume of the gridbox is **zero** or **negative** |
+    +-------------------+---------------+--------------------------------------------------------+
+    |  *boundError*     |        3      |  Trajectory leaving the **domain**                     |
+    +-------------------+---------------+--------------------------------------------------------+
+    |  *landError*      |        4      |  Trajectory hits a **land** point                      |
+    +-------------------+---------------+--------------------------------------------------------+
+    |  *coordboxError*  |      5/6/7    |  Trajectory placed in the **wrong** box                |
+    +-------------------+---------------+--------------------------------------------------------+
+    |  *dsCrossError*   |        8      |  No **available pathways** for the trajectory          |
+    +-------------------+---------------+--------------------------------------------------------+
+
+    .. note: A **infinite loop** is defined when a trajectory is iterated more than 30000 times since last time it crossed a wall or started a time subcycle.
+
+* If an error is found in a trajectory, the last position and time step will be stored in a *_err.csv* file. The module **write_error** besides writing the number of the trajectory **ntrac**, the last position **x1, y1, z1**, the volume/mass transport **subvol** and the time step; it also gives a short description of the error.
+
+* **errorType** is a private function that gives a short description of the error given by **errorCode**. This output is used by **write_error**.
+
+
+This module contains two subroutines:
+
+.. f:autosubroutine:: errorCheck
+
+.. f:autosubroutine:: write_error
+
+and a private function:
+
+.. f:autosubroutine:: errorType
+
+mod_init
+--------
+
+The module **mod_init** consists on two subroutines: **init_namelist** that reads the namelist, and **init_alloc** that allocates all the allocatable arrays. More information about the namelist can be found in the *Namelist* chapter.
+
+.. f:autosubroutine:: init_namelist
+
+.. f:autosubroutine:: init_alloc
+
 
 mod_pos
 --------
@@ -133,7 +153,7 @@ The module **mod_pos** calculates the new position of a trajectory and the time 
 
   3 - Following a similar procedure, the subroutine computes the crossing time through the western wall (**sn**).
 
-.. note:: In the computation **sn** the equations used to compute the crossing time considers a different spatial interpolation of :math:`U(x)`. The crossing time through the western wall is given by the following equation :math:`t_{W} = \frac{1}{U(x_W)-U(x_E)}\log\left(\frac{U(x)}{U_W} \right)`.
+.. note:: The equations used to compute the crossing time considers a different spatial interpolation of :math:`U(x)` for **sn**. The crossing time through the western wall is given by the following equation :math:`t_{W} = \frac{1}{U(x_W)-U(x_E)}\log\left(\frac{U(x)}{U_W} \right)`.
 
 * The subroutine **calc_pos** computes the new position of the trajectory after time **ds** in the direction given by **ijk**. This subroutine works in the following way (let us consider the same case as in the previous example for **cross_time**):
 
@@ -180,26 +200,76 @@ This module contains three subroutines:
 
 .. f:autosubroutine:: update_traj
 
-
-mod_time
+mod_seed
 --------
 
-The module **mod_time** calculates the new time step referenced to the initial time step. This module contains one subroutine **update_time**.
+The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and a private subroutine (split_grid)
 
-.. image:: figs/fig_time.png
+The subroutine **init_seed** defines the grid points and the time steps where the particles are going to be initialised, the wall of the grid where they are going to be placed (**isec**), and their direction (**idir**). There are three options for **isec**: (1) on the east wall of the grid cell, (2) on the north wall of the grid cell, and (3) on the top wall of the grid cell. idir selects the initial direction of the trajectories eastward/northward/upward (**idir = 1**) or westward/southward/downward (**idir = -1**).
+
+.. image:: figs/fig_isec.png
+    :width: 389px
+    :align: center
+    :height: 300px
+    :alt: Description of isec on the grid cell
+
+.. note:: If the simulation is backward in time (**nff = -1**), idir represents the last direction of the trajectory to follow. For example, let us consider a eastward flow field. A simulation with **nff = -1** and **idir = 1** will follow trajectories back in time that initially are moving eastward.
+
+The initial seeding location, time, and direction can be defined directly in the namelist or read from a file. This is control by **seedType** and **seedTime**.
+
+* **seedType**: (1) the seeding location is defined by the grid points within the volume described by **(ist2-ist1+1)x(jst2-jst1+1)x(kst2-kst1+1)**, all these trajectories will shared the **idir** and **isec** defined in the namelist, or (2) the seeding location and the direction is read from an external file **seedDir/seedfile**.
+
+* **seedTime**: (1) the seeding happens in the time interval defined between **tst2** and **tst1**, or (2) it is read from a external file **seedDir/timeFile**.
+
+
+The **seed** subroutine populates the **trajectory** array that contains the position of the trajectories as well as their corresponding volume/mass transport. This module works this way:
+
+1 - The subroutine checks if the current time **ntime** corresponds to a seeding time.
+
+2 - The corresponding flux is chosen according to the value of **isec**. If the direction does not correspond to the value of **idir** the trajectory is not activated.
+
+3 - **num**, the number of trajectories per grid point, is defined. There are different options based on **nqua**: (1) the number of trajectories is defined by **partQuant**, or (2) the particles transport a specific volume/mass transport defined by **partQuant**, the number of particles in the grid is then defined dividing the total volume/mass transport by **partQuant**.
+
+.. image:: figs/fig_nqua.png
+    :width: 600px
+    :align: center
+    :height: 450px
+    :alt: Description of nqua
+
+4 - The grid is split in equal parts using the private subroutine **split_grid**. If **num** is a square number the grid cell is divided in equal squares, if **num** is a prime number the grid is split in equal rectangles along one axis (see figure below). For other cases, **split_grid** will divide the square in equal rectangles with similar side lengths.
+
+.. image:: figs/fig_num.png
     :width: 500px
     :align: center
-    :height: 225px
-    :alt: Description of mod_time
+    :height: 200px
+    :alt: Description of nqua
 
-The subroutine updates **tt** and **ts** based on the value of **ds**. This is transform to a time step in seconds **dt** by multiplying **ds** with the volume **dxyz**. The subroutine chooses between the smallest of three different time steps:
+5 - The specific volume/mass transport of a trajectory **subvol** is computed from **num**.
 
-1 - **dtmin** which is the time step between two time subcycles :math:`t_{min} = \frac{\Delta t}{iter}` where **iter** is the number of subcycles.
+6 - The trajectories are placed in the middle of each of the rectangles. This initial position is given by **x1, y1, z1**.
 
-2 - **dtreg** which is the time step to the next time subcycle.
+.. warning:: **x1, y1, z1** are computed using the gridbox as a reference.
 
-3 - And the time step corresponding to the smallest wall crossing time computed with **cross_time**.
+7 - The position of the trajectory in the gridbox reference system, the trajectory number **ntrac**, the corresponding position index and the mass/volume transported by it is stored in the array **trajectories**.
 
-After updating the values of **tt** and **ts**, the new values of **intrpb** and **intrpr** are computed.
+This module contains two public subroutines:
 
-.. f:autosubroutine:: update_time
+.. f:autosubroutine:: init_seed
+
+.. f:autosubroutine:: seed
+
+and a private subroutine:
+
+.. f:autosubroutine:: split_grid
+
+
+mod_write
+---------
+
+This module contains three subroutines:
+
+.. f:autosubroutine:: open_outfiles
+
+.. f:autosubroutine:: write_data
+
+.. f:autosubroutine:: close_outfiles

@@ -13,6 +13,7 @@ Welcome to TRACMASS's documentation!
    Introduction.rst
    Configuration.rst
    Examples.rst
+   TRACMASS.rst
    Modules.rst
    References.rst
 

@@ -16,7 +16,7 @@ MODULE mod_seed
 
     USE mod_log,  only      : log_level
     USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dz, dzt
-    USE mod_time, only      : ints, tseas, tt, ts
+    USE mod_time, only      : ints, tseas, tt, ts, nff
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_loopvars, only  : subvol
     USE mod_write, only     : write_data
@@ -363,7 +363,7 @@ MODULE mod_seed
 
                   END SELECT
 
-                  IF (vol == 0.) CYCLE startLoop
+                  IF ((idir*vol <= 0.d0 .AND. idir /= 0 ) .OR. (vol == 0.)) CYCLE startLoop
 
                   ! Volume/mass transport needs to be positive
                   vol = ABS(vol)
@@ -418,9 +418,9 @@ MODULE mod_seed
                           x1 = DBLE (ib)
                           y1 = DBLE (jb-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
                           z1 = DBLE (kb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
-                          IF (idir == 1) THEN
+                          IF (idir*nff == 1) THEN
                               ib = iist+1
-                          ELSE IF (idir == -1) THEN
+                          ELSE IF (idir*nff == -1) THEN
                               ib=iist
                           END IF
 
@@ -428,9 +428,9 @@ MODULE mod_seed
                           x1 = DBLE (ib-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
                           y1 = DBLE (jb)
                           z1 = DBLE (kb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
-                          IF (idir == 1) THEN
+                          IF (idir*nff == 1) THEN
                              jb = ijst+1
-                          ELSE IF (idir == -1) THEN
+                          ELSE IF (idir*nff == -1) THEN
                              jb = ijst
                           END IF
 
@@ -438,9 +438,9 @@ MODULE mod_seed
                           x1 = DBLE (ib-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
                           y1 = DBLE (jb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
                           z1 = DBLE (kb)
-                          IF (idir == 1) THEN
+                          IF (idir*nff == 1) THEN
                             kb = ikst+1
-                          ELSE IF (idir == -1) THEN
+                          ELSE IF (idir*nff == -1) THEN
                             kb = ikst
                           END IF
 

@@ -42,6 +42,7 @@ MODULE mod_write
         OPEN(UNIT=50, FILE = TRIM(fullWritePref)//'_ini.csv', STATUS='replace')
         OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='replace')
         OPEN(UNIT=52, FILE = TRIM(fullWritePref)//'_out.csv', STATUS='replace')
+        OPEN(UNIT=53, FILE = TRIM(fullWritePref)//'_err.csv', STATUS='replace')
 
     END SUBROUTINE open_outfiles
 
@@ -56,6 +57,7 @@ MODULE mod_write
         CLOSE (50)
         CLOSE (51)
         CLOSE (52)
+        CLOSE (53)
 
     END SUBROUTINE close_outfiles
 
@@ -79,19 +81,19 @@ MODULE mod_write
 
                 CASE(0)
                 ! Include time - tt in seconds
-                WRITE(50,"(I8,4(',',F13.5),1(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                WRITE(50,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
                 RETURN
 
                 CASE(1)
                 ! Include time - Fraction ts
-                WRITE(50,"(I8,5(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
                 RETURN
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar
-                WRITE(50,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol, &
-                      dateYear, dateMon, dateDay, dateHour
+                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                    subvol, dateYear, dateMon, dateDay, dateHour
                 RETURN
 
             END SELECT
@@ -107,19 +109,19 @@ MODULE mod_write
 
                     CASE(0)
                     ! Include time - tt in seconds
-                    WRITE(51,"(I8,4(',',F13.5),1(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                    WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
                     RETURN
 
                     CASE(1)
                     ! Include time - Fraction ts
-                    WRITE(51,"(I8,5(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                    WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
                     RETURN
 
                     CASE(2)
                     ! Include time - YYYY MM DD HH MM SS
                     CALL tt_calendar
-                    WRITE(51,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol,  &
-                        dateYear, dateMon, dateDay, dateHour
+                    WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                        subvol, dateYear, dateMon, dateDay, dateHour
                     RETURN
 
                 END SELECT
@@ -131,18 +133,19 @@ MODULE mod_write
 
                 CASE(0)
                 ! Include time - tt in seconds
-                WRITE(52,"(I8,4(',',F13.5),1(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                WRITE(52,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
                 RETURN
 
                 CASE(1)
                 ! Include time - Fraction ts
-                WRITE(52,"(I8,5(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
                 RETURN
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar
-                WRITE(52,"(I8,4(',',F13.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, subvol, dateYear, dateMon, dateDay, dateHour
+                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                    subvol, dateYear, dateMon, dateDay, dateHour
                 RETURN
 
             END SELECT

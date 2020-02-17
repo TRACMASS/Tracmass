@@ -106,6 +106,9 @@ MODULE mod_traj
   INTEGER                                   :: nerror=0     ! Number of trajectories that have an error
   INTEGER, ALLOCATABLE,DIMENSION(:)         :: nexit        ! Number of trajectories killed by the killing zones
 
+  ! Error index
+  INTEGER                                   :: errCode
+  
   ! Particle positions
   INTEGER                                   :: ia, ja, ka, iam
   INTEGER                                   :: ib, jb, kb, ibm

@@ -56,7 +56,7 @@ MODULE mod_loop
 
     ! Start main time loop
     ! =======================================================================
-    intsTimeLoop: DO ints=1, intrun
+    intsTimeLoop: DO ints=1, intrun-1
 
         ! Read fields
         CALL read_field

@@ -315,11 +315,11 @@ MODULE mod_seed
                       STOP
                  END IF
 
-                 iist  = seed_ijk (jsd,1)
-                 ijst  = seed_ijk (jsd,2)
-                 ikst  = seed_ijk (jsd,3)
-                 isec  = seed_set (jsd,1)
-                 idir  = seed_set (jsd,2)
+                 iist  = seed_ijk(jsd,1)
+                 ijst  = seed_ijk(jsd,2)
+                 ikst  = seed_ijk(jsd,3)
+                 isec  = seed_set(jsd,1)
+                 idir  = seed_set(jsd,2)
 
                  ! Skip the loop
                  IF (iist <   1) CYCLE startLoop

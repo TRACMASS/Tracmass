@@ -34,14 +34,14 @@ This module contains four subroutines:
 .. f:autofunction:: tt_calendar
 
 mod_clock
---------
+---------
 
 The module **mod_clock** calculates the new time step referenced to the initial time step. This module contains one subroutine **update_time**.
 
 .. image:: figs/fig_time.png
     :width: 500px
     :align: center
-    :height: 225px
+    :height: 250px
     :alt: Description of mod_time
 
 The subroutine updates **tt** and **ts** based on the value of **ds**. This is transform to a time step in seconds **dt** by multiplying **ds** with the volume **dxyz**. The subroutine chooses between the smallest of three different time steps:
@@ -104,6 +104,31 @@ The module **mod_init** consists on two subroutines: **init_namelist** that read
 .. f:autosubroutine:: init_namelist
 
 .. f:autosubroutine:: init_alloc
+
+mod_loop
+--------
+
+The module **mod_loop** is the core module of TRACMASS. This module contains the big loop that updates the calendar, the clock and the position of the trajectories.
+
+This is how the module works:
+
+1 - First the fields are updated according to the value of **ints**.
+
+2 - Then, if the time step corresponds to a seeding time, the subrotuine **seed** is called.
+
+3 - Then the loop checks all the possible trajectories given by **ntrac**. If the trajectory is not activated the module while skip it.
+
+4 - If a trajectory is activated it will be iterated several times where its position will be updated (**update_traj**).
+
+5 - If the trajectory exceedes the limit time **timax**, it will be deactivated.
+
+6 - After each iteration the calendar is updated.
+
+.. note:: If all the trajectories are deactivated the simulation will be stopped even if the corresponding time step is not the final one set by **intrun**.
+
+This module contains a single subroutine:
+
+.. f:autosubroutine:: loop
 
 
 mod_pos
@@ -200,6 +225,23 @@ This module contains three subroutines:
 
 .. f:autosubroutine:: update_traj
 
+mod_print
+---------
+
+The module **mod_print** is responsible for printing the basic information about the run which includes a short summary of the model configuration, the number of trajectories run and a final summary of the number trajectories that are still running, have been deactivated or have errors.
+
+This module includes five subroutines:
+
+.. f:autosubroutine:: print_header_main
+
+.. f:autosubroutine:: writesetup_main
+
+.. f:autosubroutine:: print_start_loop
+
+.. f:autosubroutine:: print_cycle_loop
+
+.. f:autosubroutine:: print_end_loop
+
 mod_seed
 --------
 
@@ -262,9 +304,20 @@ and a private subroutine:
 
 .. f:autosubroutine:: split_grid
 
-
 mod_write
 ---------
+
+The module **mod_write** creates the outfiles where the information of the trajectories is stored. This module is responsible for writing three important files: *_ini.csv* where the initial positions are stored, *_out.csv* where the final positions are stored, and *_run.csv* where the new positions of the trajectory are stored.
+
+.. image:: figs/fig_write.png
+  :width: 500px
+  :align: center
+  :height: 500px
+  :alt: Example of a writing frequency
+
+The initial and the final information of the trajectories are always stored. However, the frequency at which data is stored in the *_run.csv* is controlled by **write_frec**: (1) only at GCM time steps, (2) only at GCM and subcycle time steps, (3) only when a trajectory crosses a wall, (4) all time steps, and (5) no data stored.
+
+.. note:: the time format of the output files can also be adjusted with **timeformat**: (0) **tt** is stored, (1) **ts** is stored, (2) the time is saved in YYYY-MM-DD HH format.
 
 This module contains three subroutines:
 

@@ -251,7 +251,7 @@ MODULE mod_seed
             END SELECT
 
             ! Allocate trajectories
-            ntracmax = nsdMax*nsdTim
+            ntracmax = nsdMax*nsdTim*100
 
             ALLOCATE ( trajectories(ntracmax) )
             trajectories(:)%x1 = 0.

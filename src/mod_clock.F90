@@ -48,7 +48,9 @@ MODULE mod_clock
 
      ELSE
         ! Update the real time
-        tt = tt + dt
+        ! tt is the only time variable that captures the backward trajectories
+        ! ts and tss are absolute values of tt
+        tt = tt + nff*dt
 
         ! If the time step is equal to the minimum time step
         IF (dt == dtmin) THEN

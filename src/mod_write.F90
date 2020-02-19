@@ -100,10 +100,10 @@ MODULE mod_write
 
         ! RUN file
         CASE ('run')
-            IF(  (write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1   ) .OR. &
-                 (write_frec == 2 .AND. scrivi                    ) .OR. &
-                 (write_frec == 3                                 ) .OR. &
-                 (write_frec == 5 .AND. .not.scrivi                  ) ) THEN
+            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1   ) .OR. &
+                 ( write_frec == 2 .AND. scrivi      ) .OR. &
+                 ( write_frec == 3 .AND. .not.scrivi ) .OR. &
+                 ( write_frec == 4 ) ) THEN
 
                 SELECT CASE(timeformat)
 

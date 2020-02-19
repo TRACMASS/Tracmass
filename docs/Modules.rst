@@ -2,8 +2,8 @@ Main modules
 ============
 .. _md_program:
 
-mod_calendar
-------------
+mod_calendar.F90
+----------------
 
 The module **mod_calendar** contains all the subroutines that initialise and update the calendar of the simulation. This module contains four subroutines: **init_calendar**, **update_calendar**, **end_calendar** and **tt_calendar**.
 
@@ -33,8 +33,8 @@ This module contains four subroutines:
 
 .. f:autofunction:: tt_calendar
 
-mod_clock
----------
+mod_clock.F90
+-------------
 
 The module **mod_clock** calculates the new time step referenced to the initial time step. This module contains one subroutine **update_time**.
 
@@ -56,8 +56,8 @@ After updating the values of **tt** and **ts**, the new values of **intrpb** and
 
 .. f:autosubroutine:: update_time
 
-mod_error
----------
+mod_error.F90
+-------------
 
 The module **mod_error** check for possible errors in the simulation. If any error is found a diagnostic file with a summary of the error is created. This module contains two subroutines and a private function: **errorCheck**, **write_error** and **errorType**.
 
@@ -96,8 +96,8 @@ and a private function:
 
 .. f:autosubroutine:: errorType
 
-mod_init
---------
+mod_init.F90
+------------
 
 The module **mod_init** consists on two subroutines: **init_namelist** that reads the namelist, and **init_alloc** that allocates all the allocatable arrays. More information about the namelist can be found in the *Namelist* chapter.
 
@@ -105,10 +105,16 @@ The module **mod_init** consists on two subroutines: **init_namelist** that read
 
 .. f:autosubroutine:: init_alloc
 
-mod_loop
---------
+mod_loop.F90
+------------
 
 The module **mod_loop** is the core module of TRACMASS. This module contains the big loop that updates the calendar, the clock and the position of the trajectories.
+
+.. image:: figs/fig_loop.png
+    :width: 600px
+    :align: center
+    :height: 750px
+    :alt: Description of mod_pos
 
 This is how the module works:
 
@@ -131,8 +137,8 @@ This module contains a single subroutine:
 .. f:autosubroutine:: loop
 
 
-mod_pos
---------
+mod_pos.F90
+-----------
 
 The module **mod_pos** calculates the new position of a trajectory and the time it will take to cross a wall in the gridbox. This module contains three subroutines: **cross_time**, **calc_pos**, and **update_traj**.
 
@@ -225,8 +231,8 @@ This module contains three subroutines:
 
 .. f:autosubroutine:: update_traj
 
-mod_print
----------
+mod_print.F90
+-------------
 
 The module **mod_print** is responsible for printing the basic information about the run which includes a short summary of the model configuration, the number of trajectories run and a final summary of the number trajectories that are still running, have been deactivated or have errors.
 
@@ -242,8 +248,8 @@ This module includes five subroutines:
 
 .. f:autosubroutine:: print_end_loop
 
-mod_seed
---------
+mod_seed.F90
+------------
 
 The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and a private subroutine (split_grid)
 
@@ -304,8 +310,48 @@ and a private subroutine:
 
 .. f:autosubroutine:: split_grid
 
-mod_write
----------
+mod_vars.F90
+------------
+
+**mod_vars.F90** is a collection of different modules that define the required variables for the different components of TRACMASS. This file contains 10 modules:
+
+- **mod_precdef**: defines the precisions of the REAL variables.
+
+- **mod_log**: defines the verbose variables.
+
+- **mod_param**: the general parameters of TRACMASS are defined here.
+
+- **mod_trajdef**: the derived TYPE **trajectory** is defined in this module.
+
+- **mod_loopvars**: the variables used in **mod_loop** are defined here.
+
+- **mod_traj**: the variables to describe a trajectory are defined here.
+
+- **mod_grid**: the grid variables, and the boundary conditions are defined here.
+
+- **mod_time**: defines the variables used by **mod_calendar** and **mod_clock**.
+
+- **mod_domain**: defines the variables to describe the limits of the domain where the trajectory is activated.
+
+- **mod_vel**: the volume/mass fluxes both horizontal and vertical are defined here.
+
+mod_vertvel.F90
+---------------
+
+The module **mod_vertvel** computes the vertical volume/mass fluxes. If TRACMASS is setup for two dimensional fields, or the vertical velocity is part of the dataset this module is not activated.
+
+This module contains a single subroutine **vertvel** that computes the vertical flux using the following equation:
+
+.. math::
+
+   W^n_{i,j,k} = W^n_{i,j,k-1} - ( U^n_{i,j,k}-U^n_{i-1,j,k} + V^n_{i,j,k} - V^n_{i,j-1,k})
+
+This equation is integrated from the bottom (ocean) or the TOA (atmosphere) to the level **ka**.
+
+.. f:autosubroutine:: vertvel
+
+mod_write.F90
+-------------
 
 The module **mod_write** creates the outfiles where the information of the trajectories is stored. This module is responsible for writing three important files: *_ini.csv* where the initial positions are stored, *_out.csv* where the final positions are stored, and *_run.csv* where the new positions of the trajectory are stored.
 

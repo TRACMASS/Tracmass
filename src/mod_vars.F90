@@ -108,7 +108,7 @@ MODULE mod_traj
 
   ! Error index
   INTEGER                                   :: errCode
-  
+
   ! Particle positions
   INTEGER                                   :: ia, ja, ka, iam
   INTEGER                                   :: ib, jb, kb, ibm

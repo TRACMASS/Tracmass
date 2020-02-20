@@ -213,6 +213,12 @@ MODULE mod_pos
            CALL calc_pos(2,ia,ja,ka,y0,y1,ds) ! meridional position
            CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vertical position
 
+           ! In case of corners
+           IF (ds == dsn) jb = ja + 1
+           IF (ds == dss) jb = ja - 1
+           IF (ds == dsu) kb = ka + 1
+           IF (ds == dsd) kb = ka - 1
+
         ! Westward grid-cell exit
         ELSE IF (ds==dsw) THEN
            scrivi=.FALSE.
@@ -225,6 +231,12 @@ MODULE mod_pos
 
            CALL calc_pos(2,ia,ja,ka,y0,y1,ds) ! meridional position
            CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vertical position
+
+           ! In case of corners
+           IF (ds == dse) ib = ia + 1
+           IF (ds == dsw) ib = iam
+           IF (ds == dsu) kb = ka + 1
+           IF (ds == dsd) kb = ka - 1
 
         ! Northward grid-cell exit
         ELSE IF (ds==dsn) THEN
@@ -239,6 +251,12 @@ MODULE mod_pos
            CALL calc_pos(1,ia,ja,ka,x0,x1,ds) ! zonal position
            CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vertical position
 
+           ! In case of corners
+           IF (ds == dse) ib = ia + 1
+           IF (ds == dsw) ib = iam
+           IF (ds == dsu) kb = ka + 1
+           IF (ds == dsd) kb = ka - 1
+
         ! Southward grid-cell exit
         ELSE IF (ds==dss) THEN
            scrivi=.FALSE.
@@ -251,6 +269,12 @@ MODULE mod_pos
 
            CALL calc_pos(1,ia,ja,ka,x0,x1,ds) ! zonal position
            CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vertical position
+
+           ! In case of corners
+           IF (ds == dse) ib = ia + 1
+           IF (ds == dsw) ib = iam
+           IF (ds == dsu) kb = ka + 1
+           IF (ds == dsd) kb = ka - 1
 
         ! Upward grid-cell exit
         ELSE IF (ds==dsu) THEN
@@ -274,6 +298,12 @@ MODULE mod_pos
            CALL calc_pos(1,ia,ja,ka,x0,x1,ds) ! zonal position
            CALL calc_pos(2,ia,ja,ka,y0,y1,ds) ! meridional position
 
+           ! In case of corners
+           IF (ds == dse) ib = ia + 1
+           IF (ds == dsw) ib = iam
+           IF (ds == dsn) jb = ja + 1
+           IF (ds == dss) jb = ja - 1
+
         ! Downward grid-cell exit
         ELSE IF (ds==dsd) THEN
            scrivi=.FALSE.
@@ -290,6 +320,12 @@ MODULE mod_pos
 
            CALL calc_pos(1,ia,ja,ka,x0,x1,ds) ! zonal position
            CALL calc_pos(2,ia,ja,ka,y0,y1,ds) ! meridional position
+
+           ! In case of corners
+           IF (ds == dse) ib = ia + 1
+           IF (ds == dsw) ib = iam
+           IF (ds == dsn) jb = ja + 1
+           IF (ds == dss) jb = ja - 1
 
         ! Shortest time is the time-steping
         ELSE IF (ds==dsc .OR. ds==dsmin) THEN

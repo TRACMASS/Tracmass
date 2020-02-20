@@ -10,15 +10,13 @@ MODULE mod_vertvel
     !!
     !!------------------------------------------------------------------------------
 
-    USE mod_vel,             only : nsm, nsp, uflux, vflux, wflux
+    USE mod_vel,             only : nsm, nsp, uflux, vflux, wflux, uu, um, vv, vm
     USE mod_time,            only: intrpr, intrpg, tseas
     USE mod_grid
 
     IMPLICIT NONE
 
     INTEGER  :: k = 0
-
-    REAL(DP) :: uu, um, vv, vm
 
     CONTAINS
 

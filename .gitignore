@@ -6,11 +6,14 @@ docs/_build
 docs/_static
 docs/_templates
 
+# Build objects and modules
+*.mod
+*.o
+
 
 # ---------- TO ERASE LATER --------------
 
 # Makefiles and src files
 src/Makefile
-src/*.fun
 src/_tests
 

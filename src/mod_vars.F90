@@ -226,6 +226,7 @@ MODULE mod_vel
 
   ! Velocity fields
   REAL,   ALLOCATABLE, DIMENSION(:,:,:)      :: uvel ,vvel ,wvel
+  REAL(DP)                                   :: uu, um, vv, vm
 
   ! Mass/volume fluxes
   REAL(PP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: uflux, vflux

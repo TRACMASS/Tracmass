@@ -19,13 +19,12 @@ MODULE mod_pos
     USE mod_traj
 
     USE mod_grid, only: undef, imt, jmt, km, nsm, nsp, iperio, jperio
-    USE mod_vel, only: uflux, vflux, wflux
+    USE mod_vel, only: uflux, vflux, wflux, uu, um, vv, vm
     USE mod_time, only: dtreg, intrpr, intrpg
 
     IMPLICIT none
 
     REAL(DP)                                   :: r0, r1
-    REAL(DP)                                   :: uu, um, vv, vm
     REAL(DP)                                   :: ba, sp, sn
     INTEGER                                    :: ijk, ii, im, jm
 

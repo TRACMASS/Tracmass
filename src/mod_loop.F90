@@ -203,24 +203,12 @@ MODULE mod_loop
             CALL update_time
 
             ! End trajectory if outside chosen domain
-            IF ( z1>= DBLE(KM) ) THEN
-                kb = KM
-                !PRINT*, 'z1 is outside the domain'
-                !PRINT*, 'z1 =', z1
+            CALL kill_zones(nend)
+            IF (nend>1) THEN
                 EXIT niterLoop
 
-            ELSE IF (ia>imt .OR. ib>imt .OR. ja>jmt .OR. jb>jmt &
-                 .OR. ia<1 .OR. ib<1 .OR. ja<1 .OR. jb<1) THEN
-               !PRINT*, 'Trajectory outside domain'
-               !PRINT*, 'ia =', ia, 'ib =', ib
-               !PRINT*, 'ja =', ja, 'jb =', jb
-               EXIT niterLoop
-
-            ! Emd trajectory if time are exceeded
+            ! End trajectory if time is exceeded
             ELSE IF (tt-t0 .GT. timax*24*3600) THEN
-               !PRINT*, 'Time exceeded'
-               !PRINT*, 'tt-t0 =', tt-t0
-               !PRINT*, 'timax =', timax
                EXIT niterLoop
 
             ELSE

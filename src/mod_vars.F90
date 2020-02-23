@@ -96,7 +96,7 @@ MODULE mod_traj
   USE mod_trajdef
 
   ! Variables connected to particle positions
-  INTEGER                                   :: nend         ! Killing zones
+  INTEGER                                   :: nend=0       ! Killing zone flag
   INTEGER                                   :: ntrac        ! Particle iteration variable
   INTEGER                                   :: ntractot=0   ! Total number trajectories
 
@@ -104,7 +104,6 @@ MODULE mod_traj
   INTEGER                                   :: nout=0       ! Number of killed trajectories
   INTEGER                                   :: nloop=0      ! Number of particles trapped in a infinite loop
   INTEGER                                   :: nerror=0     ! Number of trajectories that have an error
-  INTEGER, ALLOCATABLE,DIMENSION(:)         :: nexit        ! Number of trajectories killed by the killing zones
 
   ! Error index
   INTEGER                                   :: errCode
@@ -215,6 +214,7 @@ ENDMODULE mod_time
 MODULE mod_domain
   USE mod_precdef
 
+  INTEGER                                 :: exitType
   INTEGER, DIMENSION(10)                  :: ienw ,iene, jens ,jenn ! Horizontal killing zones
   REAL(PP)                                :: timax                  ! Maximum time to run a trajectory
 ENDMODULE mod_domain

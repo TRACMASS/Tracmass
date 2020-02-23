@@ -77,8 +77,8 @@ MODULE mod_error
          ! Trajectory leaving a model area
          IF(ia<1 .OR. ia>imt .OR. ib<1 .OR. ib>imt .OR.    &
             ja<1 .OR. ja>jmt .OR. jb<1 .OR. jb>jmt .OR.    &
-            y0<0 .OR. y0>jmt .OR. y1<0 .OR. y1>jmt         &
-            ) THEN
+            y0<0 .OR. y0>jmt .OR. y1<0 .OR. y1>jmt .OR.    &
+            z1>=DBLE(KM) ) THEN
 
           nerror = nerror + 1
           errCode = 3

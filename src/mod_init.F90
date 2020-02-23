@@ -47,7 +47,7 @@ MODULE mod_init
                                          loneparticle, SeedType, ist1,  &
                                          ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
                                          seedDir, seedFile, seedTime, timeFile
-        namelist /INIT_KILLZONES/        timax
+        namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn
 
         ! Read namelist
         OPEN (8,file='namelist.in',    &

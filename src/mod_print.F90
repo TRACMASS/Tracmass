@@ -61,10 +61,11 @@ MODULE mod_print
        PRINT *,'Start time  : '//currTime(1:2)// ':'//currTime(3:4)// ':'//currTime(5:6)
 
        PRINT *, thinline !---------------------------------------------------
-       PRINT *,'Directory for output files : ' ,trim(outDataDir)
-       PRINT *,'Prefix for output files    : ' ,trim(outDataFile)
+       PRINT *,'Directory for output files : ' ,TRIM(outDataDir)
+       PRINT *,'Prefix for output files    : ' ,TRIM(outDataFile)
        PRINT *, thinline !---------------------------------------------------
        PRINT *,"Selected compile options:"
+
 #if defined w_2dim
        PRINT *,' - Two-dimensional trajectories, no change in depth'
 #endif
@@ -74,6 +75,13 @@ MODULE mod_print
 #if defined w_3dim
        PRINT *,' - Explicit vertical velocities from the GCM.'
 #endif
+
+#if defined z_timevar
+       PRINT *,' - Time dependent dz'
+#else
+       PRINT *,' - Time independent dz'
+#endif
+
        PRINT *, thinline
 
    END SUBROUTINE writesetup_main

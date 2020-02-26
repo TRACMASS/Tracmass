@@ -158,11 +158,8 @@ MODULE mod_loop
             IF (errCode .NE. 0) CYCLE ntracLoop
 
             ! Interpolate volume
-#if z_timevar
             dxyz = dxdy(ib,jb)*(intrpg * dzt(ib,jb,kb,nsp) + intrpr * dzt(ib,jb,kb,nsm))
-#else
-            dxyz = dxdy(ib,jb)*dz(ib,jb,kb)
-#endif
+
             CALL errorCheck('dxyzError'     ,errCode)
             IF (errCode .NE. 0) CYCLE ntracLoop
 

@@ -15,7 +15,7 @@ MODULE mod_seed
     !!------------------------------------------------------------------------------
 
     USE mod_log,  only      : log_level
-    USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dz, dzt
+    USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dzt
     USE mod_time, only      : ints, tseas, tt, ts, nff
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_loopvars, only  : subvol
@@ -363,7 +363,7 @@ MODULE mod_seed
 
                   END SELECT
 
-                  IF ((idir*vol <= 0.d0 .AND. idir /= 0 ) .OR. (vol == 0.)) CYCLE startLoop
+                  IF ((nff*idir*vol <= 0.d0 .AND. idir /= 0 ) .OR. (vol == 0.)) CYCLE startLoop
 
                   ! Volume/mass transport needs to be positive
                   vol = ABS(vol)
@@ -418,9 +418,9 @@ MODULE mod_seed
                           x1 = DBLE (ib)
                           y1 = DBLE (jb-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
                           z1 = DBLE (kb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
-                          IF (idir*nff == 1) THEN
+                          IF (nff*idir == 1) THEN
                               ib = iist+1
-                          ELSE IF (idir*nff == -1) THEN
+                          ELSE IF (nff*idir == -1) THEN
                               ib=iist
                           END IF
 

@@ -85,11 +85,7 @@ MODULE mod_init
         ALLOCATE ( kmt(imt,jmt))
         kmt(:,:) = 1
 
-#if z_timevar
         ALLOCATE( dzt(imt,jmt,km,nst))
-# else
-        ALLOCATE( dz(imt,jmt,km))
-#endif
 
         ! Allocate velocity fields and sea-surface height
         ALLOCATE (hs(imt,jmt,nst) )

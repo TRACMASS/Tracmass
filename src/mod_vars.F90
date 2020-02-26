@@ -145,8 +145,7 @@ MODULE mod_grid
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: mask         ! Land-sea mask
 
   ! Vertical grid
-  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: dz
-  REAL, ALLOCATABLE, DIMENSION(:,:,:,:)       :: dzt, dzu, dzv
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)   :: dzt, dzu, dzv
   REAL(PP), ALLOCATABLE, DIMENSION(:,:,:)     :: botbox
 
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: kmt, kmu, kmv

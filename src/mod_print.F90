@@ -76,12 +76,6 @@ MODULE mod_print
        PRINT *,' - Explicit vertical velocities from the GCM.'
 #endif
 
-#if defined z_timevar
-       PRINT *,' - Time dependent dz'
-#else
-       PRINT *,' - Time independent dz'
-#endif
-
        PRINT *, thinline
 
    END SUBROUTINE writesetup_main
@@ -95,7 +89,6 @@ MODULE mod_print
    ! --------------------------------------------------
 
         CALL write_lines
-        PRINT*, thickline!=================================================
         WRITE(6,FMT='(A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2)')          &
              ' Start date in model-time     : ' , startYear, '-',  &
              startMon, '-', startDay,' ' ,startHour, ':', startMin

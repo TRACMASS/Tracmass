@@ -187,7 +187,7 @@ MODULE mod_error
 
            CASE(2)
            ! Include time - YYYY MM DD HH MM SS
-           CALL tt_calendar
+           CALL tt_calendar(tt)
            WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),1(',  ',A100))")  ntrac, x1, y1, z1, &
                  subvol, dateYear, dateMon, dateDay, dateHour, ADJUSTL(errorType(errCode))
            RETURN
@@ -216,11 +216,11 @@ MODULE mod_error
     CASE(4)
         errorType = 'Trajectory hits land'
     CASE(5)
-        errorType = 'Wrong box horizontal (i- index)'
+        errorType = 'Wrong box horizontal (i - index)'
     CASE(6)
-        errorType = 'Wrong box horizontal (j- index)'
+        errorType = 'Wrong box horizontal (j - index)'
     CASE(7)
-        errorType = 'Wrong box vertical (k- index)'
+        errorType = 'Wrong box vertical (k - index)'
     CASE(8)
         errorType = 'ds error - unknown path'
     END SELECT

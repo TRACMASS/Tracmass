@@ -134,7 +134,7 @@ MODULE mod_calendar
 
         INTEGER :: nt
 
-        DO nt = 1, intrun
+        DO nt = 1, intrun-1
           CALL update_calendar
         END DO
 
@@ -297,7 +297,7 @@ MODULE mod_calendar
 
      END SUBROUTINE update_calendar
 
-     SUBROUTINE tt_calendar
+     SUBROUTINE tt_calendar(tv)
      ! ---------------------------------------------------
      !
      ! Purpose:
@@ -308,8 +308,10 @@ MODULE mod_calendar
      !
      ! ---------------------------------------------------
 
+         REAL(DP), INTENT(IN)  :: tv
+
          ! Now update the time and date
-         dateSec   = tt
+         dateSec   = tv
          dateMin   = startMin
          dateHour  = startHour
          dateDay   = startDay

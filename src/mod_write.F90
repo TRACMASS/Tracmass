@@ -91,7 +91,7 @@ MODULE mod_write
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
-                CALL tt_calendar
+                CALL tt_calendar(tt)
                 WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
                     subvol, dateYear, dateMon, dateDay, dateHour
                 RETURN
@@ -101,7 +101,7 @@ MODULE mod_write
         ! RUN file
         CASE ('run')
             IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1   ) .OR. &
-                 ( write_frec == 2 .AND. scrivi      ) .OR. &
+                 ( write_frec == 2 .AND. tss==DBLE(INT(tss))     ) .OR. &
                  ( write_frec == 3 .AND. .not.scrivi ) .OR. &
                  ( write_frec == 4 ) ) THEN
 
@@ -119,7 +119,7 @@ MODULE mod_write
 
                     CASE(2)
                     ! Include time - YYYY MM DD HH MM SS
-                    CALL tt_calendar
+                    CALL tt_calendar(tt)
                     WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
                         subvol, dateYear, dateMon, dateDay, dateHour
                     RETURN
@@ -143,7 +143,7 @@ MODULE mod_write
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
-                CALL tt_calendar
+                CALL tt_calendar(tt)
                 WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
                     subvol, dateYear, dateMon, dateDay, dateHour
                 RETURN

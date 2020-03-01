@@ -66,7 +66,7 @@ MODULE mod_trajdef
                                                                   !! 1=stop and update model fields
 
       REAL(DP)                              :: x0,y0,z0,x1,y1,z1  !! positions
-      REAL(DP)                              :: tt,t0              !! time
+      REAL(DP)                              :: tt,t0             !! time
       REAL(DP)                              :: subvol             !! volume (or mass for atm.)
 
       LOGICAL                               :: active             !! particle active or not
@@ -198,6 +198,7 @@ MODULE mod_time
   REAL(DP)                                  :: tseas     ! GCM time step in seconds
   REAL(DP)                                  :: t0        ! Seeding time step in seconds
   REAL(DP)                                  :: tt        ! Time vector since the beginnig of the simulation in seconds
+  REAL(DP)                                  :: tf        ! Future time vector
   REAL(DP)                                  :: ts        ! Normalised time
   REAL(DP)                                  :: tss       ! Normalised time between two time steps
   REAL(DP)                                  :: dt        ! Time step in second

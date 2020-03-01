@@ -302,10 +302,6 @@ MODULE mod_seed
               !Loop over the seed size (nsdMax)
               startLoop: DO jsd=1,nsdMax
 
-                 ! Test if it is time to launch the particle ---
-                 ! -------------------------------------------------
-                 !itim  = seed_tim (jsd)
-
                  IF ( (seedTime == 1 .OR. seedTime == 2) .AND. &
                  &    (ints /= itim) ) THEN
 
@@ -397,6 +393,11 @@ MODULE mod_seed
                       CALL split_grid()
                   END IF
 
+#if w_2dim
+                  ! Makes no difference in depth
+                  ijt = num; ikt = 1
+#endif
+
                   subvol = vol / DBLE (ijt*ikt)
 
                   IF (subvol == 0.d0) THEN
@@ -415,7 +416,7 @@ MODULE mod_seed
 
                        SELECT CASE (isec)
                        CASE (1)   ! Meridional-vertical section
-                          x1 = DBLE (ib)
+                          x1 = DBLE (iist)
                           y1 = DBLE (jb-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
                           z1 = DBLE (kb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
                           IF (nff*idir == 1) THEN
@@ -426,7 +427,7 @@ MODULE mod_seed
 
                        CASE (2)   ! Zonal-vertical section
                           x1 = DBLE (ib-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
-                          y1 = DBLE (jb)
+                          y1 = DBLE (ijst)
                           z1 = DBLE (kb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
                           IF (idir*nff == 1) THEN
                              jb = ijst+1
@@ -437,7 +438,7 @@ MODULE mod_seed
                         CASE (3)   ! Horizontal section
                           x1 = DBLE (ib-1) + (DBLE (jjt) - 0.5d0) / DBLE (ijt)
                           y1 = DBLE (jb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
-                          z1 = DBLE (kb)
+                          z1 = DBLE (ikst)
                           IF (idir*nff == 1) THEN
                             kb = ikst+1
                           ELSE IF (idir*nff == -1) THEN
@@ -456,7 +457,6 @@ MODULE mod_seed
                           STOP
 
                         END IF
-
 
                         ! TRACERS GO HERE [ADD!]
                         ! ****************  TRACERS INTERP *****************
@@ -505,6 +505,7 @@ MODULE mod_seed
                         END IF
 
                         CALL write_data('ini')
+                        CALL write_data('run')
 
                       END DO kkkLoop
                     END DO ijjLoop

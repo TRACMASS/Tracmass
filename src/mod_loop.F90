@@ -58,6 +58,9 @@ MODULE mod_loop
     ! =======================================================================
     intsTimeLoop: DO ints=1, intrun-1
 
+        tf = ints*tseas
+        CALL tt_calendar(tf)
+
         ! Read fields
         CALL read_field
 
@@ -152,8 +155,8 @@ MODULE mod_loop
             ja  = jb
             ka  = kb
 
-
-            CALL errorCheck('coordBoxError' ,errCode)
+            CALL errorCheck('coordboxError' ,errCode)
+            IF (errCode .NE. 0) CYCLE ntracLoop
             CALL errorCheck('infLoopError'  ,errCode)
             IF (errCode .NE. 0) CYCLE ntracLoop
 
@@ -185,11 +188,11 @@ MODULE mod_loop
             CALL cross_time(3,ia,ja,ka,z0,dsu,dsd) ! vertical
 
             ds = MIN(dse, dsw, dsn, dss, dsu, dsd, dsmin)
+
             CALL errorCheck('dsCrossError', errCode)
             IF (errCode.ne.0) CYCLE ntracLoop
 
             CALL update_traj(ia,iam,ja,ka,ib,jb,kb,x0,y0,z0,x1,y1,z1)
-
 
             CALL errorCheck('boundError', errCode)
             IF (errCode.ne.0) CYCLE ntracLoop
@@ -218,6 +221,7 @@ MODULE mod_loop
           nout = nout + 1
 
           ! Write out data
+          CALL write_data('run')
           CALL write_data('out')
 
           trajectories(ntrac)%active = .FALSE.
@@ -233,6 +237,8 @@ MODULE mod_loop
         CALL update_calendar
 
     END DO intsTimeLoop
+
+    CALL print_cycle_loop()
 
     CALL print_end_loop
 

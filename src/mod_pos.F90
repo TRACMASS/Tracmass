@@ -169,7 +169,7 @@ MODULE mod_pos
            r1 = (r0+(-DBLE(ii-1) + um/(uu-um))) * &
                 DEXP( (uu-um)*ds ) + DBLE(ii-1) - um/(uu-um)
         ELSE
-           r1=r0+uu*ds
+           r1 = r0 + uu*ds
         END IF
 
         RETURN

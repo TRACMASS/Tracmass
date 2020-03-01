@@ -115,7 +115,8 @@ MODULE mod_print
    ! --------------------------------------------------
 
 
-        PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", ints, ntractot-nout, nout, nerror+nloop, ntractot, &
+        PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", ints, ntractot-nout-nerror-nloop, &
+                nout, nerror+nloop, ntractot, &
                 currYear,currMon,currDay,currHour,currMin,currSec
    END SUBROUTINE print_cycle_loop
 
@@ -134,8 +135,8 @@ MODULE mod_print
      PRINT *, thickline!=================================================
      PRINT *, ntractot ,  ' particles calculated'
      PRINT *, nout     ,  ' particles exited the space and time domain'
-     PRINT *, nerror   ,  ' particles flagged with errors'
-     PRINT *, ntractot-nout-nerror,' particles in domain'
+     PRINT *, nerror+nloop   ,  ' particles flagged with errors'
+     PRINT *, ntractot-nout-nerror-nloop,' particles in domain'
      PRINT *, thinline !---------------------------------------------------
 
      CALL date_and_time(currDate, currTime)

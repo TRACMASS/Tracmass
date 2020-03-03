@@ -100,7 +100,7 @@ MODULE mod_write
 
         ! RUN file
         CASE ('run')
-            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1   ) .OR. &
+            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1) .OR. &
                  ( write_frec == 2 .AND. tss==DBLE(INT(tss))     ) .OR. &
                  ( write_frec == 3 .AND. .not.scrivi ) .OR. &
                  ( write_frec == 4 ) ) THEN
@@ -109,19 +109,33 @@ MODULE mod_write
 
                     CASE(0)
                     ! Include time - tt in seconds
-                    WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                    IF (write_frec == 1) THEN
+                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x0, y0, z0, subvol, tt - dt
+                    ELSE
+                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                    END IF
                     RETURN
 
                     CASE(1)
                     ! Include time - Fraction ts
-                    WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                    IF (write_frec == 1) THEN
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x0, y0, z0, subvol, ts - dts
+                    ELSE
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                    END IF
                     RETURN
 
                     CASE(2)
                     ! Include time - YYYY MM DD HH MM SS
-                    CALL tt_calendar(tt)
-                    WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
-                        subvol, dateYear, dateMon, dateDay, dateHour
+                    IF (write_frec == 1) THEN
+                      CALL tt_calendar(tt - dt)
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                          subvol, dateYear, dateMon, dateDay, dateHour
+                    ELSE
+                      CALL tt_calendar(tt)
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                          subvol, dateYear, dateMon, dateDay, dateHour
+                    END IF
                     RETURN
 
                 END SELECT

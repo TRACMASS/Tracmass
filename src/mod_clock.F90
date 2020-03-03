@@ -11,7 +11,7 @@ MODULE mod_clock
    !!------------------------------------------------------------------------------
 
    USE mod_time
-   USE mod_loopvars, only   : ds, dsc, dsmin
+   USE mod_loopvars, only   : ds, dsc, dsmin, dts
    use mod_grid, only       : dxyz
    USE mod_param, only      : iter
 
@@ -39,12 +39,16 @@ MODULE mod_clock
      ! If time step makes the integration
      ! exceed the time when fields change
      IF (tss + dt/tseas*DBLE(iter) .GE. DBLE(iter)) THEN
+        dts = ts
+
         dt  = DBLE(INT(ts,8)+1)*tseas-tt
         tt  = DBLE(INT(ts,8)+1)*tseas
         ts  = DBLE(INT(ts,8)+1)
         tss = DBLE(iter)
         ds  = dt/dxyz
         dsc = ds
+
+        dts = ts - dts
 
      ELSE
         ! Update the real time
@@ -57,15 +61,23 @@ MODULE mod_clock
             ts  = ts  + dstep
             tss = tss + 1.d0
 
+            dts = dstep
+
         ! If the time step is equal to the time step to the next subcycle
         ELSE IF (dt == dtreg) THEN
+            dts = ts
+
             ts  = NINT((ts + dtreg/tseas)*DBLE(iter),8)/DBLE(iter)
             tss = DBLE(NINT(tss + dt/dtmin))
+
+            dts = ts - dts
 
         ! If the time step is equal to any other time step e.g. crossing wall
         ELSE
             ts  = ts + dt/tseas
             tss = tss + dt/dtmin
+
+            dts = dt/tseas
 
         END IF
 

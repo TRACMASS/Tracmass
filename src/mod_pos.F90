@@ -331,6 +331,8 @@ MODULE mod_pos
         ELSE IF (ds==dsc .OR. ds==dsmin) THEN
            scrivi=.TRUE.
 
+           IF (ds<1e-8) scrivi=.FALSE.
+
            ! If there is no spatial solution, i.e. a convergence zone
            IF(dse==UNDEF .AND. dsw==UNDEF .AND. dsn==UNDEF .AND. &
               dss==UNDEF .AND. dsu==UNDEF .AND. dsd==UNDEF ) THEN
@@ -342,6 +344,11 @@ MODULE mod_pos
            CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vert. crossing
 
         END IF
+
+        ! Make sure that trajectory is inside ib,jb,kb box
+        IF (x1 /= DBLE(IDINT(x1))) ib = IDINT(x1)+1
+        IF (y1 /= DBLE(IDINT(y1))) jb = IDINT(y1)+1
+        IF (z1 /= DBLE(IDINT(z1))) kb = IDINT(z1)+1
 
         !  East-west cyclic
         IF (iperio /= 0) THEN

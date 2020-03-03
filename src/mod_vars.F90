@@ -83,6 +83,7 @@ MODULE mod_loopvars
   REAL(DP)                                  :: dsn, dss   ! VNT to north/south crossing
   REAL(DP)                                  :: dsu, dsd   ! VNT to up/dow crossing
   REAL(DP)                                  :: dsc        ! VNT convergence
+  REAL(DP)                                  :: dts        ! VNT step
   REAL(DP)                                  :: subvol     ! Transported mass/vol
 
   INTEGER                                   :: niter      ! number of iterations of a trajectory

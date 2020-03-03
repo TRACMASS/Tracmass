@@ -121,7 +121,7 @@ MODULE mod_loop
             trajectories(ntrac)%icycle = 0
 
             ! time interpolation constant between 0 and 1
-            intrpg = dmod(ts,1.d0) ! -> gets the fractional part
+            intrpg = DMOD(ts,1.d0) ! -> gets the fractional part
             intrpr = 1.d0-intrpg
 
 
@@ -237,8 +237,6 @@ MODULE mod_loop
         CALL update_calendar
 
     END DO intsTimeLoop
-
-    CALL print_cycle_loop()
 
     CALL print_end_loop
 

@@ -74,9 +74,9 @@ compile_test:
 
 test:
 
-	cp projects/test_Simple/namelist_test.in namelist.in
-	cp projects/test_Simple/testData/seedFile seedFile
-	cp projects/test_Simple/testData/seedTime seedTime
+	cp src/_tests/testFiles/namelist_test.in namelist.in
+	cp src/_tests/testFiles/seedFile seedFile
+	cp src/_tests/testFiles/seedTime seedTime
 
 	./test_mod_calendar.x
 	./test_mod_seed.x
@@ -86,6 +86,7 @@ test:
 	-rm -rf seedTime seedFile namelist.in
 
 clean:
+	
 	-rm -rf *.o *.mod *.out *.dSYM *.csv fort.* *.x
 	-rm -rf _build
 	-rm $(RUNFILE)

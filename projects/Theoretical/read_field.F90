@@ -41,8 +41,8 @@ SUBROUTINE read_field
           DO ii=1,IMT
 
              IF (ints == 1) THEN
-                   uflux(ii,jj,1,1) = dyu(ii,jj) * dzt(ii,jj,1,1) * u0
-                   vflux(ii,jj,1,1) = 0.d0
+                   uflux(ii,jj,1,1) = nff*dyu(ii,jj) * dzt(ii,jj,1,1) * u0
+                   vflux(ii,jj,1,1) = nff*0.d0
 
              ELSE
                    uflux(ii,jj,1,1) = uflux(ii,jj,1,2)
@@ -50,9 +50,9 @@ SUBROUTINE read_field
 
              END IF
 
-             uflux(ii,jj,1,2) = dyu(ii,jj) * dzt(ii,jj,1,2) * ( ug*DEXP(-gammag*omtime) + &
+             uflux(ii,jj,1,2) = nff*dyu(ii,jj) * dzt(ii,jj,1,2) * ( ug*DEXP(-gammag*omtime) + &
                                                    (u0-ug) * DEXP(-gamma*omtime) * COS(fcor*omtime) )
-             vflux(ii,jj,1,2) = dxv(ii,jj) * dzt(ii,jj,1,2) * ( -(u0-ug) * DEXP(-gamma*omtime) * SIN(fcor*omtime) )
+             vflux(ii,jj,1,2) = nff*dxv(ii,jj) * dzt(ii,jj,1,2) * ( -(u0-ug) * DEXP(-gamma*omtime) * SIN(fcor*omtime) )
 
           END DO
       END DO

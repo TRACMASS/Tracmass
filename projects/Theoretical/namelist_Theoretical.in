@@ -1,0 +1,126 @@
+! namelist_test.in
+!
+! Namelist file for compiling the module test programs
+
+&INIT_GRID_DESCRIPTION
+        ! Describe filenames
+        physDataDir    = '',               ! directory of physical data (u,v,T,S,MLD,etc)
+        physPrefixForm = ''                ! format of filenames for physical data
+
+        tGridName      = '',               ! name of Tgrid, e.g. grid_T
+        uGridName      = '',               ! name of Ugrid
+        vGridName      = '',               ! name of Vgrid
+        fileSuffix     = '',               ! suffix of files, e.g. ".nc"
+
+        ! Describe variable names
+        ssh_name       = '',               ! name of SSH
+        ueul_name      = '',               ! name of resolved zonal velocity
+        veul_name      = '',               ! ---- " -------   meridional
+/
+
+&INIT_GRID_SIZE
+     	! Size of global grid
+     	imt            = 100,                 ! number of global i points
+     	jmt            = 100,                 ! number of global j points
+     	km             =  1,                  ! number of global k points
+     	nst            =  2,                  ! number of time levels to use (should be = 2)
+
+      ! Boundary conditions
+      iperio  = 1,                         ! zonal periodic
+      jperio  = 1                          ! meridional boundary conditions
+/
+
+&INIT_GRID_TIME
+     ngcm_step      = 1,                   ! time between two time levels
+     ngcm_unit      = 3,                   ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
+                                           ! units of ngcm
+
+     iter           = 100,                  ! number of subcycles between time levels                                                             ! stopped
+/
+
+&INIT_START_DATE
+     startsec       = 0,                   ! start time
+     startmin       = 0,
+     starthour      = 12,
+     startday       = 1,                   ! start date
+     startmon       = 1,
+     startyear      = 2000,
+     noleap         = .FALSE.,             ! Don't use leap years?
+/
+
+&INIT_RUN_TIME
+     ! Loop run
+     loopYears      = .FALSE.,				     ! make a time loop to run
+     		      					                   ! e.g. 1000 years using only 100 years of data
+     loopStartYear  = 2000,				         ! year to start loop from
+     loopEndYear    = 2000,				         ! last year of loop
+
+     ! Verbose
+     log_level    = 0                      ! level of verbose
+
+     ! Information of run time
+     intrun         = 100                   ! number of time steps for run
+/
+
+&INIT_WRITE_TRAJ
+
+     write_frec    = 2                     ! 1 = write at time intervals of gcm datasets (each ints)
+                                           ! 2 = write at each time iteration
+                                           ! 3 = write all the time
+                                           ! 4 = write only start and end positions
+                                           ! 5 = write each spatial grid-crossing
+
+     outDataDir    = '/Users/aitoraldama/Documents/Project/8-Tracmass/outData/',                   ! Output directory
+     outDataFile   = 'Theoretical_back'                ! Output file name
+
+     timeformat    = 1                     ! Format of the time array
+                                           ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
+/
+
+&INIT_SEEDING
+      nff            = 1,                  ! = 1 run forward trajectories
+          		      					             ! = -1 run backwards
+      isec           = 1,				           ! = 1 start on zonal cell wall
+          		      					             ! = 2 start on meridional cell wall
+     							                         ! = 3 start on vertical wall
+      idir           = 1,				           ! = 1 start only when flux > 0
+          		      					             ! = -1      only when flux < 0
+     	nqua           = 1,									 ! number of trajectories can be set by
+     														           ! = 1 constant number of particles in all seeding cells
+     														           !     set by partQuant (particles / gridcell)
+     														           ! = 2 Each particle reflects mass transport at seeding.
+     														           !     set by partQuant (m3/s or kg/s per particle)
+     														           ! = 3 Each particle reflects air/water mass/volume at seeding.
+     														           !     set by partQuant in m3 or kg per particle
+
+      partquant      = 1,                  ! particles/gridcell or m3s-1/particle or m3/particle
+      loneparticle   = 0, 				         ! start only one trajectory for debugging
+
+      seedtype       = 1,				           ! = 1 seed using ist,jst,kst (below)
+          		      					             ! = 2 seed using file with start positions
+
+      ! when seedtype = 1
+      ist1           = 31,				           ! seed in box in range i = [ist1,ist2]
+      ist2           = 31,				         ! 	       	      	    j = [jst1,jst2]
+      jst1           = 50,				           ! 			                k = [kst1,kst2]
+      jst2           = 50,
+      kst1           = 1,
+      kst2           = 1,
+      ! when seedtype = 2
+      seeddir        = '',				         ! directory for seed files
+      seedfile       = 'seedFile',				 ! name of seed file
+
+
+      seedtime       = 1,				           ! = 1 seed using tst (below)
+          		      					             ! = 2 seed using file with seeding time steps
+
+      ! when seedtime = 1
+      tst1           = 1,				           ! seed only between tst1 and tst2 as time steps
+      tst2           = 1,
+      ! when seedtime = 2
+      timefile       = 'seedTime',				 ! name of seed file
+/
+
+&INIT_KILLZONES
+      timax = 100                          ! time limit for traj [days]
+/

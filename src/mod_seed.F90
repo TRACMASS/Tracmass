@@ -38,7 +38,7 @@ MODULE mod_seed
     INTEGER                                    :: numsd, landsd=0
     INTEGER                                    :: nsdTim, nsdMax, ntracmax
     INTEGER                                    :: loneparticle
-    INTEGER*8                                  :: itim
+    INTEGER                                    :: itim
 
     INTEGER, ALLOCATABLE, DIMENSION(:,:)       :: seed_ijk, seed_set
     INTEGER, ALLOCATABLE, DIMENSION(:)         :: seed_tim
@@ -347,14 +347,14 @@ MODULE mod_seed
                   CASE (3)  ! Through upper zonal-meridional surface
                      vol = 1.
 
-                     ! Vertical
+                    ! Vertical
                      CALL vertvel (ib,ibm,jb,kb)
 #if defined w_3dim || wflux_full
-                           vol = wflux(ib,jb,kb,nsm)
+                     vol = wflux(ib,jb,kb,nsm)
 #elif w_2dim
-                           vol = 1.
+                     vol = 1.
 #else
-                           vol = wflux(kb,nsm)
+                     vol = wflux(kb,nsm)
 #endif
 
                   END SELECT
@@ -367,7 +367,7 @@ MODULE mod_seed
                   ! Number of trajectories for box (iist,ijst,ikst)
                   SELECT CASE (nqua)
                   CASE (1) ! partQuant particles per seed gridcell
-                      num = partQuant
+                      num = INT(partQuant)
                   CASE (2) ! particles reflect mass transport at seeding.
 													 ! set by partQuant
                       num = INT(vol/partQuant)
@@ -532,7 +532,7 @@ MODULE mod_seed
             ! First 10 prime numbers
             INTEGER, DIMENSION(25)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29,31, &
                                     & 37,41,43,47,53,59,61,67,71, 73, 79, 83, 89, 97/)
-            INTEGER    :: nsg, isg, jsg, numloop
+            INTEGER    :: nsg, isg, jsg
 
             LOGICAL :: l_square = .FALSE.
 

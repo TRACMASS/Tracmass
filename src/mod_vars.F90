@@ -140,7 +140,7 @@ MODULE mod_grid
   ! Horizontal grid size
   REAL(DP)                                    :: dx, dy       ! dx/dy size (T point)
   REAL(DP)                                    :: dxdeg,dydeg
-  REAL(PP), ALLOCATABLE, DIMENSION(:,:)       :: dxv, dyu     ! dx in V points, dy in U points
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)       :: dxv, dyu     ! dx in V points, dy in U points
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)       :: dxdy         ! Area of the grid (T point)
   REAL(DP)                                    :: dxyz         ! Grid volume
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: mask         ! Land-sea mask
@@ -230,7 +230,7 @@ MODULE mod_vel
   REAL(DP)                                   :: uu, um, vv, vm
 
   ! Mass/volume fluxes
-  REAL(PP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: uflux, vflux
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: uflux, vflux
 #if defined w_3dim || full_wflux
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: wflux
 #else

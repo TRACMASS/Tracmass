@@ -311,7 +311,7 @@ MODULE mod_calendar
          REAL(DP), INTENT(IN)  :: tv
 
          ! Now update the time and date
-         dateSec   = tv
+         dateSec   = INT(tv)
          dateMin   = startMin
          dateHour  = startHour
          dateDay   = startDay

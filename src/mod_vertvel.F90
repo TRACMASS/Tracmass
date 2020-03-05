@@ -11,8 +11,9 @@ MODULE mod_vertvel
     !!------------------------------------------------------------------------------
 
     USE mod_vel,             only : nsm, nsp, uflux, vflux, wflux, uu, um, vv, vm
-    USE mod_time,            only: intrpr, intrpg, tseas
+    USE mod_time,            only : intrpr, intrpg, tseas
     USE mod_grid
+
 
     IMPLICIT NONE
 
@@ -20,9 +21,9 @@ MODULE mod_vertvel
 
     CONTAINS
 
-    SUBROUTINE vertvel(ia,iam,ja,ka)
+    SUBROUTINE vertvel(ix, ixm, jy, kz)
 
-        INTEGER :: ia, iam, ja, ka
+        INTEGER :: ix, ixm, jy, kz
 
 ! 1
 #if defined w_2dim || w_3dim
@@ -30,30 +31,30 @@ MODULE mod_vertvel
             RETURN
 ! 2
 #else
-        kloop: DO k = 1, ka
+        kloop: DO k = 1, kz
 #if defined z_timevar
 
             ! Under development
 #else
 #if defined full_wflux
-            uu = intrpg * uflux(ia ,ja  ,k, 2) + intrpr * uflux(ia ,ja  ,k, 1)
-            um = intrpg * uflux(iam,ja  ,k, 2) + intrpr * uflux(iam,ja  ,k, 1)
-            vv = intrpg * vflux(ia ,ja  ,k, 2) + intrpr * vflux(ia ,ja  ,k, 1)
-            vm = intrpg * vflux(ia ,ja-1,k, 2) + intrpr * vflux(ia ,ja-1,k, 1)
+            uu = intrpg * uflux(ix ,jy  ,k, 2) + intrpr * uflux(ix ,jy  ,k, 1)
+            um = intrpg * uflux(ixm,jy  ,k, 2) + intrpr * uflux(ixm,jy  ,k, 1)
+            vv = intrpg * vflux(ix ,jy  ,k, 2) + intrpr * vflux(ix ,jy  ,k, 1)
+            vm = intrpg * vflux(ix ,jy-1,k, 2) + intrpr * vflux(ix ,jy-1,k, 1)
 
-            wflux(ia,ja,k,1) = wflux(ia,ja,k-1,1) - ( uu - um + vv - vm )
+            wflux(ix,jy,k,1) = wflux(ix,jy,k-1,1) - ( uu - um + vv - vm )
 #else
             wflux(k, 1) = wflux(k-1, 1) - &
-                ( uflux(ia,ja,k,1) - uflux(iam,ja,k,1) + vflux(ia,ja,k,1) - vflux(ia,ja-1,k,1) )
+                ( uflux(ix,jy,k,1) - uflux(ixm,jy,k,1) + vflux(ix,jy,k,1) - vflux(ix,jy-1,k,1) )
 
             wflux(k, 2) = wflux(k-1, 2) - &
-                ( uflux(ia,ja,k,2) - uflux(iam,ja,k,2) + vflux(ia,ja,k,2) - vflux(ia,ja-1,k,2) )
+                ( uflux(ix,jy,k,2) - uflux(ixm,jy,k,2) + vflux(ix,jy,k,2) - vflux(ix,jy-1,k,2) )
 #endif
 
 #endif
        END DO kloop
 
-       DO k = 0, KM-kmt(ia,ja)
+       DO k = 0, KM-kmt(ix,jy)
 #if defined full_wflux
           wflux(:,:,k,:) = 0.d0
 #else

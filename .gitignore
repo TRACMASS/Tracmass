@@ -15,6 +15,5 @@ docs/_templates
 
 # Makefiles and src files
 src/Makefile
-src/_tests
 *.csv
 *.csv.gz

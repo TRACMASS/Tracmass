@@ -184,8 +184,8 @@ MODULE mod_seed
                 ALLOCATE ( seed_tim(nsdTim) )
 
                 DO jsd=1,nsdTim
-                    seed_tim(jsd) = tst1 + (jsd-1)*(tst2-tst1)/(nsdTim-1)
-                END DO
+                    seed_tim(jsd) = tst1 + (jsd-1)
+                END DO 
 
                 IF (log_level>0) THEN
                     PRINT *,'------------------------------------------------------'
@@ -260,13 +260,13 @@ MODULE mod_seed
             trajectories(:)%tt = 0.
             trajectories(:)%t0 = 0.
             trajectories(:)%subvol = 0.
-            trajectories(:)%ib = 0.
-            trajectories(:)%jb = 0.
-            trajectories(:)%kb = 0.
-            trajectories(:)%nts = 0.
-            trajectories(:)%niter = 0.
-            trajectories(:)%icycle = 0.
-            trajectories(:)%active = .true.
+            trajectories(:)%ib = 0
+            trajectories(:)%jb = 0
+            trajectories(:)%kb = 0
+            trajectories(:)%nts = 0
+            trajectories(:)%niter = 0
+            trajectories(:)%icycle = 0
+            trajectories(:)%active = .TRUE.
 
         END SUBROUTINE
 

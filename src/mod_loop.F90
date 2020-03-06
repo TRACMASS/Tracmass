@@ -54,13 +54,18 @@ MODULE mod_loop
     dstep = 1.d0 / DBLE(iter)
     dtmin = dstep * tseas
 
+    CALL tt_calendar(0.d0)
+
+    ! Read fields
+    CALL read_field
+
     ! Start main time loop
     ! =======================================================================
     intsTimeLoop: DO ints=1, intrun-1
 
-        tf = ints*tseas
+        tf = nff*ints*tseas
         CALL tt_calendar(tf)
-
+                
         ! Read fields
         CALL read_field
 

@@ -1,8 +1,8 @@
 # Project and case definition
 PROJECT	          = Theoretical
 CASE              = Theoretical
-RUNFILE 	  = runtracmass
-
+RUNFILE 	        = runtracmass
+NETCDFLIBS        =
 #================================================================
 
 # Read the project Makefile
@@ -17,13 +17,32 @@ include projects/$(PROJECT)/Makefile.prj
 endif
 endif
 
+PROJECT_FLAG      = -DPROJECT_NAME=\'$(PROJECT)\'
+CASE_FLAG         = -DCASE_NAME=\'$(CASE)\'
+
 #================================================================
 
 # NetCDF libraries
+ifeq ($(NETCDFLIBS),"none")
+LIB_DIR =
+INC_DIR =
+ORM_FLAGS += -Dno_netcdf
+
+else ifeq ($(NETCDFLIBS),"automatic")
+LIB_DIR = $(shell nc-config --flibs)
+INC_DIR = -I$(shell nc-config --includedir)
+
+else ifeq ($(NETCDFLIBS),"automatic-44")
+LIB_DIR = $(shell nf-config --flibs)
+INC_DIR = $(shell nf-config --cflags)
+
+else
 NCDF_ROOT = /usr/local/Cellar/netcdf/4.6.2
 
 LIB_DIR = -L$(NCDF_ROOT)/lib -lnetcdf -lnetcdff
 INC_DIR	= -I$(NCDF_ROOT)/include
+
+endif
 
 # Fortran compiler and flags
 FC = gfortran
@@ -47,7 +66,7 @@ objects := $(addprefix $(OBJDIR)/,mod_vars.o setup_grid.o \
 	mod_pos.o mod_init.o mod_print.o mod_loop.o TRACMASS.o)
 
 $(OBJDIR)/%.o : %.F90
-		$(FC) $(FF) -c $(ORM_FLAGS) $(INC_DIR) $(LIB_DIR) $< -o $@
+		$(FC) $(FF) -c $(ORM_FLAGS) $(PROJECT_FLAG) $(CASE_FLAG) $(INC_DIR) $(LIB_DIR) $< -o $@
 
 $(objects) : | $(OBJDIR)
 
@@ -55,6 +74,7 @@ $(OBJDIR):
 			mkdir -p $(OBJDIR)
 
 #================================================================
+
 runfile : $(objects)
 
 	$(FC) $(FF) $(ORM_FLAGS) -o $(RUNFILE) $(objects) $(INC_DIR) $(LIB_DIR)
@@ -86,7 +106,7 @@ test:
 	-rm -rf seedTime seedFile namelist.in
 
 clean:
-	
+
 	-rm -rf *.o *.mod *.out *.dSYM *.csv fort.* *.x
 	-rm -rf _build
 	-rm $(RUNFILE)

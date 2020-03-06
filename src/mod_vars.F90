@@ -161,6 +161,9 @@ MODULE mod_grid
   CHARACTER(LEN=200)                        :: physDataDir, physPrefixForm,  &
                                                bioDataDir, bioPrefixForm
   CHARACTER(LEN=50), DIMENSION(20)          :: physTracerNames, bioTracerNames
+
+  CHARACTER (LEN=23)                        :: Project, Case
+  CHARACTER (LEN=200)                       :: projdir="", ormdir=""
 ENDMODULE mod_grid
 
 ! Time variables
@@ -169,7 +172,7 @@ MODULE mod_time
   ! Variables and routines for timekeeping
 
   !Timesteps
-  INTEGER                                   :: ints      ! Time iteration variables
+  INTEGER                                   :: ints=0    ! Time iteration variables
   INTEGER                                   :: intrun    ! Number maximum of time steps
   INTEGER                                   :: nff=1     ! Time arrow 1-forward / -1 backward
 

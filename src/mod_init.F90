@@ -8,10 +8,7 @@ MODULE mod_init
     !!
     !!------------------------------------------------------------------------------
     USE mod_vel
-    USE mod_grid, only : imt, jmt, km, mask, kmt, nst, iperio, jperio, dxv, dyu, &
-                         dxdy, hs, fileSuffix, ssh_name, ueul_name, veul_name, &
-                         physDataDir, physPrefixForm, &
-                         tGridName, uGridName, vGridName
+    USE mod_grid
     USE mod_traj
     USE mod_param
     USE mod_seed

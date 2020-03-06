@@ -365,6 +365,9 @@ MODULE mod_calendar
                      IF (dateMon <= 0) THEN
                         dateMon = dateMon + 12
                         dateYear = dateYear - 1
+                        IF (dateYear < loopEndYear .and. nff < 0) THEN
+                           dateYear = loopStartYear
+                        END IF
                      END IF
                      dateDay = dateDay + daysInMonth(dateYear,dateMon)
                   END IF

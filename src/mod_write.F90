@@ -6,10 +6,13 @@ MODULE mod_write
     !!          Opening/ Closing outfiles
     !!          & Writing trajectories to files
     !!
+    !!          Opening/ Reading rerun files
+    !!
     !!          Subroutines included:
     !!               - open_outfiles
     !!               - close_outfiles
     !!               - write_data
+    !!               - read_rerun
     !!
     !!------------------------------------------------------------------------------
 
@@ -24,8 +27,15 @@ MODULE mod_write
 
     CHARACTER(LEN=200)    :: fullWritePref
     CHARACTER(LEN=200)    :: outDataDir, outDataFile
+    CHARACTER(LEN=*), PARAMETER                :: reform = "(I8,I3)"
 
     INTEGER               :: timeformat
+    INTEGER               :: filestat
+    INTEGER               :: numline
+    INTEGER               :: ll
+    INTEGER               :: lbas
+
+    LOGICAL               :: fileexists
 
     CONTAINS
 
@@ -33,7 +43,7 @@ MODULE mod_write
     ! --------------------------------------------------
     !
     ! Purpose:
-    ! Open outfiles ini, run, out, err
+    ! Open outfiles ini, run, out, err, rerun
     !
     ! --------------------------------------------------
 
@@ -43,6 +53,7 @@ MODULE mod_write
         OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='replace')
         OPEN(UNIT=52, FILE = TRIM(fullWritePref)//'_out.csv', STATUS='replace')
         OPEN(UNIT=53, FILE = TRIM(fullWritePref)//'_err.csv', STATUS='replace')
+        OPEN(UNIT=54, FILE = TRIM(fullWritePref)//'_rerun.csv', STATUS='replace')
 
     END SUBROUTINE open_outfiles
 
@@ -50,7 +61,7 @@ MODULE mod_write
     ! --------------------------------------------------
     !
     ! Purpose:
-    ! Close outfiles ini, run, out, err
+    ! Close outfiles ini, run, out, err, rerun
     !
     ! --------------------------------------------------
 
@@ -58,6 +69,7 @@ MODULE mod_write
         CLOSE (51)
         CLOSE (52)
         CLOSE (53)
+        CLOSE (54)
 
     END SUBROUTINE close_outfiles
 
@@ -163,8 +175,56 @@ MODULE mod_write
                 RETURN
 
             END SELECT
+        ! RERUN file
+        CASE ('rerun')
+            WRITE(54,"(I8,I3)")  ntrac, nend
         END SELECT
 
     END SUBROUTINE write_data
+
+    SUBROUTINE read_rerun
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Open and read_rerun information
+    !
+    ! --------------------------------------------------
+
+    ! Test if file exists, and read it if it does
+    fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
+
+    INQUIRE (FILE = TRIM(fullWritePref)//'_rerun.csv', exist=fileexists)
+    IF (fileexists) THEN
+
+        numline=0
+
+        OPEN(UNIT=34,FILE=TRIM(fullWritePref)//'_rerun.csv', ACCESS = 'SEQUENTIAL', &
+            FORM = 'FORMATTED', ACTION = 'READ')
+
+        findRecl: DO
+        READ (UNIT=34, fmt=reform,iostat=filestat)
+        IF (filestat < 0) THEN
+            EXIT findRecl
+        END IF
+        numline = numline+1
+        END DO findRecl
+
+        REWIND (34)
+
+        DO ll = 1, numline
+            READ (UNIT=34, fmt="(I8,I3)") ntrac, lbas
+            trajectories(ntrac)%lbas = lbas
+        END DO
+
+        CLOSE(34)
+
+    ELSE
+        PRINT*, '-----------------------------------'
+        PRINT*, 'ERROR!'
+        PRINT*, 'No rerun file'
+        PRINT*, '-----------------------------------'
+    END IF
+
+    END SUBROUTINE read_rerun
 
 END MODULE mod_write

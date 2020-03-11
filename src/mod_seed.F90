@@ -20,6 +20,7 @@ MODULE mod_seed
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_loopvars, only  : subvol
     USE mod_write, only     : write_data
+    USE mod_domain, only    : l_rerun
 
     USE mod_traj
     USE mod_vertvel
@@ -185,7 +186,7 @@ MODULE mod_seed
 
                 DO jsd=1,nsdTim
                     seed_tim(jsd) = tst1 + (jsd-1)
-                END DO 
+                END DO
 
                 IF (log_level>0) THEN
                     PRINT *,'------------------------------------------------------'
@@ -267,6 +268,7 @@ MODULE mod_seed
             trajectories(:)%niter = 0
             trajectories(:)%icycle = 0
             trajectories(:)%active = .TRUE.
+            trajectories(:)%lbas = 0
 
         END SUBROUTINE
 
@@ -467,6 +469,12 @@ MODULE mod_seed
 
                         ! Only one particle for diagnistics purposes
                         IF ((loneparticle>0) .and. (ntrac.ne.loneparticle)) THEN
+                          trajectories(ntrac)%active = .FALSE.
+                          CYCLE kkkLoop
+                        END IF
+
+                        ! Rerun options
+                        IF ((l_rerun .EQV..TRUE.) .AND. (trajectories(ntrac)%lbas==0)) THEN
                           trajectories(ntrac)%active = .FALSE.
                           CYCLE kkkLoop
                         END IF

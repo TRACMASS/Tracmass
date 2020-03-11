@@ -64,9 +64,10 @@ MODULE mod_trajdef
       INTEGER                               :: niter              !! trajectory iterations
       INTEGER                               :: icycle             !! 0=keep advecting particle
                                                                   !! 1=stop and update model fields
+      INTEGER                               :: lbas               !! boundary flag
 
       REAL(DP)                              :: x0,y0,z0,x1,y1,z1  !! positions
-      REAL(DP)                              :: tt,t0             !! time
+      REAL(DP)                              :: tt,t0              !! time
       REAL(DP)                              :: subvol             !! volume (or mass for atm.)
 
       LOGICAL                               :: active             !! particle active or not
@@ -218,9 +219,13 @@ ENDMODULE mod_time
 MODULE mod_domain
   USE mod_precdef
 
+  LOGICAL                                 :: l_rerun = .FALSE.      ! Rerun logics
+
   INTEGER                                 :: exitType
   INTEGER, DIMENSION(10)                  :: ienw ,iene, jens ,jenn ! Horizontal killing zones
+
   REAL(PP)                                :: timax                  ! Maximum time to run a trajectory
+
 ENDMODULE mod_domain
 
 ! Velocity and fluxes

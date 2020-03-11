@@ -65,7 +65,7 @@ MODULE mod_loop
 
         tf = nff*ints*tseas
         CALL tt_calendar(tf)
-                
+
         ! Read fields
         CALL read_field
 
@@ -210,11 +210,14 @@ MODULE mod_loop
             ! End trajectory if outside chosen domain
             CALL kill_zones(nend)
             IF (nend>1) THEN
+                trajectories(ntrac)%lbas = nend
                 EXIT niterLoop
 
             ! End trajectory if time is exceeded
             ELSE IF (tt-t0 .GT. timax*24*3600) THEN
-               EXIT niterLoop
+                nend = 1
+                trajectories(ntrac)%lbas = nend
+                EXIT niterLoop
 
             ELSE
                CALL write_data('run')
@@ -225,7 +228,8 @@ MODULE mod_loop
 
           nout = nout + 1
 
-          ! Write out data
+          ! Write out/run/rerun data
+          CALL write_data('rerun')
           CALL write_data('run')
           CALL write_data('out')
 

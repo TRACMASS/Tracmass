@@ -311,7 +311,7 @@ MODULE mod_calendar
          REAL(DP), INTENT(IN)  :: tv
 
          ! Now update the time and date
-         dateSec   = INT(tv)
+         dateSec   = tv
          dateMin   = startMin
          dateHour  = startHour
          dateDay   = startDay
@@ -336,6 +336,9 @@ MODULE mod_calendar
                      IF (dateMon > 12) THEN
                         dateMon = dateMon - 12
                         dateYear = dateYear + 1
+                        IF (dateYear > loopEndYear .AND. nff > 0) THEN
+                           dateYear = loopStartYear
+                        END IF
                      END IF
                   END IF
                END IF
@@ -344,7 +347,7 @@ MODULE mod_calendar
          END DO
 
          IF (loopYears) THEN
-            IF (dateYear > loopEndYear .and. nff > 0) THEN
+            IF (dateYear > loopEndYear .AND. nff > 0) THEN
                dateYear = loopStartYear
             END IF
          END IF

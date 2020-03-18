@@ -17,6 +17,7 @@ MODULE mod_pos
     USE mod_loopvars
     USE mod_vertvel
     USE mod_traj
+    USE mod_stream
 
     USE mod_grid, only: undef, imt, jmt, km, nsm, nsp, iperio, jperio
     USE mod_vel, only: uflux, vflux, wflux, uu, um, vv, vm
@@ -219,6 +220,8 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
+           IF (l_psi) CALL update_stream(ia, ja, ka, 1)
+
         ! Westward grid-cell exit
         ELSE IF (ds==dsw) THEN
            scrivi=.FALSE.
@@ -237,6 +240,8 @@ MODULE mod_pos
            IF (ds == dsw) ib = iam
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
+
+           IF (l_psi) CALL update_stream(iam, ja, ka, -1)
 
         ! Northward grid-cell exit
         ELSE IF (ds==dsn) THEN

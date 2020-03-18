@@ -62,7 +62,7 @@ OBJDIR := _build
 
 objects := $(addprefix $(OBJDIR)/,mod_vars.o setup_grid.o \
 	kill_zones.o read_field.o mod_clock.o mod_calendar.o \
-	mod_write.o mod_error.o mod_vertvel.o mod_seed.o \
+	mod_write.o mod_error.o mod_vertvel.o mod_seed.o  mod_stream.o \
 	mod_pos.o mod_init.o mod_print.o mod_loop.o TRACMASS.o)
 
 $(OBJDIR)/%.o : %.F90
@@ -107,6 +107,6 @@ test:
 
 clean:
 
-	-rm -rf *.o *.mod *.out *.dSYM *.csv fort.* *.x
+	-rm -rf *.o *.mod *.out *.dSYM *.csv fort.* *.x *.in
 	-rm -rf _build
 	-rm $(RUNFILE)

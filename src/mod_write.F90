@@ -22,18 +22,22 @@ MODULE mod_write
     USE mod_time
     USE mod_loopvars
     USE mod_calendar
+    USE mod_psi
 
     IMPLICIT NONE
 
     CHARACTER(LEN=200)    :: fullWritePref
     CHARACTER(LEN=200)    :: outDataDir, outDataFile
+    CHARACTER(LEN=50)     :: psiformat
     CHARACTER(LEN=*), PARAMETER                :: reform = "(I8,I3)"
+
 
     INTEGER               :: timeformat
     INTEGER               :: filestat
     INTEGER               :: numline
     INTEGER               :: ll
     INTEGER               :: lbas
+    INTEGER               :: ilvar
 
     LOGICAL               :: fileexists
 
@@ -226,5 +230,78 @@ MODULE mod_write
     END IF
 
     END SUBROUTINE read_rerun
+
+    SUBROUTINE open_outstream(ccase)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Open streamfunction files
+    !
+    ! --------------------------------------------------
+        CHARACTER(LEN=*), INTENT(IN) :: ccase
+
+        fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
+
+        IF (TRIM(ccase) == "streamfunction") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
+        IF (TRIM(ccase) == "fluxes")         OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_fluxxy.csv', STATUS='replace')
+
+    END SUBROUTINE open_outstream
+
+    SUBROUTINE close_outstream(ccase)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Close streamfunction files
+    !
+    ! --------------------------------------------------
+        CHARACTER(LEN=*), INTENT(IN) :: ccase
+
+        IF (TRIM(ccase) == "streamfunction") CLOSE(60)
+        IF (TRIM(ccase) == "fluxes")         CLOSE(61)
+
+    END SUBROUTINE close_outstream
+
+
+    SUBROUTINE write_fluxes(ijk1, ijk2, ijk3)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Write total fluxes
+    !
+    ! --------------------------------------------------
+
+
+    INTEGER, INTENT(IN) :: ijk1, ijk2, ijk3
+
+    psiformat = "(F13.5,XXXXXX(',',F13.5))"
+
+    WRITE(psiformat(8:13),"(I6)") ijk1-1
+
+    DO ilvar = 1, ijk2
+      WRITE(61,TRIM(psiformat)) fluxes_xy(:,ilvar,ijk3)
+    END DO
+
+    END SUBROUTINE write_fluxes
+
+    SUBROUTINE write_stream(ijk1, ijk2)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Write stream functions
+    !
+    ! --------------------------------------------------
+
+
+    INTEGER, INTENT(IN) :: ijk1, ijk2
+
+    psiformat = "(F13.5,XXXXXX(',',F13.5))"
+
+    WRITE(psiformat(8:13),"(I6)") ijk1-1
+
+    DO ilvar = 1, ijk2
+      WRITE(60,TRIM(psiformat)) psi_xy(:,ilvar)
+    END DO
+
+    END SUBROUTINE write_stream
 
 END MODULE mod_write

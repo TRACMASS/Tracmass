@@ -15,6 +15,7 @@
 !!              - mod_time
 !!              - mod_domain
 !!              - mod_vel
+!!              - mod_psi
 !!
 !!---------------------------------------------------------------------------
 
@@ -181,14 +182,18 @@ MODULE mod_time
   ! Date variables
   LOGICAL                                   :: noleap=.TRUE.  ! Leap year flag
   INTEGER                                   :: startYear, startMon, startDay
-  INTEGER                                   :: startHour, startMin, startSec
+  INTEGER                                   :: startHour, startMin
+  REAL(DP)                                  :: startSec
   INTEGER                                   :: endYear=0, endMon,   endDay
-  INTEGER                                   :: endHour,   endMin,   endSec
+  INTEGER                                   :: endHour,   endMin
+  REAL(DP)                                  :: endSec
   ! Current date
   INTEGER                                   :: currYear, currMon, currDay
-  INTEGER                                   :: currHour, currMin, currSec
+  INTEGER                                   :: currHour, currMin
+  REAL(DP)                                  :: currSec
   INTEGER                                   :: dateYear, dateMon, dateDay
-  INTEGER                                   :: dateHour, dateMin, dateSec
+  INTEGER                                   :: dateHour, dateMin
+  REAL(DP)                                  :: dateSec
 
   !Looping time
   INTEGER                                   :: loopIndex = 0               ! Counter of calendar loops
@@ -245,3 +250,31 @@ MODULE mod_vel
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)        :: wflux
 #endif
 ENDMODULE mod_vel
+
+! Define derived type "flux"
+MODULE mod_psidef
+  USE mod_precdef
+
+  TYPE flux
+      REAL(DP), DIMENSION(:,:), ALLOCATABLE :: xy
+      REAL(DP), DIMENSION(:,:), ALLOCATABLE :: xz
+      REAL(DP), DIMENSION(:,:), ALLOCATABLE :: yz
+  END TYPE flux
+
+END MODULE mod_psidef
+
+! Streamfunctions
+MODULE mod_psi
+  USE mod_precdef
+  USE mod_psidef
+
+  LOGICAL    :: l_psi = .FALSE.
+
+  TYPE(flux), ALLOCATABLE, DIMENSION(:) :: fluxes
+
+  INTEGER , DIMENSION(9)   :: dirpsi = 0
+
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xy
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_xy
+
+END MODULE mod_psi

@@ -53,7 +53,7 @@ MODULE mod_print
    !
    ! --------------------------------------------------
 
-       CHARACTER (len=15)                           :: currDate ,currTime
+       CHARACTER (len=15)                           :: currDate ,currTime, cloneparticle
 
        CALL write_lines
        CALL date_and_time(currDate, currTime) ! Fortran internal function
@@ -93,7 +93,7 @@ MODULE mod_print
        PRINT *,'Prefix for output files    : ' ,TRIM(outDataFile)
        PRINT *, thinline !---------------------------------------------------
        PRINT *,''
-       PRINT *,"Selected compile options:"
+       PRINT *,"Configuration options:"
 
 #if defined w_2dim
        PRINT *,' - Two-dimensional trajectories, no change in depth'
@@ -104,6 +104,11 @@ MODULE mod_print
 #if defined w_3dim
        PRINT *,' - Explicit vertical velocities from the GCM.'
 #endif
+
+       WRITE(cloneparticle,"(I15)") loneparticle
+       IF (loneparticle>0) PRINT *, ' - Running loneparticle: ', ADJUSTL(cloneparticle)
+       IF (l_psi) PRINT *,' - Computing streamfunctions.'
+
 
        PRINT *, thinline
        PRINT *,''
@@ -148,7 +153,7 @@ MODULE mod_print
 
         PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", ints, ntractot-nout-nerror-nloop, &
                 nout, nerror+nloop, ntractot, &
-                currYear,currMon,currDay,currHour,currMin,currSec
+                currYear,currMon,currDay,currHour,currMin,INT(currSec)
    END SUBROUTINE print_cycle_loop
 
    SUBROUTINE print_end_loop()

@@ -251,29 +251,15 @@ MODULE mod_vel
 #endif
 ENDMODULE mod_vel
 
-! Define derived type "flux"
-MODULE mod_psidef
-  USE mod_precdef
-
-  TYPE flux
-      REAL(DP), DIMENSION(:,:), ALLOCATABLE :: xy
-      REAL(DP), DIMENSION(:,:), ALLOCATABLE :: xz
-      REAL(DP), DIMENSION(:,:), ALLOCATABLE :: yz
-  END TYPE flux
-
-END MODULE mod_psidef
-
 ! Streamfunctions
 MODULE mod_psi
   USE mod_precdef
-  USE mod_psidef
 
   LOGICAL    :: l_psi = .FALSE.
 
-  TYPE(flux), ALLOCATABLE, DIMENSION(:) :: fluxes
-
   INTEGER , DIMENSION(9)   :: dirpsi = 0
 
+  ! Barotropic streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xy
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_xy
 

@@ -24,6 +24,7 @@ MODULE mod_seed
 
     USE mod_traj
     USE mod_vertvel
+    USE mod_psi
 
     IMPLICIT NONE
 
@@ -473,8 +474,8 @@ MODULE mod_seed
                           CYCLE kkkLoop
                         END IF
 
-                        ! Rerun options
-                        IF ((l_rerun .EQV..TRUE.) .AND. (trajectories(ntrac)%lbas==0)) THEN
+                        ! Rerun/streamfunction options
+                        IF (((l_rerun .EQV..TRUE.) .OR. (l_psi .EQV..TRUE.)) .AND. (trajectories(ntrac)%lbas==0)) THEN
                           trajectories(ntrac)%active = .FALSE.
                           CYCLE kkkLoop
                         END IF

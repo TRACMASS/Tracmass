@@ -54,7 +54,7 @@ MODULE mod_write
         fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
         OPEN(UNIT=50, FILE = TRIM(fullWritePref)//'_ini.csv', STATUS='replace')
-        OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='replace')
+        IF (l_psi .EQV..FALSE.) OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='replace')
         OPEN(UNIT=52, FILE = TRIM(fullWritePref)//'_out.csv', STATUS='replace')
         OPEN(UNIT=53, FILE = TRIM(fullWritePref)//'_err.csv', STATUS='replace')
         OPEN(UNIT=54, FILE = TRIM(fullWritePref)//'_rerun.csv', STATUS='replace')
@@ -70,7 +70,7 @@ MODULE mod_write
     ! --------------------------------------------------
 
         CLOSE (50)
-        CLOSE (51)
+        IF (l_psi .EQV..FALSE.) CLOSE (51)
         CLOSE (52)
         CLOSE (53)
         CLOSE (54)
@@ -116,10 +116,10 @@ MODULE mod_write
 
         ! RUN file
         CASE ('run')
-            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1) .OR. &
-                 ( write_frec == 2 .AND. tss==DBLE(INT(tss))     ) .OR. &
-                 ( write_frec == 3 .AND. .not.scrivi ) .OR. &
-                 ( write_frec == 4 ) ) THEN
+            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1 .AND. l_psi .EQV..FALSE.) .OR. &
+                 ( write_frec == 2 .AND. tss==DBLE(INT(tss)) .AND. l_psi .EQV..FALSE.    ) .OR. &
+                 ( write_frec == 3 .AND. .not.scrivi .AND. l_psi .EQV..FALSE.) .OR. &
+                 ( write_frec == 4 .AND. l_psi .EQV..FALSE.) ) THEN
 
                 SELECT CASE(timeformat)
 
@@ -243,7 +243,6 @@ MODULE mod_write
         fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
         IF (TRIM(ccase) == "streamfunction") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
-        IF (TRIM(ccase) == "fluxes")         OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_fluxxy.csv', STATUS='replace')
 
     END SUBROUTINE open_outstream
 
@@ -257,31 +256,8 @@ MODULE mod_write
         CHARACTER(LEN=*), INTENT(IN) :: ccase
 
         IF (TRIM(ccase) == "streamfunction") CLOSE(60)
-        IF (TRIM(ccase) == "fluxes")         CLOSE(61)
 
     END SUBROUTINE close_outstream
-
-
-    SUBROUTINE write_fluxes(ijk1, ijk2, ijk3)
-    ! --------------------------------------------------
-    !
-    ! Purpose:
-    ! Write total fluxes
-    !
-    ! --------------------------------------------------
-
-
-    INTEGER, INTENT(IN) :: ijk1, ijk2, ijk3
-
-    psiformat = "(F13.5,XXXXXX(',',F13.5))"
-
-    WRITE(psiformat(8:13),"(I6)") ijk1-1
-
-    DO ilvar = 1, ijk2
-      WRITE(61,TRIM(psiformat)) fluxes_xy(:,ilvar,ijk3)
-    END DO
-
-    END SUBROUTINE write_fluxes
 
     SUBROUTINE write_stream(ijk1, ijk2)
     ! --------------------------------------------------
@@ -294,7 +270,7 @@ MODULE mod_write
 
     INTEGER, INTENT(IN) :: ijk1, ijk2
 
-    psiformat = "(F13.5,XXXXXX(',',F13.5))"
+    psiformat = "(F20.5,XXXXXX(',',F20.5))"
 
     WRITE(psiformat(8:13),"(I6)") ijk1-1
 

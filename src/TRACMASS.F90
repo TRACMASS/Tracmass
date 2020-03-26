@@ -7,6 +7,7 @@ PROGRAM TRACMASS
   USE mod_domain
   USE mod_psi
   USE mod_stream
+  USE mod_param
 
   IMPLICIT none
 
@@ -33,11 +34,11 @@ PROGRAM TRACMASS
   CALL init_calendar
   CALL init_seed
 
-  ! If streamfunctions ON: initialise the streamfunctions
-  IF (l_psi) CALL init_stream
-
   ! Read rerun
-  IF (l_rerun) CALL read_rerun
+  IF (l_rerun .OR. l_psi) CALL read_rerun
+
+  ! If streamfunction is activated no printing
+  write_frec = 5
 
   ! Open outfiles
   CALL open_outfiles

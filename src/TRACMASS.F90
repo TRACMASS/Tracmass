@@ -38,7 +38,7 @@ PROGRAM TRACMASS
   IF (l_rerun .OR. l_psi) CALL read_rerun
 
   ! If streamfunction is activated no printing
-  write_frec = 5
+  IF (l_psi) write_frec = 10
 
   ! Open outfiles
   CALL open_outfiles

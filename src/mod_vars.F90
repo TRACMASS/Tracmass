@@ -159,9 +159,15 @@ MODULE mod_grid
 
   ! Info about input data
   CHARACTER(LEN=50)                         :: RunID, tGridName, uGridName, vGridName, &
-                                               fileSuffix,  ssh_name, ueul_name, veul_name
+                                               fileSuffix,  ssh_name, ueul_name, veul_name, &
+                                               usgs_name, vsgs_name
+
+  CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
+                                               zgridFile, dzt_name, dzu_name, dzv_name, &
+                                               bathyFile, kmt_name
+
   CHARACTER(LEN=200)                        :: physDataDir, physPrefixForm,  &
-                                               bioDataDir, bioPrefixForm
+                                               bioDataDir, bioPrefixForm, topoDataDir
   CHARACTER(LEN=50), DIMENSION(20)          :: physTracerNames, bioTracerNames
 
   CHARACTER (LEN=23)                        :: Project, Case
@@ -239,7 +245,7 @@ MODULE mod_vel
   USE mod_precdef
 
   ! Velocity fields
-  REAL,   ALLOCATABLE, DIMENSION(:,:,:)      :: uvel ,vvel ,wvel
+  REAL(DP),   ALLOCATABLE, DIMENSION(:,:,:)      :: uvel ,vvel ,wvel
   REAL(DP)                                   :: uu, um, vv, vm
 
   ! Mass/volume fluxes
@@ -262,5 +268,9 @@ MODULE mod_psi
   ! Barotropic streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xy
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_xy
+
+  ! Meridional streamfunction
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_yz
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_yz
 
 END MODULE mod_psi

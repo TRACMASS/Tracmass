@@ -65,7 +65,7 @@ MODULE mod_pos
 
         ELSEIF (ijk .EQ. 3) THEN
             ii=ka
-#if defined  w_3dim
+#if defined  w_3dim || full_wflux
             uu = wflux(ia ,ja ,ka   ,nsm)
             um = wflux(ia ,ja ,ka-1 ,nsm)
 #else
@@ -133,7 +133,7 @@ MODULE mod_pos
         REAL(DP) :: r1  ! new position
         REAL(DP) :: ds  ! time interval
 
-#ifdef w_3dim
+#ifdef w_2dim
         IF (ijk .EQ. 3) THEN
            r1 = r0
            RETURN
@@ -155,7 +155,7 @@ MODULE mod_pos
 
         ELSE IF (ijk .EQ. 3) THEN
             ii = ka
-#if defined w_3dim
+#if defined w_3dim || full_wflux
             uu = (intrpg * wflux(ia ,ja, ka  , nsp) + intrpr * wflux(ia, ja, ka  , nsm))
             um = (intrpg * wflux(ia, ja, ka-1, nsp) + intrpr * wflux(ia, ja, ka-1, nsm))
 #else
@@ -220,7 +220,7 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
-           IF (l_psi) CALL update_stream(ia, ja, ka, 1)
+           IF (l_psi) CALL update_stream(ia, ja, ka, 1, 'xy')
 
         ! Westward grid-cell exit
         ELSE IF (ds==dsw) THEN
@@ -241,7 +241,7 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
-           IF (l_psi) CALL update_stream(iam, ja, ka, -1)
+           IF (l_psi) CALL update_stream(iam, ja, ka, -1, 'xy')
 
         ! Northward grid-cell exit
         ELSE IF (ds==dsn) THEN
@@ -262,6 +262,8 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
+           IF (l_psi) CALL update_stream(ia, ja, ka, 1, 'yz')
+
         ! Southward grid-cell exit
         ELSE IF (ds==dss) THEN
            scrivi=.FALSE.
@@ -281,11 +283,13 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
+           IF (l_psi) CALL update_stream(ia, ja-1, ka, -1, 'yz')
+
         ! Upward grid-cell exit
         ELSE IF (ds==dsu) THEN
            scrivi=.FALSE.
            CALL vertvel(ia,iam,ja,ka)
-#if defined w_3dim
+#if defined w_3dim || full_wflux
            uu = wflux(ia,ja,ka,nsm)
 #else
            uu = (intrpg*wflux(ka,nsp) + intrpr*wflux(ka,nsm))
@@ -313,7 +317,7 @@ MODULE mod_pos
         ELSE IF (ds==dsd) THEN
            scrivi=.FALSE.
            CALL vertvel(ia, iam, ja, ka)
-#if defined w_3dim
+#if defined w_3dim || full_wflux
            uu = wflux(ia,ja,ka-1,nsm)
 #else
            uu = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))

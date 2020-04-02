@@ -11,6 +11,7 @@ MODULE mod_seed
     !!               - seed
     !!
     !!               - split_grid (PRIVATE)
+    !!               - reverse    (PRIVATE )
     !!
     !!------------------------------------------------------------------------------
 
@@ -271,7 +272,7 @@ MODULE mod_seed
             trajectories(:)%active = .TRUE.
             trajectories(:)%lbas = 0
 
-        END SUBROUTINE
+        END SUBROUTINE init_seed
 
 
         SUBROUTINE seed()
@@ -317,6 +318,9 @@ MODULE mod_seed
                  iist  = seed_ijk(jsd,1)
                  ijst  = seed_ijk(jsd,2)
                  ikst  = seed_ijk(jsd,3)
+
+                 CALL reverse()
+
                  isec  = seed_set(jsd,1)
                  idir  = seed_set(jsd,2)
 
@@ -342,17 +346,17 @@ MODULE mod_seed
                  SELECT CASE(isec)
 
                  CASE(1) ! Through eastern meridional-vertical surface
-                     vol = uflux (iist,ijst,ikst,nsm)
+                     vol = uflux(iist,ijst,ikst,nsm)
 
                  CASE (2)  ! Through northern zonal-vertical surface
-                     vol = vflux (iist,ijst,ikst,nsm)
+                     vol = vflux(iist,ijst,ikst,nsm)
 
                   CASE (3)  ! Through upper zonal-meridional surface
                      vol = 1.
 
                     ! Vertical
                      CALL vertvel (ib,ibm,jb,kb)
-#if defined w_3dim || wflux_full
+#if defined w_3dim || full_wflux
                      vol = wflux(ib,jb,kb,nsm)
 #elif w_2dim
                      vol = 1.
@@ -363,7 +367,6 @@ MODULE mod_seed
                   END SELECT
 
                   IF ((nff*idir*vol <= 0.d0 .AND. idir /= 0 ) .OR. (vol == 0.)) CYCLE startLoop
-
                   ! Volume/mass transport needs to be positive
                   vol = ABS(vol)
 
@@ -524,7 +527,7 @@ MODULE mod_seed
                 PRINT*,' leaving seed'
               END IF
 
-        END SUBROUTINE
+        END SUBROUTINE seed
 
         SUBROUTINE split_grid()
         ! --------------------------------------------------
@@ -584,6 +587,21 @@ MODULE mod_seed
 
             END DO
 
-        END SUBROUTINE
+        END SUBROUTINE split_grid
+
+        SUBROUTINE reverse()
+        ! --------------------------------------------------
+        !
+        ! Purpose:
+        ! Reverse seeding indexes according to the project type
+        ! --------------------------------------------------
+
+          IF (PROJECT_NAME == 'NEMO') THEN
+                ikst = km - ikst + 1   ! Vertical reverse
+          END IF
+
+        END SUBROUTINE reverse
+
+
 
 END MODULE mod_seed

@@ -31,8 +31,13 @@ MODULE mod_init
         ! Setup namelists
         namelist /INIT_GRID_DESCRIPTION/ physDataDir, physPrefixForm, &
                                          tGridName, uGridName, vGridName, &
-                                         fileSuffix, ssh_name, ueul_name, veul_name
-        namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio
+                                         fileSuffix, ssh_name, ueul_name, veul_name, &
+                                         usgs_name, vsgs_name
+        namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio, &
+                                         topoDataDir, &
+                                         hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
+                                         zgridFile, dzt_name, dzu_name, dzv_name,&
+                                         bathyFile, kmt_name
         namelist /INIT_GRID_TIME/        ngcm_step, ngcm_unit, iter
         namelist /INIT_START_DATE/       startSec, startMin, startHour,           &
                                          startDay, startMon, startYear,           &
@@ -79,12 +84,13 @@ MODULE mod_init
         ALLOCATE( dxdy(imt,jmt))
 
         ALLOCATE( mask(imt,jmt))
-        mask(:,:) = 1
+        mask(:,:) = 1.
 
         ALLOCATE ( kmt(imt,jmt))
-        kmt(:,:) = 1
+        kmt(:,:) = 0.
 
-        ALLOCATE( dzt(imt,jmt,km,nst))
+        ALLOCATE( dzt(imt,jmt,km,nst), dzu(imt,jmt,km,nst), dzv(imt,jmt,km,nst))
+        dzt(:,:,:,:) = 0.; dzu(:,:,:,:) = 0.; dzv(:,:,:,:) = 0.
 
         ! Allocate velocity fields and sea-surface height
         ALLOCATE (hs(imt,jmt,nst) )
@@ -111,6 +117,10 @@ MODULE mod_init
             ALLOCATE( fluxes_xy(imt, jmt, 10), psi_xy(imt, jmt))
             fluxes_xy(:,:,:) = 0.
             psi_xy(:,:) = 0.
+
+            ALLOCATE( fluxes_yz(jmt, km, 10), psi_yz(jmt, km))
+            fluxes_yz(:,:,:) = 0.
+            psi_yz(:,:) = 0.
 
         END IF
 

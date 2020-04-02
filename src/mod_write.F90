@@ -238,11 +238,12 @@ MODULE mod_write
     ! Open streamfunction files
     !
     ! --------------------------------------------------
-        CHARACTER(LEN=*), INTENT(IN) :: ccase
+        CHARACTER(LEN=2), INTENT(IN) :: ccase
 
         fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
-        IF (TRIM(ccase) == "streamfunction") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
+        IF (TRIM(ccase) == "xy") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
+        IF (TRIM(ccase) == "yz") OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_psiyz.csv', STATUS='replace')
 
     END SUBROUTINE open_outstream
 
@@ -253,13 +254,14 @@ MODULE mod_write
     ! Close streamfunction files
     !
     ! --------------------------------------------------
-        CHARACTER(LEN=*), INTENT(IN) :: ccase
+        CHARACTER(LEN=2), INTENT(IN) :: ccase
 
-        IF (TRIM(ccase) == "streamfunction") CLOSE(60)
+        IF (TRIM(ccase) == "xy") CLOSE(60)
+        IF (TRIM(ccase) == "yz") CLOSE(61)
 
     END SUBROUTINE close_outstream
 
-    SUBROUTINE write_stream(ijk1, ijk2)
+    SUBROUTINE write_stream(ijk1, ijk2, psicase)
     ! --------------------------------------------------
     !
     ! Purpose:
@@ -269,13 +271,15 @@ MODULE mod_write
 
 
     INTEGER, INTENT(IN) :: ijk1, ijk2
+    CHARACTER(LEN=2), INTENT(IN) :: psicase
 
     psiformat = "(F20.5,XXXXXX(',',F20.5))"
 
     WRITE(psiformat(8:13),"(I6)") ijk1-1
 
     DO ilvar = 1, ijk2
-      WRITE(60,TRIM(psiformat)) psi_xy(:,ilvar)
+      IF (psicase=='xy') WRITE(60,TRIM(psiformat)) psi_xy(:,ilvar)
+      IF (psicase=='yz') WRITE(61,TRIM(psiformat)) psi_yz(:,ilvar)
     END DO
 
     END SUBROUTINE write_stream

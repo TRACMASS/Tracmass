@@ -106,7 +106,6 @@ MODULE mod_loop
 
             ! Store trajectory positions
             IF (niter/=1 .AND. trajectories(ntrac)%icycle/=1 .AND. tss==DBLE(iter)) THEN
-
               trajectories(ntrac)%x1     = x1
               trajectories(ntrac)%y1     = y1
               trajectories(ntrac)%z1     = z1
@@ -219,7 +218,7 @@ MODULE mod_loop
                 trajectories(ntrac)%lbas = nend
                 EXIT niterLoop
 
-            ELSE
+            ELSE IF (l_psi .EQV..FALSE.) THEN
                CALL write_data('run')
 
             END IF
@@ -230,7 +229,7 @@ MODULE mod_loop
 
           ! Write out/run/rerun data
           CALL write_data('rerun')
-          CALL write_data('run')
+          IF (l_psi .EQV..FALSE.) CALL write_data('run')
           CALL write_data('out')
 
           trajectories(ntrac)%active = .FALSE.
@@ -247,6 +246,7 @@ MODULE mod_loop
 
     END DO intsTimeLoop
 
+    CALL print_cycle_loop()
     CALL print_end_loop
 
   END SUBROUTINE loop

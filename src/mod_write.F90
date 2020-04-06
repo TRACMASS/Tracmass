@@ -116,10 +116,12 @@ MODULE mod_write
 
         ! RUN file
         CASE ('run')
-            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1 .AND. l_psi .EQV..FALSE.) .OR. &
-                 ( write_frec == 2 .AND. tss==DBLE(INT(tss)) .AND. l_psi .EQV..FALSE.    ) .OR. &
-                 ( write_frec == 3 .AND. .not.scrivi .AND. l_psi .EQV..FALSE.) .OR. &
-                 ( write_frec == 4 .AND. l_psi .EQV..FALSE.) ) THEN
+
+            IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1) .OR. &
+                 ( write_frec == 2 .AND. ABS(tss-DBLE(INT(tss)))<1e-11 .AND. ints == NINT(ts)) .OR. &
+                 ( write_frec == 3 .AND. .not.scrivi) .OR. &
+                 ( write_frec == 4 ) .OR. &
+                 ( write_frec == 2 .AND. tt == 0.d0)) THEN
 
                 SELECT CASE(timeformat)
 
@@ -144,11 +146,11 @@ MODULE mod_write
                     CASE(2)
                     ! Include time - YYYY MM DD HH MM SS
                     IF (write_frec == 1) THEN
-                      CALL tt_calendar(tt - dt)
+                      CALL tt_calendar(REAL(NINT(tt - dt),8))
                       WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
                           subvol, dateYear, dateMon, dateDay, dateHour
                     ELSE
-                      CALL tt_calendar(tt)
+                      CALL tt_calendar(REAL(NINT(tt),8))
                       WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
                           subvol, dateYear, dateMon, dateDay, dateHour
                     END IF

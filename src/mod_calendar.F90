@@ -53,10 +53,13 @@ MODULE mod_calendar
                     daysInMonth(jyear,2) = 28
                  END IF
               END IF
+
+              IF (ngcm_unit == 5) daysInMonth(jyear,:) = (/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
            END DO
         ELSE
            DO jyear=1,10000
               daysInMonth(jyear,:) = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+              IF (ngcm_unit == 5) daysInMonth(jyear,:) = (/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
            END DO
         END IF
 

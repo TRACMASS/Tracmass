@@ -33,8 +33,13 @@ MODULE mod_vertvel
 #else
         kloop: DO k = 1, kz
 #if defined z_timevar
+            wflux(k, 1) = wflux(k-1, 1) - &
+                  ( uflux(ix,jy,k,1) - uflux(ixm,jy,k,1) + vflux(ix,jy,k,1) - vflux(ix,jy-1,k,1) ) &
+                  + dzdt(ix,jy,k,1)*dxdy(ix,jy)
 
-            ! Under development
+            wflux(k, 2) = wflux(k-1, 2) - &
+                  ( uflux(ix,jy,k,2) - uflux(ixm,jy,k,2) + vflux(ix,jy,k,2) - vflux(ix,jy-1,k,2) ) &
+                  + dzdt(ix,jy,k,2)*dxdy(ix,jy)
 #else
 #if defined full_wflux
             uu = intrpg * uflux(ix ,jy  ,k, 2) + intrpr * uflux(ix ,jy  ,k, 1)

@@ -148,14 +148,16 @@ MODULE mod_grid
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: mask         ! Land-sea mask
 
   ! Vertical grid
-  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)   :: dzt, dzu, dzv
-  REAL(PP), ALLOCATABLE, DIMENSION(:,:,:)     :: botbox
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)   :: dzt, dzu, dzv, dzdt
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)       :: zstou, zstov
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: zstot
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: botbox
 
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: kmt, kmu, kmv
 
 
   ! Sea level
-  REAL(PP), ALLOCATABLE, DIMENSION(:,:,:)     :: hs
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: hs
 
   ! Info about input data
   CHARACTER(LEN=50)                         :: RunID, tGridName, uGridName, vGridName, &
@@ -197,6 +199,9 @@ MODULE mod_time
   INTEGER                                   :: currYear, currMon, currDay
   INTEGER                                   :: currHour, currMin
   REAL(DP)                                  :: currSec
+  INTEGER                                   :: tempYear, tempMon, tempDay
+  INTEGER                                   :: tempHour, tempMin
+  REAL(DP)                                  :: tempSec
   INTEGER                                   :: dateYear, dateMon, dateDay
   INTEGER                                   :: dateHour, dateMin
   REAL(DP)                                  :: dateSec

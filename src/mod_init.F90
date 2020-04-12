@@ -92,8 +92,14 @@ MODULE mod_init
         ALLOCATE( dzt(imt,jmt,km,nst), dzu(imt,jmt,km,nst), dzv(imt,jmt,km,nst))
         dzt(:,:,:,:) = 0.; dzu(:,:,:,:) = 0.; dzv(:,:,:,:) = 0.
 
+        ALLOCATE( dzdt(imt,jmt,km,nst))
+        dzdt(:,:,:,:) = 0.
+
+        ALLOCATE( zstot(imt,jmt,-1:1), zstou(imt,jmt), zstov(imt,jmt))
+        zstot(:,:,:) = 1.; zstou(:,:) = 1.; zstov(:,:) = 1.
+
         ! Allocate velocity fields and sea-surface height
-        ALLOCATE (hs(imt,jmt,nst) )
+        ALLOCATE ( hs(imt+1,jmt+1,-1:1))
         hs(:,:,:) = 0.
 
         ALLOCATE ( uflux(imt,jmt,km,nst), vflux(imt,0:jmt,km,nst) )

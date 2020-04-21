@@ -55,6 +55,30 @@ MODULE mod_param
   REAL(DP), PARAMETER                       :: tday = 24.d0 * 3600.d0
 ENDMODULE mod_param
 
+! Seed Variables
+MODULE mod_seedvars
+  USE mod_precdef
+
+  INTEGER                                    :: isec         ! section for seeding
+  INTEGER                                    :: idir         ! spatial direction of seeding
+  INTEGER                                    :: nqua         ! type of seeding
+  INTEGER                                    :: loneparticle ! ntrac of the lone particle
+
+  REAL(DP)                                   :: partQuant    ! number of particles per grid to seed
+
+  INTEGER                                    :: ist1, ist2   ! Zonal seeding region
+  INTEGER                                    :: jst1, jst2   ! Meridional seeding region
+  INTEGER                                    :: kst1, kst2   ! Vertical seeding region
+  INTEGER                                    :: tst1, tst2   ! Seeding time
+
+  INTEGER                                    :: seedType, seedTime
+
+  CHARACTER(LEN=200)                         :: seedDir      ! Directory where seed files are stored
+  CHARACTER(LEN=200)                         :: seedFile     ! space seed file
+  CHARACTER(LEN=200)                         :: timeFile     ! time seed file
+
+END MODULE mod_seedvars
+
 ! Define derived type "trajectory"
 MODULE mod_trajdef
    USE mod_precdef
@@ -152,6 +176,7 @@ MODULE mod_grid
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)       :: zstou, zstov
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: zstot
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: botbox
+  REAL(DP), ALLOCATABLE, DIMENSION(:)         :: aa, bb
 
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: kmt, kmu, kmv
 
@@ -161,7 +186,7 @@ MODULE mod_grid
 
   ! Info about input data
   CHARACTER(LEN=50)                         :: RunID, tGridName, uGridName, vGridName, &
-                                               fileSuffix,  ssh_name, ueul_name, veul_name, &
+                                               fileSuffix,  hs_name, ueul_name, veul_name, &
                                                usgs_name, vsgs_name
 
   CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
@@ -255,7 +280,7 @@ MODULE mod_vel
 
   ! Mass/volume fluxes
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: uflux, vflux
-#if defined w_3dim || full_wflux
+#if defined w_explicit
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: wflux
 #else
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)        :: wflux

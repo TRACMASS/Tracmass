@@ -23,33 +23,25 @@ MODULE mod_seed
     USE mod_write, only     : write_data
     USE mod_domain, only    : l_rerun
 
+    USE mod_seedvars
     USE mod_traj
     USE mod_vertvel
     USE mod_psi
 
     IMPLICIT NONE
 
-    INTEGER                                    :: isec, idir
-    INTEGER                                    :: nqua, num
-    INTEGER                                    :: seedType, seedTime
-    INTEGER                                    :: ist1, ist2, jst1, jst2
-    INTEGER                                    :: kst1, kst2, tst1, tst2
+    INTEGER                                    :: num
     INTEGER                                    :: iist, ijst, ikst
     INTEGER                                    :: ijt,  ikt,  jjt, jkt
     INTEGER                                    :: ji, jj, jk, jsd
     INTEGER                                    :: filestat
     INTEGER                                    :: numsd, landsd=0
     INTEGER                                    :: nsdTim, nsdMax, ntracmax
-    INTEGER                                    :: loneparticle
     INTEGER                                    :: itim
 
     INTEGER, ALLOCATABLE, DIMENSION(:,:)       :: seed_ijk, seed_set
     INTEGER, ALLOCATABLE, DIMENSION(:)         :: seed_tim
 
-    REAL(DP)                                   :: partQuant
-
-    CHARACTER(LEN=200)                         :: seedDir, seedFile
-    CHARACTER(LEN=200)                         :: timeFile
     CHARACTER(LEN=200)                         :: fullSeedFile
 
     CHARACTER(LEN=*), PARAMETER                :: timform = "(i12)"
@@ -140,7 +132,6 @@ MODULE mod_seed
                 REWIND (34)
 
                 DO jsd = 1,nsdMax
-                   !READ (unit=34, fmt=ijkform) seed_ijk(jsd,1), &
                    READ (unit=34,fmt=*) seed_ijk(jsd,1), &
                                                seed_ijk(jsd,2), &
                                                seed_ijk(jsd,3), &
@@ -254,7 +245,11 @@ MODULE mod_seed
             END SELECT
 
             ! Allocate trajectories
-            ntracmax = nsdMax*nsdTim*100
+            IF (nqua == 1) THEN
+                ntracmax = nsdMax*nsdTim*INT(partQuant)
+            ELSE
+                ntracmax = nsdMax*nsdTim*100
+            END IF
 
             ALLOCATE ( trajectories(ntracmax) )
             trajectories(:)%x1 = 0.
@@ -356,7 +351,7 @@ MODULE mod_seed
 
                     ! Vertical
                      CALL vertvel (ib,ibm,jb,kb)
-#if defined w_3dim || full_wflux
+#if defined w_explicit
                      vol = wflux(ib,jb,kb,nsm)
 #elif w_2dim
                      vol = 1.
@@ -598,6 +593,14 @@ MODULE mod_seed
 
           IF (PROJECT_NAME == 'NEMO') THEN
                 ikst = km - ikst + 1   ! Vertical reverse
+          END IF
+
+          IF (PROJECT_NAME == 'IFS') THEN
+                IF (idir == 2) THEN
+                  ijst = jmt - ijst    ! Meridional reverse
+                ELSE
+                  ijst = jmt - ijst + 1   ! Meridional reverse
+                END IF
           END IF
 
         END SUBROUTINE reverse

@@ -76,7 +76,6 @@ MODULE mod_loop
         ntracLoop: DO ntrac=1, ntractot
 
           IF (trajectories(ntrac)%active .EQV. .FALSE.) CYCLE ntracLoop
-
           ! Read in the position and other particles parameters
           x1         = trajectories(ntrac)%x1
           y1         = trajectories(ntrac)%y1
@@ -165,7 +164,7 @@ MODULE mod_loop
             IF (errCode .NE. 0) CYCLE ntracLoop
 
             ! Interpolate volume
-            dxyz = dxdy(ib,jb)*(intrpg * dzt(ib,jb,kb,nsp)*zstot(ib,jb,1) + intrpr * dzt(ib,jb,kb,nsm)*zstot(ib,jb,0))
+            dxyz = dxdy(ib,jb)*(intrpg * dzt(ib,jb,kb,nsp)*zstot(ib,jb,0) + intrpr * dzt(ib,jb,kb,nsm)*zstot(ib,jb,-1))
 
             CALL errorCheck('dxyzError'     ,errCode)
             IF (errCode .NE. 0) CYCLE ntracLoop

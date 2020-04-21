@@ -275,7 +275,7 @@ MODULE mod_write
     INTEGER, INTENT(IN) :: ijk1, ijk2
     CHARACTER(LEN=2), INTENT(IN) :: psicase
 
-    psiformat = "(F20.5,XXXXXX(',',F20.5))"
+    psiformat = "(F22.5,XXXXXX(',',F22.5))"
 
     WRITE(psiformat(8:13),"(I6)") ijk1-1
 

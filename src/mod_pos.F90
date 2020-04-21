@@ -56,7 +56,6 @@ MODULE mod_pos
             IF( (im .EQ. 0) .AND. (iperio .EQ. 1) ) im = IMT
             uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
             um = (intrpg*uflux(im,ja,ka,nsp) + intrpr*uflux(im,ja,ka,nsm))
-
         ELSEIF (ijk .EQ. 2) THEN
             ii=ja
             jm=ja-1
@@ -65,9 +64,9 @@ MODULE mod_pos
 
         ELSEIF (ijk .EQ. 3) THEN
             ii=ka
-#if defined  w_3dim || full_wflux
-            uu = wflux(ia ,ja ,ka   ,nsm)
-            um = wflux(ia ,ja ,ka-1 ,nsm)
+#if defined  w_explicit
+            uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
+            um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
 #else
             uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
             um = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
@@ -155,12 +154,12 @@ MODULE mod_pos
 
         ELSE IF (ijk .EQ. 3) THEN
             ii = ka
-#if defined w_3dim || full_wflux
-            uu = (intrpg * wflux(ia ,ja, ka  , nsp) + intrpr * wflux(ia, ja, ka  , nsm))
-            um = (intrpg * wflux(ia, ja, ka-1, nsp) + intrpr * wflux(ia, ja, ka-1, nsm))
+#if defined  w_explicit
+            uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
+            um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
 #else
-            uu = (intrpg * wflux(ka  ,nsp) + intrpr * wflux(ka  ,nsm))
-            um = (intrpg * wflux(ka-1,nsp) + intrpr * wflux(ka-1,nsm))
+            uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
+            um = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
 #endif
 
         END IF
@@ -289,8 +288,8 @@ MODULE mod_pos
         ELSE IF (ds==dsu) THEN
            scrivi=.FALSE.
            CALL vertvel(ia,iam,ja,ka)
-#if defined w_3dim || full_wflux
-           uu = wflux(ia,ja,ka,nsm)
+#if defined w_explicit
+           uu = (intrpg*wflux(ia,ja,ka,nsp) + intrpr*wflux(ia,ja,ka,nsm))
 #else
            uu = (intrpg*wflux(ka,nsp) + intrpr*wflux(ka,nsm))
 #endif
@@ -317,8 +316,8 @@ MODULE mod_pos
         ELSE IF (ds==dsd) THEN
            scrivi=.FALSE.
            CALL vertvel(ia, iam, ja, ka)
-#if defined w_3dim || full_wflux
-           uu = wflux(ia,ja,ka-1,nsm)
+#if defined w_explicit
+           uu = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
 #else
            uu = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
 #endif

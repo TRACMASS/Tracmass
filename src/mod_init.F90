@@ -11,12 +11,14 @@ MODULE mod_init
     USE mod_grid
     USE mod_traj
     USE mod_param
-    USE mod_seed
+    USE mod_seedvars
     USE mod_time
     USE mod_write
     USE mod_domain
 
     IMPLICIT NONE
+
+    PRIVATE :: reverse
 
     CONTAINS
 
@@ -31,7 +33,7 @@ MODULE mod_init
         ! Setup namelists
         namelist /INIT_GRID_DESCRIPTION/ physDataDir, physPrefixForm, &
                                          tGridName, uGridName, vGridName, &
-                                         fileSuffix, ssh_name, ueul_name, veul_name, &
+                                         fileSuffix, hs_name, ueul_name, veul_name, &
                                          usgs_name, vsgs_name
         namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio, &
                                          topoDataDir, &
@@ -66,6 +68,9 @@ MODULE mod_init
         READ (8,nml=INIT_STREAMFUNCTION)
         CLOSE(8)
 
+        ! Reverse killing zones
+        CALL reverse()
+
     END SUBROUTINE init_namelist
 
     SUBROUTINE init_alloc()
@@ -87,9 +92,9 @@ MODULE mod_init
         mask(:,:) = 1.
 
         ALLOCATE ( kmt(imt,jmt))
-        kmt(:,:) = 0.
+        kmt(:,:) = 1
 
-        ALLOCATE( dzt(imt,jmt,km,nst), dzu(imt,jmt,km,nst), dzv(imt,jmt,km,nst))
+        ALLOCATE( dzt(imt,jmt,km,nst+1), dzu(imt,jmt,km,nst), dzv(imt,jmt,km,nst))
         dzt(:,:,:,:) = 0.; dzu(:,:,:,:) = 0.; dzv(:,:,:,:) = 0.
 
         ALLOCATE( dzdt(imt,jmt,km,nst))
@@ -98,10 +103,11 @@ MODULE mod_init
         ALLOCATE( zstot(imt,jmt,-1:1), zstou(imt,jmt), zstov(imt,jmt))
         zstot(:,:,:) = 1.; zstou(:,:) = 1.; zstov(:,:) = 1.
 
-        ! Allocate velocity fields and sea-surface height
+        ! Allocate surface parameter (SSH ocean, surface pressure atmosphere)
         ALLOCATE ( hs(imt+1,jmt+1,-1:1))
         hs(:,:,:) = 0.
 
+        ! Allocate velocity fields
         ALLOCATE ( uflux(imt,jmt,km,nst), vflux(imt,0:jmt,km,nst) )
         uflux(:,:,:,:) = 0.
         vflux(:,:,:,:) = 0.
@@ -110,7 +116,7 @@ MODULE mod_init
         uvel(:,:,:) = 0.
         vvel(:,:,:) = 0.
 
-#if defined w_3dim || full_wflux
+#if defined w_explicit
         ALLOCATE ( wflux(imt ,jmt ,0:km, nst) )
         wflux(:,:,:,:) = 0.
 #else
@@ -131,6 +137,29 @@ MODULE mod_init
         END IF
 
     END SUBROUTINE init_alloc
+
+    SUBROUTINE reverse()
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Reverse seeding indexes according to the project type
+    ! --------------------------------------------------
+
+      INTEGER :: ii
+
+      IF (PROJECT_NAME == 'IFS') THEN
+            DO ii = 1, 10
+              IF (idir == 2) THEN
+                jenn(ii) = jmt - jenn(ii)    ! Meridional reverse
+                jens(ii) = jmt - jens(ii)    ! Meridional reverse
+              ELSE
+                jenn(ii) = jmt - jenn(ii) + 1    ! Meridional reverse
+                jens(ii) = jmt - jens(ii) + 1   ! Meridional reverse
+              END IF
+            END DO
+      END IF
+
+    END SUBROUTINE
 
 END MODULE mod_init
 

@@ -92,7 +92,7 @@ MODULE mod_init
         mask(:,:) = 1.
 
         ALLOCATE ( kmt(imt,jmt))
-        kmt(:,:) = 1
+        kmt(:,:) = km
 
         ALLOCATE( dzt(imt,jmt,km,nst+1), dzu(imt,jmt,km,nst), dzv(imt,jmt,km,nst))
         dzt(:,:,:,:) = 0.; dzu(:,:,:,:) = 0.; dzv(:,:,:,:) = 0.

@@ -400,6 +400,7 @@ PROGRAM mod_calendar_test
     PRINT *, ' * Test tt_calendar   : forward in time (loop)'
     ierr = 0
 
+    ngcm_unit     = 4
     loopYears     = .TRUE.
     loopEndYear   = 2000
     loopStartYear = 1950

@@ -7,10 +7,10 @@ NETCDFLIBS        =
 
 # Read the project Makefile
 PROJMAKE           := $(wildcard projects/$(PROJECT)/Makefile.prj)
-CASEMAKE           := $(wildcard projects/$(PROJECT)/$(CASE)Makefile.prj)
+CASEMAKE           := $(wildcard projects/$(PROJECT)/Makefile.prj)
 
 ifneq ($(strip $(CASEMAKE)),)
-include projects/$(PROJECT)/$(CASE)Makefile.prj
+include projects/$(PROJECT)/Makefile.prj
 else
 ifneq ($(strip $(PROJMAKE)),)
 include projects/$(PROJECT)/Makefile.prj
@@ -53,15 +53,22 @@ VPATH = src:projects/$(PROJECT)
 
 all: runfile
 
+ifneq ($(strip $(CASE)),)
+	cp projects/$(PROJECT)/namelist_$(CASE).in namelist.in
+else
+ifneq ($(strip $(PROJECT)),)
 	cp projects/$(PROJECT)/namelist_$(PROJECT).in namelist.in
+endif
+endif
+
 
 #================================================================
 
 # Object definitions
 OBJDIR := _build
 
-objects := $(addprefix $(OBJDIR)/,mod_vars.o setup_grid.o \
-	kill_zones.o read_field.o mod_clock.o mod_calendar.o \
+objects := $(addprefix $(OBJDIR)/,mod_vars.o mod_getfile.o mod_calendar.o \
+	setup_grid.o kill_zones.o read_field.o mod_clock.o  \
 	mod_write.o mod_error.o mod_vertvel.o mod_seed.o  mod_stream.o \
 	mod_pos.o mod_init.o mod_print.o mod_loop.o TRACMASS.o)
 
@@ -83,13 +90,13 @@ runfile : $(objects)
 
 compile_test:
 
-	$(FC) $(FF) -o test_mod_calendar.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_write.F90 src/mod_error.F90 src/mod_vertvel.F90 src/mod_seed.F90 src/mod_init.F90   src/_tests/mod_calendar_test.F90
+	$(FC) $(FF) $(PROJECT_FLAG) -o test_mod_calendar.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_write.F90 src/mod_error.F90 src/mod_vertvel.F90 src/mod_seed.F90 src/mod_init.F90   src/_tests/mod_calendar_test.F90
 
-	$(FC) $(FF) -o test_mod_seed.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_write.F90 src/mod_error.F90 src/mod_vertvel.F90 src/mod_seed.F90 src/mod_init.F90  src/_tests/mod_seed_test.F90
+	$(FC) $(FF) $(PROJECT_FLAG) -o test_mod_seed.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_write.F90 src/mod_error.F90 src/mod_vertvel.F90 src/mod_seed.F90 src/mod_init.F90  src/_tests/mod_seed_test.F90
 
-	$(FC) $(FF) -o test_mod_pos.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_write.F90 src/mod_error.F90 src/mod_pos.F90 src/mod_vertvel.F90  src/mod_seed.F90 src/mod_init.F90 src/_tests/mod_pos_test.F90
+	$(FC) $(FF) $(PROJECT_FLAG) -o test_mod_pos.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_stream.F90 src/mod_write.F90 src/mod_error.F90 src/mod_pos.F90 src/mod_vertvel.F90  src/mod_seed.F90 src/mod_init.F90 src/_tests/mod_pos_test.F90
 
-	$(FC) $(FF) -o test_mod_error.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_write.F90 src/mod_error.F90 src/mod_pos.F90 src/mod_vertvel.F90  src/mod_seed.F90 src/mod_init.F90 src/_tests/mod_error_test.F90
+	$(FC) $(FF) $(PROJECT_FLAG) -o test_mod_error.x src/mod_vars.F90 src/mod_calendar.F90 src/mod_stream.F90 src/mod_write.F90 src/mod_error.F90 src/mod_pos.F90 src/mod_vertvel.F90  src/mod_seed.F90 src/mod_init.F90 src/_tests/mod_error_test.F90
 
 
 test:

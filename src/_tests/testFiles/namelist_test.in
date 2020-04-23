@@ -3,15 +3,14 @@
 ! Namelist file for compiling the module test programs
 
 &INIT_GRID_DESCRIPTION
-
 /
 
 &INIT_GRID_SIZE
      	! Size of global grid
-     	imt            = 100,                ! number of global i points
-     	jmt            = 100,                ! number of global j points
-     	km             =  1,                 ! number of global k points
-     	nst            =  2,                 ! number of time levels to use (should be = 2)
+     	imt            = 20,                 ! number of global i points
+     	jmt            = 20,                 ! number of global j points
+     	km             = 20,                 ! number of global k points
+     	nst            = 2,                  ! number of time levels to use (should be = 2)
 
       ! Boundary conditions
       iperio  = 1,                         ! zonal periodic
@@ -20,19 +19,19 @@
 
 &INIT_GRID_TIME
      ngcm_step      = 1,                   ! time between two time levels
-     ngcm_unit      = 3,                   ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
+     ngcm_unit      = 5,                   ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
                                            ! units of ngcm
 
-     iter           = 100,                 ! number of subcycles between time levels                                                             ! stopped
+     iter           = 10,                  ! number of subcycles between time levels                                                             ! stopped
 /
 
 &INIT_START_DATE
      startsec       = 0,                   ! start time
      startmin       = 0,
      starthour      = 12,
-     startday       = 1,                   ! start date
+     startday       = 16,                  ! start date
      startmon       = 1,
-     startyear      = 2000,
+     startyear      = 1999,
      noleap         = .FALSE.,             ! Don't use leap years?
 /
 
@@ -47,21 +46,21 @@
      log_level    = 0                      ! level of verbose
 
      ! Information of run time
-     intrun         = 100                  ! number of time steps for run
+     intrun         = 30                   ! number of time steps for run
 /
 
 &INIT_WRITE_TRAJ
 
      write_frec    = 2                     ! 1 = write at time intervals of gcm datasets (each ints)
                                            ! 2 = write at each time iteration
-                                           ! 3 = write each spatial grid-crossing
-                                           ! 4 = write all the time steps
-                                           ! 5 = write only start and end positions
+                                           ! 3 = write all the time
+                                           ! 4 = write only start and end positions
+                                           ! 5 = write each spatial grid-crossing
 
      outDataDir    = '',                   ! Output directory
-     outDataFile   = ''                    ! Output file name
+     outDataFile   = 'test'                ! Output file name
 
-     timeformat    = 1                     ! Format of the time array
+     timeformat    = 2                     ! Format of the time array
                                            ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
 /
 
@@ -88,15 +87,15 @@
           		      					             ! = 2 seed using file with start positions
 
       ! when seedtype = 1
-      ist1           = 31,				         ! seed in box in range i = [ist1,ist2]
-      ist2           = 31,				         ! 	       	      	    j = [jst1,jst2]
-      jst1           = 50,				         ! 			                k = [kst1,kst2]
-      jst2           = 50,
+      ist1           = 1,				           ! seed in box in range i = [ist1,ist2]
+      ist2           = 10,				         ! 	       	      	    j = [jst1,jst2]
+      jst1           = 1,				           ! 			                k = [kst1,kst2]
+      jst2           = 10,
       kst1           = 1,
-      kst2           = 1,
+      kst2           = 2,
       ! when seedtype = 2
       seeddir        = '',				         ! directory for seed files
-      seedfile       = '',				         ! name of seed file
+      seedfile       = 'seedFile',				 ! name of seed file
 
 
       seedtime       = 1,				           ! = 1 seed using tst (below)
@@ -104,10 +103,9 @@
 
       ! when seedtime = 1
       tst1           = 1,				           ! seed only between tst1 and tst2 as time steps
-      tst2           = 1,
-
+      tst2           = 10,
       ! when seedtime = 2
-      timefile       = '',				         ! name of seed file
+      timefile       = 'seedTime',				 ! name of seed file
 /
 
 &INIT_KILLZONES
@@ -115,5 +113,5 @@
 /
 
 &INIT_STREAMFUNCTION
-
+      dirpsi     = 1,1,1,1  ! Direction of integration
 /

@@ -8,6 +8,7 @@
 !!              - mod_precdef
 !!              - mod_log
 !!              - mod_param
+!!              - mod_seedvars
 !!              - mod_trajdef
 !!              - mod_loopvars
 !!              - mod_traj

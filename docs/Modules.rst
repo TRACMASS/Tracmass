@@ -19,7 +19,7 @@ The module **mod_calendar** contains all the subroutines that initialise and upd
 
   .. warning::  Note than in backward simulations in time, **loopStartYear>loopEndYear**. The start year (**StartYear**) is always larger or equal to the current year (**currYear**) - unless **loopYears** is activated.  If **loopYears** is activated, the calendar is corrected in similar way to the forward simulations (see Figure above).
 
-* **end_calendar** computes the final date of simulation defined by the time step **intrun**
+* **end_calendar** computes the final date of simulation defined by the time step **intrun**.
 
 * **tt_calendar** uses the starting date as a reference and translates the time step **tt** into a date (year, month, day) and time (hour, minute, second).
 
@@ -96,10 +96,35 @@ and a private function:
 
 .. f:autosubroutine:: errorType
 
+mod_getfile.F90
+---------------
+
+The module **mod_getfile** consists on two functions: **get2DfieldNC** to extract 2D data fields, and **get3DfieldNC** to extract 3D data fields.
+
+* The function **get2DfieldNC** has five arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start2D* a 4D array that describes the starting indexes, *count2D* a 4D array that describes how many indexes are read, and *cextend* an optional argument to read 2D fields in v points (an extra j index).
+
+
+* The function **get3DfieldNC** has six arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start3D* a 4D array that describes the starting indexes, *count3D* a 4D array that describes how many indexes are read, *stcase* describes the order data is stored in the netCDF file:
+
+    - *'ts'*:  [time, x, y, z]
+    - *'st'*:  [x, y, z, time]
+    - *'ts_r'*: [time, z, y, x]
+    - *'st_r'*: [z, y, x, time]
+
+  and *cextend* an optional argument to read 3D fields in v points (an extra j index).
+
+This module contains two functions:
+
+.. f:autosubroutine:: get2DfieldNC
+
+.. f:autosubroutine:: get3DfieldNC
+
 mod_init.F90
 ------------
 
 The module **mod_init** consists on two subroutines: **init_namelist** that reads the namelist, and **init_alloc** that allocates all the allocatable arrays. More information about the namelist can be found in the *Namelist* chapter.
+
+It contains an internal subroutine **reverse** to adapt the meridional indexes to the TRACMASS reference system.
 
 .. f:autosubroutine:: init_namelist
 
@@ -251,7 +276,7 @@ This module includes five subroutines:
 mod_seed.F90
 ------------
 
-The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and a private subroutine (split_grid)
+The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and two private subroutines (**split_grid** and **reverse**)
 
 The subroutine **init_seed** defines the grid points and the time steps where the particles are going to be initialised, the wall of the grid where they are going to be placed (**isec**), and their direction (**idir**). There are three options for **isec**: (1) on the east wall of the grid cell, (2) on the north wall of the grid cell, and (3) on the top wall of the grid cell. idir selects the initial direction of the trajectories eastward/northward/upward (**idir = 1**) or westward/southward/downward (**idir = -1**).
 
@@ -300,15 +325,51 @@ The **seed** subroutine populates the **trajectory** array that contains the pos
 
 7 - The position of the trajectory in the gridbox reference system, the trajectory number **ntrac**, the corresponding position index and the mass/volume transported by it is stored in the array **trajectories**.
 
+The private subroutine **reverse** adjust the seeding indexes to the TRACMASS reference system.
+
 This module contains two public subroutines:
 
 .. f:autosubroutine:: init_seed
 
 .. f:autosubroutine:: seed
 
-and a private subroutine:
+and two private subroutine:
 
 .. f:autosubroutine:: split_grid
+
+.. f:autosubroutine:: reverse
+
+mod_stream.F90
+--------------
+
+The module **mod_stream.F90** is responsible for computing volume/mass fluxes and compute different stream functions. This module is only called if the main program is run with the *streamfunction* argument on (see chapters *Configuration* and *Main program*). This module contains two subroutines **update_stream** and **compute_stream**.
+
+* The subrotuine **update_stream** is responsible to compute the fluxes and filter them according to the different kill zones. This subroutine has five arguments: *indx, indy, indz* represent the i,j,k indexes of the trajectory, *dir* is the direction of the trajectory (+1 if the trajectory crosses an east/north/up wall, -1 if the trajectory crosses a west/south/down wall). *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction).
+
+.. math::
+
+    F(i,j) = F(i,j) + sign(U) U
+
+
+* The subroutine **compute_stream** integrates the fluxes computed by **update_stream** to compute the stream functions. The integration direction is defined by **dirpsi**.
+
+  .. math:: \Psi(i,j) = \sum^{j}_{jj=0} F(i,jj) \quad \text{(dirpsi = 1)  or} \quad  \Psi(i,j) = \sum^{jmt}_{jj=j} F(i,jj) \quad \text{(dirpsi = -1)}.
+|
+
+  .. note:: This is an example of how a stream function is computed. Consider two trajectories (A) with the same volume/mass transport. The computed fluxes are shown in (B) where blue represents positive fluxes and orange negative fluxes. Notice that the region where both trajectories cross the same wall the resulting flux is zero as they cancel each other. The resulting stream function (C) is computed integrating in a downward direction.
+
+    .. image:: figs/fig_stream.png
+      :width: 600px
+      :align: center
+      :height: 200px
+      :alt: Description of nqua
+
+
+This module contains two public subroutines:
+
+.. f:autosubroutine:: update_stream
+
+.. f:autosubroutine:: compute_stream
 
 mod_vars.F90
 ------------
@@ -320,6 +381,8 @@ mod_vars.F90
 - **mod_log**: defines the verbose variables.
 
 - **mod_param**: the general parameters of TRACMASS are defined here.
+
+- **mod_seedvars**: the variables used in **mod_seed** are defined here.
 
 - **mod_trajdef**: the derived TYPE **trajectory** is defined in this module.
 
@@ -335,6 +398,8 @@ mod_vars.F90
 
 - **mod_vel**: the volume/mass fluxes both horizontal and vertical are defined here.
 
+- **mod_psi**: defines the variables to describe the stream functions.
+
 mod_vertvel.F90
 ---------------
 
@@ -344,7 +409,7 @@ This module contains a single subroutine **vertvel** that computes the vertical 
 
 .. math::
 
-   W^n_{i,j,k} = W^n_{i,j,k-1} - ( U^n_{i,j,k}-U^n_{i-1,j,k} + V^n_{i,j,k} - V^n_{i,j-1,k})
+   W^n_{i,j,k,n} = W^n_{i,j,k-1} - ( U^n_{i,j,k,n}-U^n_{i-1,j,k} + V^n_{i,j,k} - V^n_{i,j-1,k}) + area(i,j)\frac{\Delta z^{n+1}_{i,j,k}-\Delta z^{n-1}_{i,j,k}}{2\Delta t}
 
 This equation is integrated from the bottom (ocean) or the TOA (atmosphere) to the level **ka**.
 
@@ -353,7 +418,9 @@ This equation is integrated from the bottom (ocean) or the TOA (atmosphere) to t
 mod_write.F90
 -------------
 
-The module **mod_write** creates the outfiles where the information of the trajectories is stored. This module is responsible for writing three important files: *_ini.csv* where the initial positions are stored, *_out.csv* where the final positions are stored, and *_run.csv* where the new positions of the trajectory are stored.
+The module **mod_write** creates the outfiles where the information of the trajectories is stored. This module is responsible for writing four important files: *_ini.csv* where the initial positions are stored, *_out.csv* where the final positions are stored, *_run.csv* where the new positions of the trajectory are stored, and  *_rerun.csv* where the trajectory number and the flag corresponding to the kill zone is stored.
+
+.. warning:: If a particle is not terminated it will not be stored in the *_rerun.csv* file.
 
 .. image:: figs/fig_write.png
   :width: 500px
@@ -362,13 +429,23 @@ The module **mod_write** creates the outfiles where the information of the traje
   :alt: Example of a writing frequency
 
 The initial and the final information of the trajectories are always stored. However, the frequency at which data is stored in the *_run.csv* is controlled by **write_frec**: (1) only at GCM time steps, (2) only at GCM and subcycle time steps, (3) only when a trajectory crosses a wall, (4) all time steps, and (5) no data stored.
+The time format of the output files can also be adjusted with **timeformat**: (0) **tt** is stored, (1) **ts** is stored, (2) the time is saved in YYYY-MM-DD HH format.
 
-.. note:: the time format of the output files can also be adjusted with **timeformat**: (0) **tt** is stored, (1) **ts** is stored, (2) the time is saved in YYYY-MM-DD HH format.
+.. important::  If TRACMASS is run with the streamfunction flag this module also writes the resulting streamfunctions in the files: *_psixy.csv* for the barotropic case, and *_psiyz.csv* for the meridional case. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
 
-This module contains three subroutines:
+
+This module contains seven subroutines:
 
 .. f:autosubroutine:: open_outfiles
 
 .. f:autosubroutine:: write_data
 
 .. f:autosubroutine:: close_outfiles
+
+.. f:autosubroutine:: read_rerun
+
+.. f:autosubroutine:: open_outstream
+
+.. f:autosubroutine:: write_stream
+
+.. f:autosubroutine:: close_outstream

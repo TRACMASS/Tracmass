@@ -23,6 +23,7 @@ MODULE mod_write
     USE mod_loopvars
     USE mod_calendar
     USE mod_psi
+    USE mod_grid
 
     IMPLICIT NONE
 
@@ -31,6 +32,7 @@ MODULE mod_write
     CHARACTER(LEN=50)     :: psiformat
     CHARACTER(LEN=*), PARAMETER                :: reform = "(I8,I3)"
 
+    REAL(DP)              :: xw,yw,zw
 
     INTEGER               :: timeformat
     INTEGER               :: filestat
@@ -40,6 +42,8 @@ MODULE mod_write
     INTEGER               :: ilvar
 
     LOGICAL               :: fileexists
+
+    PRIVATE               :: reverse
 
     CONTAINS
 
@@ -93,22 +97,25 @@ MODULE mod_write
         ! INI file
         CASE ('ini')
 
+            xw = x1; yw = y1; zw = z1
+            CALL reverse()
+
             SELECT CASE(timeformat)
 
                 CASE(0)
                 ! Include time - tt in seconds
-                WRITE(50,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                WRITE(50,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt
                 RETURN
 
                 CASE(1)
                 ! Include time - Fraction ts
-                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts
                 RETURN
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar(tt)
-                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
                     subvol, dateYear, dateMon, dateDay, dateHour
                 RETURN
 
@@ -123,23 +130,32 @@ MODULE mod_write
                  ( write_frec == 4 ) .OR. &
                  ( write_frec == 2 .AND. tt == 0.d0)) THEN
 
+
+                IF (write_frec == 1) THEN
+                      xw = x0; yw = y0; zw = z0
+                ELSE
+                      xw = x1; yw = y1; zw = z1
+                END IF
+
+                CALL reverse()
+
                 SELECT CASE(timeformat)
 
                     CASE(0)
                     ! Include time - tt in seconds
                     IF (write_frec == 1) THEN
-                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x0, y0, z0, subvol, tt - dt
+                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt - dt
                     ELSE
-                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt
                     END IF
                     RETURN
 
                     CASE(1)
                     ! Include time - Fraction ts
                     IF (write_frec == 1) THEN
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x0, y0, z0, subvol, ts - dts
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts - dts
                     ELSE
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts
                     END IF
                     RETURN
 
@@ -147,11 +163,11 @@ MODULE mod_write
                     ! Include time - YYYY MM DD HH MM SS
                     IF (write_frec == 1) THEN
                       CALL tt_calendar(REAL(NINT(tt - dt),8))
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
                           subvol, dateYear, dateMon, dateDay, dateHour
                     ELSE
                       CALL tt_calendar(REAL(NINT(tt),8))
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
                           subvol, dateYear, dateMon, dateDay, dateHour
                     END IF
                     RETURN
@@ -161,26 +177,31 @@ MODULE mod_write
 
         ! OUT file
         CASE ('out')
+
+            xw = x1; yw = y1; zw = z1
+            CALL reverse()
+
             SELECT CASE(timeformat)
 
                 CASE(0)
                 ! Include time - tt in seconds
-                WRITE(52,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, x1, y1, z1, subvol, tt
+                WRITE(52,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt
                 RETURN
 
                 CASE(1)
                 ! Include time - Fraction ts
-                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, x1, y1, z1, subvol, ts
+                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts
                 RETURN
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar(tt)
-                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, x1, y1, z1, &
+                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
                     subvol, dateYear, dateMon, dateDay, dateHour
                 RETURN
 
             END SELECT
+
         ! RERUN file
         CASE ('rerun')
             WRITE(54,"(I8,I3)")  ntrac, nend
@@ -285,5 +306,22 @@ MODULE mod_write
     END DO
 
     END SUBROUTINE write_stream
+
+    SUBROUTINE reverse()
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Reverse seeding indexes according to the project type
+    !
+    ! --------------------------------------------------
+      IF (griddir(2) == -1) THEN
+          yw = jmt - yw    ! Meridional reverse
+      END IF
+
+      IF (griddir(3) == -1) THEN
+          zw = km - zw     ! Vertical reverse
+      END IF
+
+    END SUBROUTINE reverse
 
 END MODULE mod_write

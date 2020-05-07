@@ -16,7 +16,7 @@ MODULE mod_seed
     !!------------------------------------------------------------------------------
 
     USE mod_log,  only      : log_level
-    USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dzt
+    USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dzt, griddir
     USE mod_time, only      : ints, tseas, tt, ts, nff
     USE mod_vel,  only      : uflux, vflux, wflux
     USE mod_loopvars, only  : subvol
@@ -592,15 +592,19 @@ MODULE mod_seed
         !
         ! --------------------------------------------------
 
-          IF (PROJECT_NAME == 'NEMO') THEN
-                ikst = km - ikst + 1   ! Vertical reverse
-          END IF
-
-          IF (PROJECT_NAME == 'IFS') THEN
-                IF (idir == 2) THEN
+          IF (griddir(2) == -1) THEN
+                IF (isec == 2) THEN
                   ijst = jmt - ijst    ! Meridional reverse
                 ELSE
                   ijst = jmt - ijst + 1   ! Meridional reverse
+                END IF
+          END IF
+
+          IF (griddir(3) == -1) THEN
+                IF (isec == 3) THEN
+                  ikst = km - ikst       ! Vertical reverse
+                ELSE
+                  ikst = km - ikst + 1   ! Vertical reverse
                 END IF
           END IF
 

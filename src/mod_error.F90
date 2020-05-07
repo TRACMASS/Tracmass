@@ -26,6 +26,8 @@ MODULE mod_error
 
   IMPLICIT NONE
 
+  REAL(DP)              :: xw,yw,zw
+
   PRIVATE :: errorType
 
   CONTAINS
@@ -171,24 +173,27 @@ MODULE mod_error
   ! --------------------------------------------------
        INTEGER, INTENT(IN)                 :: errCode
 
+       xw = x1; yw = y1; zw = z1
+       CALL reverse()
+
        SELECT CASE(timeformat)
 
            CASE(0)
            ! Include time - tt in seconds
-           WRITE(53,"(I8,3(',',F13.5),2(',',F20.5),1(',  ',A100))")  ntrac, x1, y1, z1, subvol, tt, &
+           WRITE(53,"(I8,3(',',F13.5),2(',',F20.5),1(',  ',A100))")  ntrac, xw, yw, zw, subvol, tt, &
                  ADJUSTL(errorType(errCode))
            RETURN
 
            CASE(1)
            ! Include time - Fraction ts
-           WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5),1(',  ',A100))")  ntrac, x1, y1, z1, subvol, ts, &
+           WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5),1(',  ',A100))")  ntrac, xw, yw, zw, subvol, ts, &
                  ADJUSTL(errorType(errCode))
            RETURN
 
            CASE(2)
            ! Include time - YYYY MM DD HH MM SS
            CALL tt_calendar(tt)
-           WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),1(',  ',A100))")  ntrac, x1, y1, z1, &
+           WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),1(',  ',A100))")  ntrac, xw, yw, zw, &
                  subvol, dateYear, dateMon, dateDay, dateHour, ADJUSTL(errorType(errCode))
            RETURN
 
@@ -226,5 +231,23 @@ MODULE mod_error
     END SELECT
 
   END FUNCTION errorType
+
+  SUBROUTINE reverse()
+  ! --------------------------------------------------
+  !
+  ! Purpose:
+  ! Reverse seeding indexes according to the project type
+  !
+  ! --------------------------------------------------
+
+      IF (griddir(2) == -1) THEN
+          yw = jmt - yw    ! Meridional reverse
+      END IF
+
+      IF (griddir(3) == -1) THEN
+          zw = km - zw     ! Vertical reverse
+      END IF
+
+  END SUBROUTINE reverse
 
 END MODULE mod_error

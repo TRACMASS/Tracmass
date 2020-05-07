@@ -154,6 +154,9 @@ MODULE mod_grid
 
   IMPLICIT NONE
 
+  ! Grid description
+  INTEGER, DIMENSION(3)                     :: griddir = 1
+  
   ! Regular size
   INTEGER                                   :: imt, jmt, km   ! Size of domain
   INTEGER                                   :: nst=2          ! Number of time steps stored in memory

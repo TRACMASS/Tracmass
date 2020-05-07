@@ -31,7 +31,7 @@ MODULE mod_init
     ! --------------------------------------------------
 
         ! Setup namelists
-        namelist /INIT_GRID_DESCRIPTION/ physDataDir, physPrefixForm, &
+        namelist /INIT_GRID_DESCRIPTION/ griddir, physDataDir, physPrefixForm, &
                                          tGridName, uGridName, vGridName, &
                                          fileSuffix, hs_name, ueul_name, veul_name, &
                                          usgs_name, vsgs_name
@@ -147,9 +147,9 @@ MODULE mod_init
 
       INTEGER :: ii
 
-      IF (PROJECT_NAME == 'IFS') THEN
+      IF (griddir(2) == -1) THEN
             DO ii = 1, 10
-              IF (idir == 2) THEN
+              IF (isec == 2) THEN
                 jenn(ii) = jmt - jenn(ii)    ! Meridional reverse
                 jens(ii) = jmt - jens(ii)    ! Meridional reverse
               ELSE

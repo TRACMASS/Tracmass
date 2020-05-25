@@ -8,6 +8,7 @@ PROGRAM TRACMASS
   USE mod_psi
   USE mod_stream
   USE mod_param
+  USE mod_subdomain
 
   IMPLICIT none
 
@@ -19,8 +20,9 @@ PROGRAM TRACMASS
   IF (ARG1 == 'streamfunction') l_psi = .TRUE.
 
 
-  ! Read namelist and allocate the arrays
+  ! Read namelist, define the domain and allocate the arrays
   CALL init_namelist
+  CALL init_subdomain
   CALL init_alloc
 
   ! Welcome heading and setup info
@@ -36,7 +38,7 @@ PROGRAM TRACMASS
 
   ! Read rerun
   IF (l_rerun .OR. l_psi) CALL read_rerun
-  
+
   ! Open outfiles
   CALL open_outfiles
 

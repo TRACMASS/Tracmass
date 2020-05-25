@@ -98,6 +98,14 @@ MODULE mod_write
         CASE ('ini')
 
             xw = x1; yw = y1; zw = z1
+
+            IF (l_subdom) THEN
+                xw = xw + imindom - 1;
+                yw = yw + jmindom - 1;
+
+                IF ( (imindom > imaxdom) .AND. xw >imtdom )  xw = xw - imtdom
+            END IF
+
             CALL reverse()
 
             SELECT CASE(timeformat)
@@ -135,6 +143,13 @@ MODULE mod_write
                       xw = x0; yw = y0; zw = z0
                 ELSE
                       xw = x1; yw = y1; zw = z1
+                END IF
+
+                IF (l_subdom) THEN
+                    xw = xw + imindom - 1;
+                    yw = yw + jmindom - 1;
+
+                    IF ( (imindom > imaxdom) .AND. xw > imtdom )  xw = xw - imtdom
                 END IF
 
                 CALL reverse()
@@ -179,6 +194,14 @@ MODULE mod_write
         CASE ('out')
 
             xw = x1; yw = y1; zw = z1
+
+            IF (l_subdom) THEN
+                xw = xw + imindom - 1;
+                yw = yw + jmindom - 1;
+
+                IF ( (imindom > imaxdom) .AND. xw > imtdom )  xw = xw - imtdom
+            END IF
+
             CALL reverse()
 
             SELECT CASE(timeformat)
@@ -314,6 +337,12 @@ MODULE mod_write
     ! Reverse seeding indexes according to the project type
     !
     ! --------------------------------------------------
+
+      IF (zeroindx) THEN
+         xw = xw - 1
+         IF (xw<0.) xw = imtdom + xw
+      END IF
+
       IF (griddir(2) == -1) THEN
           yw = jmt - yw    ! Meridional reverse
       END IF

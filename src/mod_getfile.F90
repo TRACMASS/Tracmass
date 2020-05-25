@@ -39,7 +39,7 @@ MODULE mod_getfile
 
       CHARACTER (len=*)                       :: fieldFile ,varName
 
-      ALLOCATE(field(count2D(1)-start2D(1)+1, count2D(2)-start2D(2)+1))
+      ALLOCATE(field(count2D(1), count2D(2)))
 
       IF ( PRESENT(cextend)) THEN
             ALLOCATE(get2DfieldNC(1:imt, 1:jmt+1))
@@ -51,8 +51,16 @@ MODULE mod_getfile
       IF(ierr .NE. 0) STOP 1
       ierr=NF90_INQ_VARID(ncid ,varName ,varid)
       IF(ierr .NE. 0) STOP 2
-      ierr=NF90_GET_VAR(ncid ,varid ,field, start2D, count2D )
-      IF(ierr .NE. 0) STOP 3
+
+      IF ( (l_subdom) .AND. (imindom > imaxdom) ) THEN
+          start2D(1) = imindom; count2D(1) = imthalf1
+          ierr=NF90_GET_VAR(ncid ,varid ,field(1:imthalf1,:), start2D, count2D )
+          start2D(1) = 1; count2D(1) = imthalf2
+          ierr=NF90_GET_VAR(ncid ,varid ,field(imthalf1+1:imt,:), start2D, count2D )
+      ELSE
+          ierr=NF90_GET_VAR(ncid ,varid ,field, start2D, count2D )
+          IF(ierr .NE. 0) STOP 3
+      END IF
 
       ierr = NF90_GET_ATT(ncid, varid,"scale_factor", scale_factor)
       IF(ierr .NE. 0) scale_factor = 1.0
@@ -86,13 +94,13 @@ MODULE mod_getfile
        CHARACTER (len=*)                         :: fieldFile ,varName, stcase
 
        IF (stcase == 'st')  THEN
-            ALLOCATE(field(count3D(1)-start3D(1)+1, count3D(2)-start3D(2)+1,count3D(3)-start3D(3)+1))
+            ALLOCATE(field(count3D(1), count3D(2),count3D(3)))
        ELSE IF (stcase == 'ts')  THEN
-            ALLOCATE(field4(1,count3D(1)-start3D(1)+1, count3D(2)-start3D(2)+1,count3D(3)-start3D(3)+1))
+            ALLOCATE(field4(1,count3D(1), count3D(2),count3D(3)))
        ELSE IF (stcase == 'st_r') THEN
-            ALLOCATE(field(count3D(3)-start3D(3)+1, count3D(2)-start3D(2)+1,count3D(1)-start3D(1)+1))
+            ALLOCATE(field(count3D(3), count3D(2),count3D(1)))
        ELSE IF (stcase == 'ts_r') THEN
-            ALLOCATE(field4(1,count3D(3)-start3D(3)+1, count3D(2)-start3D(2)+1,count3D(1)-start3D(1)+1))
+            ALLOCATE(field4(1,count3D(3), count3D(2),count3D(1)))
        END IF
 
        IF (stcase == 'st') THEN
@@ -119,9 +127,35 @@ MODULE mod_getfile
        IF(ierr .NE. 0) STOP TRIM(fieldFile)
        ierr=NF90_INQ_VARID(ncid, varName, varid)
        IF(ierr .NE. 0) STOP 2
-       IF (stcase == 'st' .OR. stcase == 'st_r') ierr=NF90_GET_VAR(ncid, varid, field, ss, cc)
-       IF (stcase == 'ts' .OR. stcase == 'ts_r') ierr=NF90_GET_VAR(ncid, varid, field4, ss, cc)
-       IF(ierr .NE. 0) STOP 3
+       IF ( (l_subdom) .AND. (imindom > imaxdom) ) THEN
+
+           IF (stcase == 'st') THEN
+              ss(1) = imindom; cc(1) = imthalf1
+              ierr=NF90_GET_VAR(ncid, varid, field(1:imthalf1,:,:), ss, cc)
+              ss(1) = 1; cc(1) = imthalf2
+              ierr=NF90_GET_VAR(ncid ,varid ,field(imthalf1+1:imt,:,:), ss, cc )
+           ELSE IF (stcase == 'st_r') THEN
+              ss(3) = imindom; cc(3) = imthalf1
+              ierr=NF90_GET_VAR(ncid, varid, field(:,:,1:imtdom), ss, cc)
+              ss(3) = 1; cc(3) = imthalf2
+              ierr=NF90_GET_VAR(ncid ,varid ,field(:,:,imtdom+1:imt), ss, cc )
+           ELSE IF (stcase == 'ts') THEN
+              ss(2) = imindom; cc(2) = imthalf1
+              ierr=NF90_GET_VAR(ncid, varid, field4(:,1:imthalf1,:,:), ss, cc)
+              ss(2) = 1; cc(2) = imthalf2
+              ierr=NF90_GET_VAR(ncid ,varid ,field4(:,imthalf1+1:imt,:,:), ss, cc )
+           ELSE IF (stcase == 'ts_r') THEN
+             ss(4) = imindom; cc(4) = imthalf1
+             ierr=NF90_GET_VAR(ncid, varid, field4(:,:,:,1:imthalf1), ss, cc)
+             ss(4) = 1; cc(4) = imthalf2
+             ierr=NF90_GET_VAR(ncid ,varid ,field4(:,:,:,imthalf1+1:imt), ss, cc )
+           END IF
+           IF(ierr .NE. 0) STOP 3
+       ELSE
+           IF (stcase == 'st' .OR. stcase == 'st_r') ierr=NF90_GET_VAR(ncid, varid, field, ss, cc)
+           IF (stcase == 'ts' .OR. stcase == 'ts_r') ierr=NF90_GET_VAR(ncid, varid, field4, ss, cc)
+           IF(ierr .NE. 0) STOP 3
+       END IF
 
        ierr = NF90_GET_ATT(ncid, varid,"scale_factor", scale_factor)
        IF(ierr .NE. 0) scale_factor = 1.0

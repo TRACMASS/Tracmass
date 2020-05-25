@@ -31,7 +31,7 @@ MODULE mod_init
     ! --------------------------------------------------
 
         ! Setup namelists
-        namelist /INIT_GRID_DESCRIPTION/ griddir, physDataDir, physPrefixForm, &
+        namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx, physDataDir, physPrefixForm, &
                                          tGridName, uGridName, vGridName, &
                                          fileSuffix, hs_name, ueul_name, veul_name, &
                                          usgs_name, vsgs_name
@@ -40,6 +40,7 @@ MODULE mod_init
                                          hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
                                          zgridFile, dzt_name, dzu_name, dzv_name,&
                                          bathyFile, kmt_name
+        namelist /INIT_GRID_SUBDOMAIN/   l_subdom, imindom, imaxdom, jmindom, jmaxdom
         namelist /INIT_GRID_TIME/        ngcm_step, ngcm_unit, iter
         namelist /INIT_START_DATE/       startSec, startMin, startHour,           &
                                          startDay, startMon, startYear,           &
@@ -59,6 +60,7 @@ MODULE mod_init
              & status='OLD', delim='APOSTROPHE')
         READ (8,nml=INIT_GRID_DESCRIPTION)
         READ (8,nml=INIT_GRID_SIZE)
+        READ (8,nml=INIT_GRID_SUBDOMAIN)
         READ (8,nml=INIT_GRID_TIME)
         READ (8,nml=INIT_START_DATE)
         READ (8,nml=INIT_RUN_TIME)
@@ -70,6 +72,12 @@ MODULE mod_init
 
         ! Reverse killing zones
         CALL reverse()
+
+        ! Shift in case of netcdf data starting at zero
+        IF (zeroindx) THEN
+          ienw = ienw + 1
+          iene = iene + 1
+        END IF
 
     END SUBROUTINE init_namelist
 

@@ -54,6 +54,7 @@ MODULE mod_print
    ! --------------------------------------------------
 
        CHARACTER (len=15)                           :: currDate ,currTime, cloneparticle
+       CHARACTER (len=5), DIMENSION(4)              :: csubdomain
 
        CALL write_lines
        CALL date_and_time(currDate, currTime) ! Fortran internal function
@@ -95,18 +96,40 @@ MODULE mod_print
        PRINT *,''
        PRINT *,"Configuration options:"
 
+       ! Subdomain
+       IF (l_subdom) THEN
+              PRINT *,' - A subdomain has been choosen'
+              IF (zeroindx) THEN
+                  WRITE(csubdomain(1),"(I5)") imindom - 1
+                  WRITE(csubdomain(2),"(I5)") imaxdom - 1
+                  WRITE(csubdomain(3),"(I5)") jmindom - 1
+                  WRITE(csubdomain(4),"(I5)") jmaxdom - 1
+              ELSE
+                  WRITE(csubdomain(1),"(I5)") imindom
+                  WRITE(csubdomain(2),"(I5)") imaxdom
+                  WRITE(csubdomain(3),"(I5)") jmindom
+                  WRITE(csubdomain(4),"(I5)") jmaxdom
+              END IF
+              PRINT *, '     i index: ', ADJUSTR(csubdomain(1)),' - ',ADJUSTL(csubdomain(2))
+              PRINT *, '     j index: ', ADJUSTR(csubdomain(3)),' - ',ADJUSTL(csubdomain(4))
+       END IF
+
+       ! Vertical fluxes
 #if defined w_2dim
        PRINT *,' - Two-dimensional trajectories, no change in depth'
 #endif
-#if defined full_wflux
-       PRINT *,' - 3D vertival volume flux field.'
-#endif
 #if defined w_3dim
-       PRINT *,' - Explicit vertical velocities from the GCM.'
+       PRINT *,' - Three-dimensional trajectories (vertical fluxes computed)'
+#endif
+#if defined w_explicit
+       PRINT *,' - Three-dimensional trajectories (explicit vertical fluxes)'
 #endif
 
+       ! Loneparticle
        WRITE(cloneparticle,"(I15)") loneparticle
        IF (loneparticle>0) PRINT *, ' - Running loneparticle: ', ADJUSTL(cloneparticle)
+
+       ! Streamfunctions
        IF (l_psi) PRINT *,' - Computing streamfunctions.'
 
 

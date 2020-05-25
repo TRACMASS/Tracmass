@@ -27,13 +27,14 @@ MODULE mod_seed
     USE mod_traj
     USE mod_vertvel
     USE mod_psi
+    USE mod_subdomain
 
     IMPLICIT NONE
 
     INTEGER                                    :: num
     INTEGER                                    :: iist, ijst, ikst
     INTEGER                                    :: ijt,  ikt,  jjt, jkt
-    INTEGER                                    :: ji, jj, jk, jsd
+    INTEGER                                    :: ji, jii, jj, jjj, jk, jsd
     INTEGER                                    :: filestat
     INTEGER                                    :: numsd, landsd=0
     INTEGER                                    :: nsdTim, nsdMax, ntracmax
@@ -82,10 +83,16 @@ MODULE mod_seed
 
             DO ji=ist1,ist2
                DO jj=jst1,jst2
-                  IF (mask(ji,jj) .ne. 0) THEN
+
+                  ! Update the indexes
+                  jii = ji; jjj = jj
+                  
+                  CALL update_subindex(jii,jjj)
+
+                  IF (mask(jii,jjj) .ne. 0) THEN
                      DO jk=kst1,kst2
                         numsd = numsd+1
-                        seed_ijk (numsd,1:3) = [ ji, jj, jk ]
+                        seed_ijk (numsd,1:3) = [ jii, jjj, jk ]
                         seed_set (numsd,1:2) = [ isec, idir ]
                      END DO
                   ELSE
@@ -137,6 +144,11 @@ MODULE mod_seed
                                                seed_ijk(jsd,3), &
                                                seed_set(jsd,1), &
                                                seed_set(jsd,2)
+
+                   ji = seed_ijk(jsd,1); jj = seed_ijk(jsd,2)
+                   CALL update_subindex(ji,jj)
+                   seed_ijk(jsd,1) = ji; seed_ijk(jsd,2) = jj
+
                 END DO
 
                 CLOSE (34)
@@ -313,7 +325,6 @@ MODULE mod_seed
                  iist  = seed_ijk(jsd,1)
                  ijst  = seed_ijk(jsd,2)
                  ikst  = seed_ijk(jsd,3)
-
                  CALL reverse()
 
                  isec  = seed_set(jsd,1)
@@ -609,7 +620,6 @@ MODULE mod_seed
           END IF
 
         END SUBROUTINE reverse
-
 
 
 END MODULE mod_seed

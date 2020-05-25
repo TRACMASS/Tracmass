@@ -193,7 +193,7 @@ MODULE mod_pos
         INTEGER  :: jb  ! future meridional index
         INTEGER  :: kb  ! future vertical index
 
-        REAL(DP), INTENT(IN)  :: x0, y0, z0  ! current position (referenced to the box)
+        REAL(DP), INTENT(INOUT)  :: x0, y0, z0  ! current position (referenced to the box)
         REAL(DP), INTENT(OUT) :: x1, y1, z1  ! future position (referenced to the box)
 
         ! New position
@@ -365,6 +365,18 @@ MODULE mod_pos
             ELSE IF (x1 > DBLE(IMT)) THEN
                 x1 = x1 - DBLE(IMT)
             END IF
+        END IF
+
+        IF (jperio /= 0) THEN
+
+          IF( y1 == DBLE(JMTdom-1) ) THEN
+             x1 = DBLE(IMT+3) - x1
+             ib = IDINT(x1) + 1
+             jb = JMTdom - 1
+             ia=ib ; ja=jb
+             x0 = x1; y0 = y1
+          END IF
+
         END IF
 
     END SUBROUTINE update_traj

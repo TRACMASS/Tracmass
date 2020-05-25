@@ -156,9 +156,16 @@ MODULE mod_grid
 
   ! Grid description
   INTEGER, DIMENSION(3)                     :: griddir = 1
-  
+  LOGICAL                                   :: zeroindx
+
+  ! Subdomain grid
+  LOGICAL                                   :: l_subdom
+  INTEGER                                   :: imindom = 1,  imaxdom, jmindom = 1, jmaxdom
+
   ! Regular size
   INTEGER                                   :: imt, jmt, km   ! Size of domain
+  INTEGER                                   :: imtdom, jmtdom ! Size of the original domain
+  INTEGER                                   :: imthalf1, imthalf2, imtjump
   INTEGER                                   :: nst=2          ! Number of time steps stored in memory
   INTEGER                                   :: nsm=1,  nsp=2  ! Past/Present time step
 

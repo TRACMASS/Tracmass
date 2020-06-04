@@ -15,6 +15,7 @@ MODULE mod_init
     USE mod_time
     USE mod_write
     USE mod_domain
+    USE mod_tracervars
 
     IMPLICIT NONE
 
@@ -31,7 +32,7 @@ MODULE mod_init
     ! --------------------------------------------------
 
         ! Setup namelists
-        namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx, physDataDir, physPrefixForm, &
+        namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx,l_onestep, physDataDir, physPrefixForm, &
                                          tGridName, uGridName, vGridName, &
                                          fileSuffix, hs_name, ueul_name, veul_name, &
                                          usgs_name, vsgs_name
@@ -52,7 +53,13 @@ MODULE mod_init
                                          loneparticle, SeedType, ist1,  &
                                          ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
                                          seedDir, seedFile, seedTime, timeFile
-        namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn
+        namelist /INIT_TRACERS/          l_tracers, &
+                                         tracername, tracerunit, tracervarname,&
+                                         traceraction,tracermin, tracermax, &
+                                         tracerdimension
+        namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
+        namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn, &
+                                         tracerchoice, tracere
         namelist /INIT_STREAMFUNCTION/   dirpsi
 
         ! Read namelist
@@ -66,6 +73,8 @@ MODULE mod_init
         READ (8,nml=INIT_RUN_TIME)
         READ (8,nml=INIT_WRITE_TRAJ)
         READ (8,nml=INIT_SEEDING)
+        READ (8,nml=INIT_TRACERS)
+        READ (8,nml=INIT_TRACERS_SEEDING)
         READ (8,nml=INIT_KILLZONES)
         READ (8,nml=INIT_STREAMFUNCTION)
         CLOSE(8)
@@ -132,7 +141,7 @@ MODULE mod_init
         wflux(:,:) = 0.
 #endif
 
-        IF (l_psi) then
+        IF (l_psi) THEN
 
             ALLOCATE( fluxes_xy(imt, jmt, 10), psi_xy(imt, jmt))
             fluxes_xy(:,:,:) = 0.
@@ -141,6 +150,12 @@ MODULE mod_init
             ALLOCATE( fluxes_yz(jmt, km, 10), psi_yz(jmt, km))
             fluxes_yz(:,:,:) = 0.
             psi_yz(:,:) = 0.
+
+            IF (l_tracers) THEN
+              ALLOCATE( fluxes_yr(jmt, resolution, 10, numtracers), psi_yr(jmt, resolution, numtracers))
+              fluxes_yr(:,:,:,:) = 0.
+              psi_yr(:,:,:) = 0.
+            END IF
 
         END IF
 

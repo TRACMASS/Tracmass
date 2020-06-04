@@ -28,13 +28,15 @@ MODULE mod_seed
     USE mod_vertvel
     USE mod_psi
     USE mod_subdomain
+    USE mod_tracervars
 
     IMPLICIT NONE
 
-    INTEGER                                    :: num
+    INTEGER                                    :: num, itrac
     INTEGER                                    :: iist, ijst, ikst
     INTEGER                                    :: ijt,  ikt,  jjt, jkt
     INTEGER                                    :: ji, jii, jj, jjj, jk, jsd
+    INTEGER                                    :: ktracer
     INTEGER                                    :: filestat
     INTEGER                                    :: numsd, landsd=0
     INTEGER                                    :: nsdTim, nsdMax, ntracmax
@@ -86,7 +88,7 @@ MODULE mod_seed
 
                   ! Update the indexes
                   jii = ji; jjj = jj
-                  
+
                   CALL update_subindex(jii,jjj)
 
                   IF (mask(jii,jjj) .ne. 0) THEN
@@ -470,8 +472,22 @@ MODULE mod_seed
 
                         END IF
 
-                        ! TRACERS GO HERE [ADD!]
-                        ! ****************  TRACERS INTERP *****************
+                        ! If tracers are activated, initialise only those defined between the limits imposed by tracer0min and tracermax0
+                        IF (l_tracers) THEN
+                            DO itrac = 1, numtracers
+
+                                ! Depending on the dimensions
+                                ktracer = kb
+                                IF (tracers(itrac)%dimension == '2D') ktracer = 1
+
+                                ! Compute the value of the tracer
+                                tracervalue(itrac) = tracers(itrac)%data(ib,jb,ktracer,nsm)
+
+                                IF ((tracervalue(itrac)<tracer0min(itrac)) .OR. (tracervalue(itrac)>tracer0max(itrac))) THEN
+                                        CYCLE kkkLoop
+                                END IF
+                            END DO
+                        END IF
 
                         ! Update trajectory numbers
                         ntractot = ntractot + 1
@@ -494,12 +510,7 @@ MODULE mod_seed
                         ts = DBLE (ints-1)
                         tt = ts * tseas
 
-                        ! Put the new particle into the vectors trj and nrj ---
-                        ! ---------------------------------------------------------
-                        !trj(1:7,ntrac) = [ x1, y1, z1, trelative, subvol, 0.d0, tt ]
-                        !nrj(1:5,ntrac) = [ ib, jb, kb,  0, IDINT(tfraction)]
-                        !nrj(7,ntrac)=1
-
+                        ! Define the trajectories
                         trajectories(ntrac)%x1 = x1
                         trajectories(ntrac)%y1 = y1
                         trajectories(ntrac)%z1 = z1
@@ -514,8 +525,11 @@ MODULE mod_seed
                         trajectories(ntrac)%nts = IDINT(ts)
                         trajectories(ntrac)%icycle = 1
 
-                        ! LAPLACIAN GOES HERE [ADD!]
-                        ! ******************lapu/lapv definition **************
+                        ! Tracer definition
+                        IF (l_tracers) THEN
+                            ALLOCATE(trajectories(ntrac)%tracerval(numtracers))
+                            trajectories(ntrac)%tracerval(:) = tracervalue
+                        END IF
 
                         !Save initial particle position
                         IF(log_level >= 3) THEN

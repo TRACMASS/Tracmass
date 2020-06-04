@@ -197,7 +197,8 @@ MODULE mod_pos
         REAL(DP), INTENT(OUT) :: x1, y1, z1  ! future position (referenced to the box)
 
         ! New position
-        scrivi=.FALSE.
+        scrivi  = .FALSE.
+        trajdir = 0
 
         ! Eastward grid-cell exit
         IF (ds==dse) THEN
@@ -219,7 +220,11 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
-           IF (l_psi) CALL update_stream(ia, ja, ka, 1, 'xy')
+           ! Trajectory direction
+           trajdir = 1
+
+           ! Streamfunction
+           IF (l_psi) CALL update_stream(ia, ja, trajdir, 'xy')
 
         ! Westward grid-cell exit
         ELSE IF (ds==dsw) THEN
@@ -240,7 +245,11 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
-           IF (l_psi) CALL update_stream(iam, ja, ka, -1, 'xy')
+           ! Trajectory direction
+           trajdir = -1
+
+           ! Streamfunction
+           IF (l_psi) CALL update_stream(iam, ja, trajdir, 'xy')
 
         ! Northward grid-cell exit
         ELSE IF (ds==dsn) THEN
@@ -261,7 +270,11 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
-           IF (l_psi) CALL update_stream(ia, ja, ka, 1, 'yz')
+           ! Trajectory direction
+           trajdir = 1
+
+           ! Streamfunction
+           IF (l_psi) CALL update_stream(ja, ka, trajdir, 'yz')
 
         ! Southward grid-cell exit
         ELSE IF (ds==dss) THEN
@@ -282,7 +295,11 @@ MODULE mod_pos
            IF (ds == dsu) kb = ka + 1
            IF (ds == dsd) kb = ka - 1
 
-           IF (l_psi) CALL update_stream(ia, ja-1, ka, -1, 'yz')
+           ! Trajectory direction
+           trajdir = -1
+
+           ! Streamfunction
+           IF (l_psi) CALL update_stream(ja-1, ka, trajdir, 'yz')
 
         ! Upward grid-cell exit
         ELSE IF (ds==dsu) THEN

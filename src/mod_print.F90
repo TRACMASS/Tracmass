@@ -21,6 +21,7 @@ MODULE mod_print
   USE mod_param
   USE mod_seed
   USE mod_write
+  USE mod_tracervars
 
   IMPLICIT NONE
 
@@ -52,6 +53,7 @@ MODULE mod_print
    ! Prints the main settings of TRACMASS
    !
    ! --------------------------------------------------
+       INTEGER                                      :: itrac
 
        CHARACTER (len=15)                           :: currDate ,currTime, cloneparticle
        CHARACTER (len=5), DIMENSION(4)              :: csubdomain
@@ -128,6 +130,14 @@ MODULE mod_print
        ! Loneparticle
        WRITE(cloneparticle,"(I15)") loneparticle
        IF (loneparticle>0) PRINT *, ' - Running loneparticle: ', ADJUSTL(cloneparticle)
+
+       ! Tracers
+       IF (l_tracers) THEN
+         PRINT *,' - Evaluate the value of these tracers along the trajectories:'
+         DO itrac = 1, numtracers
+           PRINT '(A4,I2,A)','    ',itrac,ADJUSTL('- '//TRIM(tracername(itrac))//' ('//TRIM(tracerunit(itrac))//') ')
+         END DO
+       END IF
 
        ! Streamfunctions
        IF (l_psi) PRINT *,' - Computing streamfunctions.'

@@ -24,12 +24,14 @@ MODULE mod_write
     USE mod_calendar
     USE mod_psi
     USE mod_grid
+    USE mod_tracervars
 
     IMPLICIT NONE
 
     CHARACTER(LEN=200)    :: fullWritePref
     CHARACTER(LEN=200)    :: outDataDir, outDataFile
     CHARACTER(LEN=50)     :: psiformat
+    CHARACTER(LEN=100)    :: outformat
     CHARACTER(LEN=*), PARAMETER                :: reform = "(I8,I3)"
 
     REAL(DP)              :: xw,yw,zw
@@ -39,7 +41,7 @@ MODULE mod_write
     INTEGER               :: numline
     INTEGER               :: ll
     INTEGER               :: lbas
-    INTEGER               :: ilvar
+    INTEGER               :: ilvar, itrac
 
     LOGICAL               :: fileexists
 
@@ -91,6 +93,8 @@ MODULE mod_write
 
         CHARACTER(LEN=*)     :: sel
 
+        REAL(DP)  :: tout
+
         SELECT CASE (TRIM(sel))
 
 
@@ -112,19 +116,50 @@ MODULE mod_write
 
                 CASE(0)
                 ! Include time - tt in seconds
-                WRITE(50,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt
+                IF (l_tracers) THEN
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+                    WRITE(outformat(31:32),"(I2)") numtracers
+
+                    WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt, trajectories(ntrac)%tracerval
+                ELSE
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5))"
+
+                    WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt
+                END IF
+
                 RETURN
 
                 CASE(1)
                 ! Include time - Fraction ts
-                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts
+                IF (l_tracers) THEN
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+                    WRITE(outformat(31:32),"(I2)") numtracers+1
+
+                    WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts, trajectories(ntrac)%tracerval
+                ELSE
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
+
+                    WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts
+                END IF
+
                 RETURN
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar(tt)
-                WRITE(50,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
-                    subvol, dateYear, dateMon, dateDay, dateHour
+                IF (l_tracers) THEN
+                    outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
+                    WRITE(outformat(50:51),"(I2)") numtracers
+
+                    WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
+                        subvol, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
+                ELSE
+                    outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
+
+                    WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
+                        subvol, dateYear, dateMon, dateDay, dateHour
+                END IF
+
                 RETURN
 
             END SELECT
@@ -158,33 +193,60 @@ MODULE mod_write
 
                     CASE(0)
                     ! Include time - tt in seconds
-                    IF (write_frec == 1) THEN
-                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt - dt
+                    tout = tt
+                    IF (write_frec == 1) tout = tt-dt
+
+                    IF (l_tracers) THEN
+                        outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+                        WRITE(outformat(31:32),"(I2)") numtracers
+                        WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout, trajectories(ntrac)%tracerval
                     ELSE
-                      WRITE(51,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt
+                        outformat = "(I8,3(',',F13.5),2(',',F20.5))"
+
+                        WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout
                     END IF
+
                     RETURN
 
                     CASE(1)
                     ! Include time - Fraction ts
-                    IF (write_frec == 1) THEN
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts - dts
+                    tout = ts
+                    IF (write_frec == 1) tout = ts-dts
+
+                    IF (l_tracers) THEN
+                        outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+                        WRITE(outformat(31:32),"(I2)") numtracers+1
+
+                        WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout, trajectories(ntrac)%tracerval
                     ELSE
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts
+                        outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
+
+                        WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout
                     END IF
+
                     RETURN
 
                     CASE(2)
                     ! Include time - YYYY MM DD HH MM SS
                     IF (write_frec == 1) THEN
                       CALL tt_calendar(REAL(NINT(tt - dt),8))
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
-                          subvol, dateYear, dateMon, dateDay, dateHour
                     ELSE
                       CALL tt_calendar(REAL(NINT(tt),8))
-                      WRITE(51,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
-                          subvol, dateYear, dateMon, dateDay, dateHour
                     END IF
+
+                    IF (l_tracers) THEN
+                        outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
+                        WRITE(outformat(50:51),"(I2)") numtracers
+
+                        WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
+                            subvol, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
+                    ELSE
+                        outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
+
+                        WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
+                            subvol, dateYear, dateMon, dateDay, dateHour
+                    END IF
+
                     RETURN
 
                 END SELECT
@@ -208,19 +270,50 @@ MODULE mod_write
 
                 CASE(0)
                 ! Include time - tt in seconds
-                WRITE(52,"(I8,3(',',F13.5),2(',',F20.5))")  ntrac, xw, yw, zw, subvol, tt
+                IF (l_tracers) THEN
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+                    WRITE(outformat(31:32),"(I2)") numtracers
+
+                    WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt, trajectories(ntrac)%tracerval
+                ELSE
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5))"
+
+                    WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt
+                END IF
+
                 RETURN
 
                 CASE(1)
                 ! Include time - Fraction ts
-                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5))")  ntrac, xw, yw, zw, subvol, ts
+                IF (l_tracers) THEN
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+                    WRITE(outformat(31:32),"(I2)") numtracers+1
+
+                    WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts, trajectories(ntrac)%tracerval
+                ELSE
+                    outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
+
+                    WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts
+                END IF
+
                 RETURN
 
                 CASE(2)
                 ! Include time - YYYY MM DD HH MM SS
                 CALL tt_calendar(tt)
-                WRITE(52,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))")  ntrac, xw, yw, zw, &
-                    subvol, dateYear, dateMon, dateDay, dateHour
+                IF (l_tracers) THEN
+                    outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
+                    WRITE(outformat(50:51),"(I2)") numtracers
+
+                    WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
+                        subvol, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
+                ELSE
+                    outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
+
+                    WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
+                        subvol, dateYear, dateMon, dateDay, dateHour
+                END IF
+
                 RETURN
 
             END SELECT
@@ -290,6 +383,8 @@ MODULE mod_write
 
         IF (TRIM(ccase) == "xy") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
         IF (TRIM(ccase) == "yz") OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_psiyz.csv', STATUS='replace')
+        IF (TRIM(ccase) == "yr") OPEN(UNIT=62, FILE = TRIM(fullWritePref)//'_psiyr.csv', STATUS='replace')
+
 
     END SUBROUTINE open_outstream
 
@@ -304,6 +399,7 @@ MODULE mod_write
 
         IF (TRIM(ccase) == "xy") CLOSE(60)
         IF (TRIM(ccase) == "yz") CLOSE(61)
+        IF (TRIM(ccase) == "yr") CLOSE(62)
 
     END SUBROUTINE close_outstream
 
@@ -323,10 +419,18 @@ MODULE mod_write
 
     WRITE(psiformat(8:13),"(I6)") ijk1-1
 
-    DO ilvar = 1, ijk2
-      IF (psicase=='xy') WRITE(60,TRIM(psiformat)) psi_xy(:,ilvar)
-      IF (psicase=='yz') WRITE(61,TRIM(psiformat)) psi_yz(:,ilvar)
-    END DO
+    IF (psicase =='yr') THEN
+        DO itrac = 1, numtracers
+          DO ilvar = 1, ijk2
+            IF (psicase=='yr') WRITE(62,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
+          END DO
+        END DO
+    ELSE
+        DO ilvar = 1, ijk2
+          IF (psicase=='xy') WRITE(60,TRIM(psiformat)) psi_xy(:,ilvar)
+          IF (psicase=='yz') WRITE(61,TRIM(psiformat)) psi_yz(:,ilvar)
+        END DO
+    END IF
 
     END SUBROUTINE write_stream
 

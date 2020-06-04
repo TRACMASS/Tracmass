@@ -27,8 +27,9 @@ MODULE mod_loop
   USE mod_calendar
   USE mod_clock
   USE mod_error
+  USE mod_tracers
 
-  USE mod_loopvars, only: niter, scrivi
+  USE mod_loopvars, only: niter, iloop, scrivi
 
   IMPLICIT NONE
 
@@ -204,6 +205,22 @@ MODULE mod_loop
 
             ! Update time tt and ts
             CALL update_time
+
+            ! Update the value of the tracer
+            IF (l_tracers) THEN
+              CALL update_tracer(ntrac,ia,ja,ka, ib,jb,kb,x1,y1,z1)
+
+              ! If the streamfunctions are computed
+              IF ((l_psi) .AND. (scrivi .EQV. .FALSE.) .AND. (y1==DBLE(ja-1) .OR. y1==DBLE(ja))) THEN
+
+                  DO iloop = 1, numtracers
+                      IF (trajdir ==  1)  CALL update_stream(ja, tracerbin(iloop), trajdir, 'yr', iloop)
+                      IF (trajdir == -1)  CALL update_stream(ja-1, tracerbin(iloop), trajdir, 'yr', iloop)
+                  END DO
+
+              END IF
+
+            END IF
 
             ! End trajectory if outside chosen domain
             CALL kill_zones(nend)

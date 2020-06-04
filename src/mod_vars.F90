@@ -95,6 +95,7 @@ MODULE mod_trajdef
       REAL(DP)                              :: x0,y0,z0,x1,y1,z1  !! positions
       REAL(DP)                              :: tt,t0              !! time
       REAL(DP)                              :: subvol             !! volume (or mass for atm.)
+      REAL(DP),DIMENSION(:), ALLOCATABLE    :: tracerval
 
       LOGICAL                               :: active             !! particle active or not
    END TYPE trajectory
@@ -114,6 +115,7 @@ MODULE mod_loopvars
   REAL(DP)                                  :: subvol     ! Transported mass/vol
 
   INTEGER                                   :: niter      ! number of iterations of a trajectory
+  INTEGER                                   :: iloop      ! tracer loop dummy
 
   LOGICAL                                   :: scrivi     ! Writing flag
 ENDMODULE mod_loopvars
@@ -135,6 +137,9 @@ MODULE mod_traj
 
   ! Error index
   INTEGER                                   :: errCode
+
+  ! Trajectory direction
+  INTEGER                                   :: trajdir = 1
 
   ! Particle positions
   INTEGER                                   :: ia, ja, ka, iam
@@ -198,7 +203,7 @@ MODULE mod_grid
   ! Info about input data
   CHARACTER(LEN=50)                         :: RunID, tGridName, uGridName, vGridName, &
                                                fileSuffix,  hs_name, ueul_name, veul_name, &
-                                               usgs_name, vsgs_name
+                                               usgs_name = '', vsgs_name = ''
 
   CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
                                                zgridFile, dzt_name, dzu_name, dzv_name, &
@@ -210,6 +215,8 @@ MODULE mod_grid
 
   CHARACTER (LEN=23)                        :: Project, Case
   CHARACTER (LEN=200)                       :: projdir="", ormdir=""
+
+  LOGICAL                                   :: l_onestep = .FALSE.
 ENDMODULE mod_grid
 
 ! Time variables
@@ -221,7 +228,7 @@ MODULE mod_time
   INTEGER                                   :: ints=0    ! Time iteration variables
   INTEGER                                   :: intrun    ! Number maximum of time steps
   INTEGER                                   :: nff=1     ! Time arrow 1-forward / -1 backward
-
+  INTEGER                                   :: nctstep
 
   ! Date variables
   LOGICAL                                   :: noleap=.TRUE.  ! Leap year flag
@@ -231,6 +238,7 @@ MODULE mod_time
   INTEGER                                   :: endYear=0, endMon,   endDay
   INTEGER                                   :: endHour,   endMin
   REAL(DP)                                  :: endSec
+
   ! Current date
   INTEGER                                   :: currYear, currMon, currDay
   INTEGER                                   :: currHour, currMin
@@ -286,8 +294,8 @@ MODULE mod_vel
   USE mod_precdef
 
   ! Velocity fields
-  REAL(DP),   ALLOCATABLE, DIMENSION(:,:,:)      :: uvel ,vvel ,wvel
-  REAL(DP)                                   :: uu, um, vv, vm
+  REAL(DP),   ALLOCATABLE, DIMENSION(:,:,:)    :: uvel ,vvel ,wvel
+  REAL(DP)                                     :: uu, um, vv, vm
 
   ! Mass/volume fluxes
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)    :: uflux, vflux
@@ -297,6 +305,59 @@ MODULE mod_vel
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)        :: wflux
 #endif
 ENDMODULE mod_vel
+
+! Define derived type "tracers"
+MODULE mod_tracerdef
+   USE mod_precdef
+
+   TYPE tracer
+      REAL(DP)                              :: minimum, maximum   !! minimum and maximum value of tracer
+
+      CHARACTER(len=100)                    :: name               !! Description of the tracer
+      CHARACTER(len=100)                    :: unit               !! Unit of the tracer
+      CHARACTER(len=100)                    :: action             !! Read/Compute action
+      CHARACTER(len=100)                    :: varname            !! Name of the variable
+      CHARACTER(len=2)                      :: dimension          !! 2D/3D tracer
+
+      REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE :: data           !! Data tracer
+    END TYPE tracer
+END MODULE mod_tracerdef
+
+! Tracers
+MODULE mod_tracervars
+  USE mod_precdef
+  USE mod_tracerdef
+
+  LOGICAL    :: l_tracers = .FALSE.
+
+  ! Number of tracers
+  INTEGER                             :: numtracers = 0
+
+  ! Tracer choice
+  INTEGER, DIMENSION(20)              :: tracerchoice = 999
+
+  ! Tracer characteristics
+  CHARACTER(len=100), DIMENSION(20)   :: tracername = '', tracerunit, &
+                                         tracervarname,traceraction
+
+  CHARACTER(len=2), DIMENSION(20)     :: tracerdimension = '3D'
+
+  REAL(DP), DIMENSION(20)             :: tracermin, tracermax, &
+                                         tracer0min=-999.d0, tracer0max=999.d0, &
+                                         tracere
+  REAL(DP), DIMENSION(:), ALLOCATABLE :: tracervalue
+
+  ! Tracer resolution
+  INTEGER     :: resolution = 501
+
+  REAL(DP), DIMENSION(:), ALLOCATABLE :: dtracervalue
+  INTEGER, DIMENSION(:), ALLOCATABLE  :: tracerbin
+
+  ! Particle arrays
+  TYPE(tracer), ALLOCATABLE, DIMENSION(:) :: tracers
+
+
+END MODULE mod_tracervars
 
 ! Streamfunctions
 MODULE mod_psi
@@ -313,5 +374,9 @@ MODULE mod_psi
   ! Meridional streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_yz
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_yz
+
+  ! Meridional-tracer streamfunction
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:) :: fluxes_yr
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_yr
 
 END MODULE mod_psi

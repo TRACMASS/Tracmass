@@ -9,6 +9,8 @@ PROGRAM TRACMASS
   USE mod_stream
   USE mod_param
   USE mod_subdomain
+  USE mod_tracers
+  USE mod_tracervars
 
   IMPLICIT none
 
@@ -23,6 +25,7 @@ PROGRAM TRACMASS
   ! Read namelist, define the domain and allocate the arrays
   CALL init_namelist
   CALL init_subdomain
+  IF ( l_tracers ) CALL init_tracer
   CALL init_alloc
 
   ! Welcome heading and setup info

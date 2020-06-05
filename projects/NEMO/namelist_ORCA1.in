@@ -1,7 +1,11 @@
 &INIT_GRID_DESCRIPTION
+
         ! Direction of the grid (1 - E->W, S->N, B->U)
         griddir = 1,1,-1
-        
+
+        ! Does the netcdf data start with a zero index?
+        zeroindx = .TRUE.
+
         ! Describe filenames
         physDataDir    = '',                            ! directory of physical data (u,v,T,S,MLD,etc)
         physPrefixForm = 'ORCA1-N406_',
@@ -48,12 +52,20 @@
 
 /
 
+&INIT_GRID_SUBDOMAIN
+      l_subdom    = .FALSE.                             ! Define a subdomain?
+      imindom     = 309,
+      imaxdom     = 359,
+      jmindom     = 20,
+      jmaxdom     = 140,
+/
+
 &INIT_GRID_TIME
      ngcm_step      = 1,                                ! time between two time levels
                                                         ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
      ngcm_unit      = 5,                                ! units of ngcm
                                                         !
-     iter           = 1,                                ! number of subcycles between time levels                                                             ! stopped
+     iter           = 10,                               ! number of subcycles between time levels                                                             ! stopped
 /
 
 &INIT_START_DATE
@@ -140,6 +152,35 @@
       timefile       = '',             ! name of seed file
 /
 
+&INIT_TRACERS
+      l_tracers = .TRUE.               ! Should we evaluate tracers along the trajectories?
+
+      ! Tracer name (description)
+      tracername = 'To','S','MLD'
+      ! Tracer unit (description)
+      tracerunit = 'degC','PSU','m'
+
+      ! Name of the variable in the netcdf (if it's read)
+      tracervarname = 'votemper','vosaline','somxl010'
+
+      ! Action (read or compute)
+      traceraction = 'read','read','read'
+
+      ! Minimum and maximum value of the binning
+      tracermin = -3, 32, 0
+      tracermax = 33, 38, 1000
+
+      ! Dimension of the tracer
+      tracerdimension = 3D, 3D, 2D
+/
+
+&INIT_TRACERS_SEEDING
+      ! minimum and maximum value for seeding
+      ! same order as in tracername
+      tracer0min = 0, 32
+      tracer0max = 10, 38
+/
+
 &INIT_KILLZONES
       timax = 7500 ! time limit for traj [days]
 
@@ -159,6 +200,15 @@
       jens           =  150,         ! south indices of killzones
       jenn           =  300,         ! north indices of killzones
 
+      ! If exitType = 2: killing zone defined by tracer value
+      ! Tracerchoice defines which tracer is used for the killing zone
+      ! it could be different
+      !tracerchoice = 1,2
+      !tracere      = 25,35
+      ! This set up defines a killing zone by the 25C isotherm and the 35psu isohaline
+
+      tracerchoice = 1
+      tracere = 30
 /
 
 &INIT_STREAMFUNCTION

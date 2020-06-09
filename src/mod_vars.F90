@@ -16,6 +16,8 @@
 !!              - mod_time
 !!              - mod_domain
 !!              - mod_vel
+!!              - mod_tracerdef
+!!              - mod_tracervars
 !!              - mod_psi
 !!
 !!---------------------------------------------------------------------------

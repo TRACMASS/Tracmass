@@ -59,7 +59,7 @@ After updating the values of **tt** and **ts**, the new values of **intrpb** and
 mod_error.F90
 -------------
 
-The module **mod_error** check for possible errors in the simulation. If any error is found a diagnostic file with a summary of the error is created. This module contains two subroutines and a private function: **errorCheck**, **write_error** and **errorType**.
+The module **mod_error** check for possible errors in the simulation. If any error is found a diagnostic file with a summary of the error is created. This module contains two subroutines and two private function: **errorCheck**, **write_error**, **errorType**, and **reverse**.
 
 * **errorCheck** check for a possible error defined by **teststr**. The possible errors are listed below:
 
@@ -83,8 +83,11 @@ The module **mod_error** check for possible errors in the simulation. If any err
 
 * If an error is found in a trajectory, the last position and time step will be stored in a *_err.csv* file. The module **write_error** besides writing the number of the trajectory **ntrac**, the last position **x1, y1, z1**, the volume/mass transport **subvol** and the time step; it also gives a short description of the error.
 
+.. note :: The positions are given referenced to the original dataset reference system.
+
 * **errorType** is a private function that gives a short description of the error given by **errorCode**. This output is used by **write_error**.
 
+* **reverse** updates the indexes if the original data's grid does not correspond to the TRACMASS grid set up.
 
 This module contains two subroutines:
 
@@ -113,6 +116,17 @@ The module **mod_getfile** consists on two functions: **get2DfieldNC** to extrac
 
   and *cextend* an optional argument to read 3D fields in v points (an extra j index).
 
+.. note ::
+
+  If the original data is reduced to a subdomain, both functions will only extract data in the selected subdomain. For the case where the subdomain crosses the zonal limit of the original domain, the function will read separately the two subdomains and then join them into a unique subdomain (blue domain).
+
+  .. image:: figs/fig_netcdf.png
+      :width: 500px
+      :align: center
+      :height: 400px
+      :alt: Description of mod_pos
+
+
 This module contains two functions:
 
 .. f:autosubroutine:: get2DfieldNC
@@ -122,7 +136,7 @@ This module contains two functions:
 mod_init.F90
 ------------
 
-The module **mod_init** consists on two subroutines: **init_namelist** that reads the namelist, and **init_alloc** that allocates all the allocatable arrays. More information about the namelist can be found in the *Namelist* chapter.
+The module **mod_init** consists of two subroutines: **init_namelist** that reads the namelist, and **init_alloc** that allocates all the allocatable arrays. More information about the namelist can be found in the *Namelist* chapter.
 
 It contains an internal subroutine **reverse** to adapt the meridional indexes to the TRACMASS reference system.
 
@@ -248,6 +262,10 @@ The module **mod_pos** calculates the new position of a trajectory and the time 
 
 If **ds** is smaller than any of the crossing times and equal to the time stepping, or if the trajectory is inside a convergence zone where all the crossing times are **UNDEF**. The trajectory remains inside the box.
 
+.. note :: If stream functions are computed, this subroutine will transfer the required information to compute geographical streamfunctions.
+
+.. important :: The north fold (**jperio**) is an important feature for original grids that are not based on latitude longitude such as the ORCA grids. The current version includes three possible corrections to the north fold: no correction (0), correction for ORCA1 grids (1) and correction for ORCA025 and ORCA12 grids (2).
+
 This module contains three subroutines:
 
 .. f:autosubroutine:: cross_time
@@ -315,7 +333,7 @@ The **seed** subroutine populates the **trajectory** array that contains the pos
     :width: 500px
     :align: center
     :height: 200px
-    :alt: Description of nqua
+    :alt: Description of num
 
 5 - The specific volume/mass transport of a trajectory **subvol** is computed from **num**.
 
@@ -323,7 +341,10 @@ The **seed** subroutine populates the **trajectory** array that contains the pos
 
 .. warning:: **x1, y1, z1** are computed using the gridbox as a reference.
 
-7 - The position of the trajectory in the gridbox reference system, the trajectory number **ntrac**, the corresponding position index and the mass/volume transported by it is stored in the array **trajectories**.
+7 - If TRACMASS is rerun or run to compute streamfunctions, only the trajectories that exit through a kill zone will be activated.
+Besides, if **l_tracers** is true, the trajectories outside the tracer limits **tracer0min** and **tracer0max** will be deactivated.
+
+8 - The position of the trajectory in the gridbox reference system, the trajectory number **ntrac**, the corresponding position index and the mass/volume transported by it is stored in the array **trajectories**.
 
 The private subroutine **reverse** adjust the seeding indexes to the TRACMASS reference system.
 
@@ -344,16 +365,19 @@ mod_stream.F90
 
 The module **mod_stream.F90** is responsible for computing volume/mass fluxes and compute different stream functions. This module is only called if the main program is run with the *streamfunction* argument on (see chapters *Configuration* and *Main program*). This module contains two subroutines **update_stream** and **compute_stream**.
 
-* The subrotuine **update_stream** is responsible to compute the fluxes and filter them according to the different kill zones. This subroutine has five arguments: *indx, indy, indz* represent the i,j,k indexes of the trajectory, *dir* is the direction of the trajectory (+1 if the trajectory crosses an east/north/up wall, -1 if the trajectory crosses a west/south/down wall). *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction).
+* The subrotuine **update_stream** is responsible to compute the fluxes and filter them according to the different kill zones. This subroutine has five arguments: *index1, index2* represent the indexes of the two coordinates of the streamfunction, *dir* is the direction of the trajectory (in the streamfunction coordinate reference system), *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction, *'yr'*: latitude-tracer streamfunction). The fifth argument is optional and it is used whenever a *'yr'* streamfunction is used to represent the different tracer choice.
 
 .. math::
 
-    F(i,j) = F(i,j) + sign(U) U
+    F(\textbf{index1,index2}[, \textbf{indt}]) = F(\textbf{index1,index2}[, \textbf{indt}]) + dir \cdot \textbf{subvol}
 
 
 * The subroutine **compute_stream** integrates the fluxes computed by **update_stream** to compute the stream functions. The integration direction is defined by **dirpsi**.
 
-  .. math:: \Psi(i,j) = \sum^{j}_{jj=0} F(i,jj) \quad \text{(dirpsi = 1)  or} \quad  \Psi(i,j) = \sum^{jmt}_{jj=j} F(i,jj) \quad \text{(dirpsi = -1)}.
+  .. math::
+    \Psi(\textbf{index1,index2}[, \textbf{indt}]) &=& \sum^{\text{\textbf{index2}}}_{index=0} -F(\textbf{index1},index[, \textbf{indt}]) \quad \text{(dirpsi = 1)} \\
+
+    \Psi(\textbf{index1,index2}[, \textbf{indt}]) &=& \sum_{index=\text{\textbf{index2}}} F(\textbf{index1},index[, \textbf{indt}])  \quad \text{(dirpsi = -1)}.
 |
 
   .. note:: This is an example of how a stream function is computed. Consider two trajectories (A) with the same volume/mass transport. The computed fluxes are shown in (B) where blue represents positive fluxes and orange negative fluxes. Notice that the region where both trajectories cross the same wall the resulting flux is zero as they cancel each other. The resulting stream function (C) is computed integrating in a downward direction.
@@ -362,7 +386,7 @@ The module **mod_stream.F90** is responsible for computing volume/mass fluxes an
       :width: 600px
       :align: center
       :height: 200px
-      :alt: Description of nqua
+      :alt: Description of streamfunctions
 
 
 This module contains two public subroutines:
@@ -370,6 +394,118 @@ This module contains two public subroutines:
 .. f:autosubroutine:: update_stream
 
 .. f:autosubroutine:: compute_stream
+
+
+mod_subdomain.F90
+-----------------
+
+The module **mod_subdomain.F90** is responsible to define a subdomain and updating the indexes according to the new domain. Defining a subdomain is useful to run TRACMASS with high resolution data especially if the area of study does not cover the whole original domain. Two types of subdomain can be declared: a regular box (**imindom** < **imaxdom**) and a split box (**imaxdom** < **imindom**).
+
+.. image:: figs/fig_subdomain_1.png
+  :width: 600px
+  :align: center
+  :height: 175px
+  :alt: Description of subdomains
+
+.. note :: The subdomain is only defined in the longitude-latitude space.
+
+It consists of two subroutines **init_subdomain** and **update_subindex**:
+
+* The subroutine **init_subdomain** defines the size of the new subdomain. If a subdomain is chosen (**l_subdomain** is true) the new size of the domain is defined as:
+
+.. table::
+  :align: center
+
+  +-------------------+-------------------------------------------+--------------------------------+
+  | *Subdomain type*  |*zonal dimension* (**imt**)                |*meridional dimension* (**jmt**)|
+  +-------------------+-------------------------------------------+--------------------------------+
+  |Regular box        |**imaxdom** - **imindom** + 1              |**jmaxdom** - **jmindom** + 1   |
+  +-------------------+-------------------------------------------+--------------------------------+
+  |Split box          |**imtdom** + **imaxdom**  - **imindom** + 1|**jmaxdom** - **jmindom** + 1   |
+  +-------------------+-------------------------------------------+--------------------------------+
+
+..
+
+  Besides, once the subdomain is declared a kill zone is imposed around the boundaries of the subdomain. To avoid problems with the possible kill zones defined by the user in **kill_zones.F90** the subdomain kill zones are declared for the indexes 7,8,9 and 10.
+
+.. image:: figs/fig_subdomain_2.png
+  :width: 400px
+  :align: center
+  :height: 300px
+  :alt: Description of subdomains
+
+* The subroutine **update_subindex** updates the subindexes before trajectories are seeded. The indexes are updated using **imindom** and **jmindom** as referenced. There is an special case for the *Split box* case.
+
+.. table::
+  :align: center
+
+  +-------------------+-------------------------------------------------------+---------------------------+
+  | *Subdomain type*  |*zonal index* (**ji**)                                 |*meridional index* (**jj**)|
+  +-------------------+-------------------------------------------------------+---------------------------+
+  |Regular box        |**ji** - **imindom** + 1                               |**jj** - **jmindom** + 1   |
+  +-------------------+-------------------------------------------------------+---------------------------+
+  |Split box          |**ji** - **imindom** + 1    (if **imindom** <= **ji** )|**jj** - **jmindom** + 1   |
+  +                   +-------------------------------------------------------+                           +
+  |                   |**ji** - **imtdom** - **imindom** + 1  (otherwise)     |                           |
+  +-------------------+-------------------------------------------------------+---------------------------+
+
+This module contains two subroutines:
+
+.. f:autosubroutine:: init_subdomain
+
+.. f:autosubroutine:: update_subindex
+
+
+mod_tracers.F90
+---------------
+
+If TRACMASS is run with tracers (**l_tracers** is true), the module **mod_tracers.F90** contains all the subroutines needed to initialise, allocate, compute and update tracers.
+
+* **init_tracers** initialise the **tracers** array from the information provided in the namelist. This information consists of a short description of the tracer (**name**), **units**, whether the tracer is read from an input file ( **action** =='read') or computed in TRACMMASS ( **action** ='compute'). If the tracer is read, the name of the variable in the input file is given by **varname** and the number of **dimension**-s.
+
+.. important :: To compute stream functions it is important to define the lower (**minimum**) and the upper (**maximum**) limit of the tracer coordinate.
+
+
+* **update_tracers** updates the value of the tracer in the new position (computed by **update_traj**). The tracers are updated using the nearest point approach where trajectory stores the value of the tracer in the nearest T point. If the trajectory crosses a grid wall the tracer value is the mean value between the two nearest T points. A time interpolation is computed before the spatial interpolation.
+
+.. image:: figs/fig_tracers.png
+  :width: 275px
+  :align: center
+  :height: 250px
+  :alt: Description of tracer interpolation
+
+* The private subroutine **tracers_default** assigns default values to the **tracers** array for the most common tracers. The tracers included in this subroutine are:
+
+.. table::
+  :align: center
+
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | **name** |**unit**|**minimum**|**maximum**|**action**|**varname**| Descripition              |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | To       | degC   |  -3       | 33        | read     | T         | Temperature (Ocean)       |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | Ta       | K      |  173      | 223       | read     | T         | Temperature (Atmosphere)  |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | Tp       | K      |  173      | 223       | read     | Tp        | Potential temperature     |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | S        | g kg-1 |  32       | 38        | read     | S         | Salinity                  |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | q        | g kg-1 |  0        | 25        | read     | q         | Specific humidity         |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | sigma0   | kg m-3 |  19       | 29        | compute  |           | Sea water density (sigma0)|
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | p        | hPa    |  0        | 1100      | compute  |           | Atmospheric pressure      |
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+
+
+This module contains two public subroutines and a private subroutine:
+
+.. f:autosubroutine:: init_tracer
+
+.. f:autosubroutine:: update_tracer
+
+.. f:autosubroutine:: tracers_default
+
 
 mod_vars.F90
 ------------
@@ -397,6 +533,10 @@ mod_vars.F90
 - **mod_domain**: defines the variables to describe the limits of the domain where the trajectory is activated.
 
 - **mod_vel**: the volume/mass fluxes both horizontal and vertical are defined here.
+
+- **mod_trajdef**: the derived TYPE **tracers** is defined in this module.
+
+- **mod_tracervars**: the variables to describe tracers are defined here.
 
 - **mod_psi**: defines the variables to describe the stream functions.
 

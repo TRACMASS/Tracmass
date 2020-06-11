@@ -138,13 +138,13 @@ MODULE mod_init
           uvel(:,:,:) = 0.
           vvel(:,:,:) = 0.
 
-  #if defined w_explicit
+#if defined w_explicit
           ALLOCATE ( wflux(imt ,jmt ,0:km, nst) )
           wflux(:,:,:,:) = 0.
-  #else
+#else
           ALLOCATE ( wflux(0:km, nst))
           wflux(:,:) = 0.
-  #endif
+#endif
 
           IF (l_psi) THEN
 

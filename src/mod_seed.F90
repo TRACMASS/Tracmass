@@ -280,7 +280,6 @@ MODULE mod_seed
             trajectories(:)%icycle = 0
             trajectories(:)%active = .TRUE.
             trajectories(:)%lbas = 0
-            trajectories(:)%traceval = 0.
 
         END SUBROUTINE init_seed
 

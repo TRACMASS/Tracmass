@@ -22,6 +22,8 @@ MODULE mod_getfile
 
   INTEGER                                    :: ierr, varid,ncid
 
+  PRIVATE :: error_getfieldNC
+
   CONTAINS
 
       FUNCTION get2DfieldNC(fieldFile ,varName, start2D, count2D, cextend)
@@ -51,9 +53,9 @@ MODULE mod_getfile
           END IF
 
           ierr=NF90_OPEN(TRIM(fieldFile) ,NF90_NOWRITE ,ncid)
-          IF(ierr .NE. 0) STOP 1
+          IF(ierr .NE. 0) CALL error_getfieldNC(1,fieldFile,varName)
           ierr=NF90_INQ_VARID(ncid ,varName ,varid)
-          IF(ierr .NE. 0) STOP 2
+          IF(ierr .NE. 0) CALL error_getfieldNC(2,fieldFile,varName)
 
           IF ( (l_subdom) .AND. (imindom > imaxdom) ) THEN
               start2D(1) = imindom; count2D(1) = imthalf1
@@ -62,8 +64,8 @@ MODULE mod_getfile
               ierr=NF90_GET_VAR(ncid ,varid ,field(imthalf1+1:imt,:), start2D, count2D )
           ELSE
               ierr=NF90_GET_VAR(ncid ,varid ,field, start2D, count2D )
-              IF(ierr .NE. 0) STOP 3
           END IF
+          IF(ierr .NE. 0) CALL error_getfieldNC(3,fieldFile,varName)
 
           ierr = NF90_GET_ATT(ncid, varid,"scale_factor", scale_factor)
           IF(ierr .NE. 0) scale_factor = 1.0
@@ -71,7 +73,7 @@ MODULE mod_getfile
           IF(ierr .NE. 0) add_offset = 0.0
 
           ierr=NF90_CLOSE(ncid)
-          IF(ierr .NE. 0) STOP 4
+          IF(ierr .NE. 0) CALL error_getfieldNC(4,fieldFile,varName)
 
           get2DfieldNC(:,:) = field(:,:)*scale_factor + add_offset
 
@@ -127,9 +129,9 @@ MODULE mod_getfile
            END IF
 
            ierr=NF90_OPEN(TRIM(fieldFile), NF90_NOWRITE, ncid)
-           IF(ierr .NE. 0) STOP 1
+           IF(ierr .NE. 0) CALL error_getfieldNC(1,fieldFile,varName)
            ierr=NF90_INQ_VARID(ncid, varName, varid)
-           IF(ierr .NE. 0) STOP 2
+           IF(ierr .NE. 0) CALL error_getfieldNC(2,fieldFile,varName)
            IF ( (l_subdom) .AND. (imindom > imaxdom) ) THEN
 
                IF (stcase == 'st') THEN
@@ -153,12 +155,14 @@ MODULE mod_getfile
                  ss(4) = 1; cc(4) = imthalf2
                  ierr=NF90_GET_VAR(ncid ,varid ,field4(:,:,:,imthalf1+1:imt), ss, cc )
                END IF
-               IF(ierr .NE. 0) STOP 3
+
            ELSE
                IF (stcase == 'st' .OR. stcase == 'st_r') ierr=NF90_GET_VAR(ncid, varid, field, ss, cc)
                IF (stcase == 'ts' .OR. stcase == 'ts_r') ierr=NF90_GET_VAR(ncid, varid, field4, ss, cc)
-               IF(ierr .NE. 0) STOP 3
+
            END IF
+
+           IF(ierr .NE. 0) CALL error_getfieldNC(3,fieldFile,varName)
 
            ierr = NF90_GET_ATT(ncid, varid,"scale_factor", scale_factor)
            IF(ierr .NE. 0) scale_factor = 1.0
@@ -166,7 +170,7 @@ MODULE mod_getfile
            IF(ierr .NE. 0) add_offset = 0.0
 
            ierr=NF90_CLOSE(ncid)
-           IF(ierr .NE. 0) STOP 4
+           IF(ierr .NE. 0) CALL error_getfieldNC(4,fieldFile,varName)
 
            IF (stcase == 'st') THEN
               get3DfieldNC(:,:,:) = field(:,:,:)*scale_factor + add_offset
@@ -181,7 +185,45 @@ MODULE mod_getfile
               END DO
            END IF
 
-        end function get3DfieldNC
+        END FUNCTION get3DfieldNC
+
+
+        SUBROUTINE error_getfieldNC(ierror,fieldFile,varName)
+        ! --------------------------------------------------
+        !
+        ! Purpose:
+        ! Describe the possible errors after reading the netCDF file
+        !
+        ! --------------------------------------------------
+
+          INTEGER, INTENT(IN)              :: ierror
+          CHARACTER (len=*), INTENT(IN)    :: fieldFile ,varName
+
+          SELECT CASE(ierror)
+
+              CASE(1)
+                  PRINT*,'ERROR:'
+                  PRINT*,'Could not find the following file:',TRIM(fieldFile)
+                  STOP
+              CASE(2)
+                  PRINT*,'ERROR:'
+                  PRINT*,'Could not find the following variable',TRIM(varName)
+                  PRINT*,'in file', TRIM(fieldFile)
+                  STOP
+              CASE(3)
+                  PRINT*,'ERROR:'
+                  PRINT*,'The dimensions of variable',TRIM(varName),' do not match'
+                  STOP
+              CASE(4)
+                  PRINT*,'ERROR:'
+                  PRINT*,'Could not close the following file:',TRIM(fieldFile)
+                  STOP
+              CASE DEFAULT
+                RETURN
+
+          END SELECT
+
+        END SUBROUTINE error_getfieldNC
 
 #endif
 END MODULE mod_getfile

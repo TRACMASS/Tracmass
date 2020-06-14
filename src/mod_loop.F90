@@ -55,7 +55,7 @@ MODULE mod_loop
     dstep = 1.d0 / DBLE(iter)
     dtmin = dstep * tseas
 
-    CALL tt_calendar(0.d0)
+    CALL update_calendar()
 
     ! Read fields
     CALL read_field
@@ -64,8 +64,7 @@ MODULE mod_loop
     ! =======================================================================
     intsTimeLoop: DO ints=1, intrun-1
 
-        tf = nff*ints*tseas
-        CALL tt_calendar(tf)
+        CALL update_calendar()
 
         ! Read fields
         CALL read_field
@@ -257,8 +256,6 @@ MODULE mod_loop
         IF (ntractot /= 0 .AND. ntractot - nout - nerror == 0) THEN
            EXIT intsTimeLoop
         END IF
-
-        CALL update_calendar
 
     END DO intsTimeLoop
 

@@ -33,7 +33,7 @@ MODULE mod_calendar
      !
      ! Method:
      ! Populate the daysInMonth array.
-     ! Set currDay,currHour etc to startDay,startHour
+     ! Set startDay,startHour to futDay,futHour etc
      !
      ! --------------------------------------------------
 
@@ -63,12 +63,12 @@ MODULE mod_calendar
            END DO
         END IF
 
-        currSec  = startSec
-        currMin  = startMin
-        currHour = startHour
-        currDay  = startDay
-        currMon  = startMon
-        currYear = startYear
+        futSec  = startSec
+        futMin  = startMin
+        futHour = startHour
+        futDay  = startDay
+        futMon  = startMon
+        futYear = startYear
 
         iyear = 1
         ! For forward trajectories, we need the current month to calculate step length
@@ -76,16 +76,16 @@ MODULE mod_calendar
         ! E.g. if we start 1 Feb, currStep is 28 days for fwd trajs
         ! but currStep is 31 days for backwd trajs (duration of Jan)
         IF (nff > 0) THEN
-           imon = currMon
+           imon = futMon
         ELSE IF (nff < 0) THEN
-           imon = currMon - 1
+           imon = futMon - 1
            IF (imon <= 0) THEN
               imon = 12
            END IF
         END IF
 
         IF (log_level >=3) THEN
-           print*,'Before setting first time step. curryear, mon,day, iyear, imon ',currYear,currMon,currDay,iyear,imon
+           print*,'Before setting first time step. futyear, mon,day, iyear, imon ',futYear,futMon,futDay,iyear,imon
         END IF
 
         ! Find current step (secs)
@@ -98,9 +98,9 @@ MODULE mod_calendar
         ELSE IF (ngcm_unit == 4) THEN ! days
            currStep = ngcm_step * 24 * 60 * 60
         ELSE IF (ngcm_unit == 5) THEN ! months
-           currStep = daysInMonth(currYear,imon) * 24 * 60 * 60
+           currStep = daysInMonth(futYear,imon) * 24 * 60 * 60
         ELSE IF (ngcm_unit == 6) THEN ! years
-           currStep = SUM(daysInMonth(currYear,:)) * 24 * 60 * 60
+           currStep = SUM(daysInMonth(futYear,:)) * 24 * 60 * 60
         ELSE
            PRINT*," Error [init_calendar]"
            PRINT*," ================================================="
@@ -143,7 +143,7 @@ MODULE mod_calendar
 
         endYear = currYear
         endMon  = currMon
-        endDay = currDay
+        endDay  = currDay
         endHour = currHour
         endMin  = currMin
         endSec  = currSec
@@ -152,7 +152,7 @@ MODULE mod_calendar
 
      END SUBROUTINE end_calendar
 
-     SUBROUTINE update_calendar
+     SUBROUTINE update_calendar()
      ! ---------------------------------------------------
      !
      ! Purpose:
@@ -169,6 +169,10 @@ MODULE mod_calendar
             PRINT*,' entering update_calendar '
          END IF
 
+         ! Update calendar
+         currSec = futSec; currMin = futMin; currHour = futHour
+         currDay = futDay; currMon = futMon; currYear = futYear
+
          ! see comment for init_calendar for explanation of the following lines
          ! iyear is corrected if loopYear is True
          IF (nff > 0) THEN
@@ -183,7 +187,7 @@ MODULE mod_calendar
          END IF
 
          IF (log_level >= 3) THEN
-            print*,'b4 update calendar',currYear,currMon,currDay,iyear,imon
+            print*,'b4 update calendar',futYear,futMon,futDay,iyear,imon
          END IF
 
          ! Find number of minutes to add
@@ -212,30 +216,30 @@ MODULE mod_calendar
          ngcm = currStep / (60*60) ! hours
 
          ! Now update the time and date
-         currSec  = currSec + currStep * nff
+         futSec  = currSec + currStep * nff
 
          IF (log_level >= 3) THEN
             PRINT*,' set up currStep, ngcm ',currStep,ngcm
          END IF
 
-         ! If currSec > 60 we update the minutes,
-         ! and hours etc until we have currSec < 60 again
-         DO WHILE (currSec >= 60)
+         ! If futSec > 60 we update the minutes,
+         ! and hours etc until we have futSec < 60 again
+         DO WHILE (futSec >= 60)
 
-            currSec = currSec - 60
-            currMin = currMin + 1
-            IF (currMin >= 60) THEN
-               currMin = currMin - 60
-               currHour = currHour + 1
-               IF (currHour >= 24) THEN
-                  currHour = currHour - 24
-                  currDay  = currDay + 1
-                  IF (currDay > daysInMonth(currYear,currMon)) THEN
-                     currDay = currDay - daysInMonth(currYear,currMon)
-                     currMon = currMon + 1
-                     IF (currMon > 12) THEN
-                        currMon = currMon - 12
-                        currYear = currYear + 1
+            futSec = futSec - 60
+            futMin = futMin + 1
+            IF (futMin >= 60) THEN
+               futMin = futMin - 60
+               futHour = futHour + 1
+               IF (futHour >= 24) THEN
+                  futHour = futHour - 24
+                  futDay  = futDay + 1
+                  IF (futDay > daysInMonth(futYear,futMon)) THEN
+                     futDay = futDay - daysInMonth(futYear,futMon)
+                     futMon = futMon + 1
+                     IF (futMon > 12) THEN
+                        futMon = futMon - 12
+                        futYear = futYear + 1
                         iyear = iyear + 1
                      END IF
                   END IF
@@ -245,51 +249,52 @@ MODULE mod_calendar
          END DO
 
          IF (loopYears) THEN
-            IF (currYear > loopEndYear .and. nff > 0) THEN
+            IF (futYear > loopEndYear .and. nff > 0) THEN
                IF (log_level >= 3) THEN
-                  PRINT*,' currYear > loopEndYear. Going back to loopStartYear '
+                  PRINT*,' futYear > loopEndYear. Going back to loopStartYear '
                END IF
-               currYear = loopStartYear
+               futYear = loopStartYear
                loopIndex = loopIndex + 1
             END IF
          END IF
 
-         ! If currSec < 0 (backward trajs) we update the minutes,
-         ! and hours etc until we have currSec >= 0 again
-         DO WHILE (currSec < 0)
-            currSec = currSec + 60
-            currMin = currMin - 1
-            IF (currMin < 0) THEN
-               currMin = currMin + 60
-               currHour = currHour - 1
-               IF (currHour < 0) THEN
-                  currHour = currHour + 24
-                  currDay  = currDay - 1
-                  IF (currDay <= 0) THEN
-                     currMon = currMon - 1
-                     IF (currMon <= 0) THEN
-                        currMon = currMon + 12
-                        currYear = currYear - 1
+         ! If futSec < 0 (backward trajs) we update the minutes,
+         ! and hours etc until we have futSec >= 0 again
+         DO WHILE (futSec < 0)
+            futSec = futSec + 60
+            futMin = futMin - 1
+            IF (futMin < 0) THEN
+               futMin = futMin + 60
+               futHour = futHour - 1
+               IF (futHour < 0) THEN
+                  futHour = futHour + 24
+                  futDay  = futDay - 1
+                  IF (futDay <= 0) THEN
+                     futMon = futMon - 1
+                     IF (futMon <= 0) THEN
+                        futMon = futMon + 12
+                        futYear = futYear - 1
                         iyear = iyear + 1
                      END IF
-                     currDay = currDay + daysInMonth(currYear,currMon)
+                     futDay = futDay + daysInMonth(futYear,futMon)
                   END IF
                END IF
             END IF
          END DO
 
          IF (loopYears) THEN
-            IF (currYear < loopEndYear .and. nff < 0) THEN
+            IF (futYear < loopEndYear .and. nff < 0) THEN
                IF (log_level >= 3) THEN
-                  PRINT*,' currYear < loopEndYear. Going back to loopStartYear '
+                  PRINT*,' futYear < loopEndYear. Going back to loopStartYear '
                END IF
-               currYear = loopStartYear
+               futYear = loopStartYear
                loopIndex = loopIndex + 1
             END IF
          END IF
+
 
          IF (log_level >= 3) THEN
-            print*,'af update calendar',currYear,currMon,currDay,iyear
+            print*,'af update calendar',futYear,futMon,futDay,iyear
          END IF
 
          IF (log_level >= 5) THEN

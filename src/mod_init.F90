@@ -64,7 +64,7 @@ MODULE mod_init
                                            tracerdimension
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
           namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn, &
-                                           tracerchoice, tracere
+                                           tracerchoice, tracere, maxormin
           namelist /INIT_STREAMFUNCTION/   dirpsi
 
           ! Read namelist

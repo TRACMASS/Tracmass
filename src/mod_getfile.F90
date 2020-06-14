@@ -203,20 +203,20 @@ MODULE mod_getfile
 
               CASE(1)
                   PRINT*,'ERROR:'
-                  PRINT*,'Could not find the following file:',TRIM(fieldFile)
+                  PRINT*,'Could not find the following file: ',TRIM(fieldFile)
                   STOP
               CASE(2)
                   PRINT*,'ERROR:'
-                  PRINT*,'Could not find the following variable',TRIM(varName)
+                  PRINT*,'Could not find the following variable ',TRIM(varName)
                   PRINT*,'in file', TRIM(fieldFile)
                   STOP
               CASE(3)
                   PRINT*,'ERROR:'
-                  PRINT*,'The dimensions of variable',TRIM(varName),' do not match'
+                  PRINT*,'The dimensions of variable ',TRIM(varName),' do not match'
                   STOP
               CASE(4)
                   PRINT*,'ERROR:'
-                  PRINT*,'Could not close the following file:',TRIM(fieldFile)
+                  PRINT*,'Could not close the following file: ',TRIM(fieldFile)
                   STOP
               CASE DEFAULT
                 RETURN

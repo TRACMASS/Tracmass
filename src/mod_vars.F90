@@ -245,6 +245,13 @@ MODULE mod_time
   INTEGER                                   :: currYear, currMon, currDay
   INTEGER                                   :: currHour, currMin
   REAL(DP)                                  :: currSec
+
+  ! Future dates
+  INTEGER                                   :: futYear, futMon, futDay
+  INTEGER                                   :: futHour, futMin
+  REAL(DP)                                  :: futSec
+
+  ! Temporary or calendar dates
   INTEGER                                   :: tempYear, tempMon, tempDay
   INTEGER                                   :: tempHour, tempMin
   REAL(DP)                                  :: tempSec
@@ -336,7 +343,7 @@ MODULE mod_tracervars
   INTEGER                             :: numtracers = 0
 
   ! Tracer choice
-  INTEGER, DIMENSION(20)              :: tracerchoice = 999
+  INTEGER, DIMENSION(20)              :: tracerchoice = 999, maxormin = 1
 
   ! Tracer characteristics
   CHARACTER(len=100), DIMENSION(20)   :: tracername = '', tracerunit, &

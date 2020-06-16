@@ -355,9 +355,7 @@ MODULE mod_pos
           ! Shortest time is the time-steping
           ELSE IF (ds==dsc .OR. ds==dsmin) THEN
              scrivi=.TRUE.
-
-             IF (ds<1e-8) scrivi=.FALSE.
-
+             
              ! If there is no spatial solution, i.e. a convergence zone
              IF(dse==UNDEF .AND. dsw==UNDEF .AND. dsn==UNDEF .AND. &
                 dss==UNDEF .AND. dsu==UNDEF .AND. dsd==UNDEF ) THEN
@@ -387,8 +385,7 @@ MODULE mod_pos
           IF (jperio /= 0) THEN
 
             IF( y1 == DBLE(JMTdom-1) ) THEN
-               IF (jperio == 1) x1 = DBLE(IMT+1) - x1
-               IF (jperio > 1)  x1 = DBLE(IMT+2) - x1
+               x1 = DBLE(IMT+2) - x1
                ib = IDINT(x1) + 1
                jb = JMTdom - 1
                ia=ib ; ja=jb

@@ -384,6 +384,8 @@ MODULE mod_write
           IF (TRIM(ccase) == "xy") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
           IF (TRIM(ccase) == "yz") OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_psiyz.csv', STATUS='replace')
           IF (TRIM(ccase) == "yr") OPEN(UNIT=62, FILE = TRIM(fullWritePref)//'_psiyr.csv', STATUS='replace')
+          IF (TRIM(ccase) == "rr") OPEN(UNIT=63, FILE = TRIM(fullWritePref)//'_psirr1.csv', STATUS='replace')
+          IF (TRIM(ccase) == "rr") OPEN(UNIT=64, FILE = TRIM(fullWritePref)//'_psirr2.csv', STATUS='replace')
 
 
       END SUBROUTINE open_outstream
@@ -400,6 +402,8 @@ MODULE mod_write
           IF (TRIM(ccase) == "xy") CLOSE(60)
           IF (TRIM(ccase) == "yz") CLOSE(61)
           IF (TRIM(ccase) == "yr") CLOSE(62)
+          IF (TRIM(ccase) == "rr") CLOSE(63)
+          IF (TRIM(ccase) == "rr") CLOSE(64)
 
       END SUBROUTINE close_outstream
 
@@ -422,8 +426,13 @@ MODULE mod_write
       IF (psicase =='yr') THEN
           DO itrac = 1, numtracers
             DO ilvar = 1, ijk2
-              IF (psicase=='yr') WRITE(62,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
+              WRITE(62,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
             END DO
+          END DO
+      ELSE IF (psicase == 'rr') THEN
+          DO ilvar = 1, ijk2
+             WRITE(63,TRIM(psiformat)) psi_rr(:,ilvar,1)
+             WRITE(64,TRIM(psiformat)) psi_rr(:,ilvar,2)
           END DO
       ELSE
           DO ilvar = 1, ijk2

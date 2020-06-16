@@ -359,8 +359,8 @@ MODULE mod_tracervars
   ! Tracer resolution
   INTEGER     :: resolution = 501
 
-  REAL(DP), DIMENSION(:), ALLOCATABLE :: dtracervalue
-  INTEGER, DIMENSION(:), ALLOCATABLE  :: tracerbin
+  REAL(DP), DIMENSION(:), ALLOCATABLE   :: dtracervalue
+  INTEGER, DIMENSION(:,:), ALLOCATABLE  :: tracerbin
 
   ! Particle arrays
   TYPE(tracer), ALLOCATABLE, DIMENSION(:) :: tracers
@@ -387,5 +387,9 @@ MODULE mod_psi
   ! Meridional-tracer streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:) :: fluxes_yr
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_yr
+
+  ! Meridional-tracer streamfunction
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:) :: fluxes_rr
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_rr
 
 END MODULE mod_psi

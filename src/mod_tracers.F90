@@ -39,7 +39,7 @@ MODULE mod_tracers
 
         ! Allocate the tracer array
         ALLOCATE(tracers(numtracers), tracervalue(numtracers))
-        ALLOCATE(tracerbin(numtracers),dtracervalue(numtracers))
+        ALLOCATE(tracerbin(numtracers,2),dtracervalue(numtracers))
 
         ! Assigned default values
         CALL tracers_default
@@ -119,10 +119,11 @@ MODULE mod_tracers
           tracervalue(itrac) = (intrpg*tm + intrpr*tu)
 
           ! Tracerbins
-          tracerbin(itrac) =  NINT((tracervalue(itrac) - tracers(itrac)%minimum)/dtracervalue(itrac)) + 1
+          tracerbin(itrac,1) =  tracerbin(itrac,2)
+          tracerbin(itrac,2) =  NINT((tracervalue(itrac) - tracers(itrac)%minimum)/dtracervalue(itrac)) + 1
 
-          tracerbin(itrac) = MAX(1,tracerbin(itrac))
-          tracerbin(itrac) = MIN(resolution,tracerbin(itrac))
+          tracerbin(itrac,2) = MAX(1,tracerbin(itrac,2))
+          tracerbin(itrac,2) = MIN(resolution,tracerbin(itrac,2))
 
         END DO
 

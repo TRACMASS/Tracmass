@@ -23,7 +23,7 @@ MODULE mod_stream
 
     CONTAINS
 
-      SUBROUTINE update_stream(index1, index2, dir, psicase, indt)
+      SUBROUTINE update_stream(index1, index2, dir, psicase, indt1, indt2)
       ! --------------------------------------------------
       !
       ! Purpose:
@@ -32,8 +32,9 @@ MODULE mod_stream
       ! --------------------------------------------------
 
       INTEGER, INTENT(IN)           :: index1, index2, dir
-      INTEGER, INTENT(IN), OPTIONAL :: indt
+      INTEGER, INTENT(IN), OPTIONAL :: indt1, indt2
       CHARACTER(LEN=2), INTENT(IN)  :: psicase
+      INTEGER                       :: indm
 
       ilvar2 = trajectories(ntrac)%lbas
 
@@ -43,9 +44,24 @@ MODULE mod_stream
          IF (psicase=='yz') fluxes_yz(index1,index2,ilvar2) = fluxes_yz(index1,index2,ilvar2) + dir*subvol
 
          ! Geographical + tracer
-         IF (psicase=='yr' .AND. PRESENT(indt)) THEN
-            fluxes_yr(index1,index2,ilvar2,indt) = fluxes_yr(index1,index2,ilvar2,indt) + dir*subvol
+         IF (psicase=='yr' .AND. PRESENT(indt1)) THEN
+            fluxes_yr(index1,index2,ilvar2,indt1) = fluxes_yr(index1,index2,ilvar2,indt1) + dir*subvol
          END IF
+
+         ! Tracer-tracer equation
+         IF (psicase=='rr' .AND. PRESENT(indt1) .AND. PRESENT(indt2)) THEN
+
+            ! Isohaline tracer 2
+            DO indm = index1, index2-1
+                fluxes_rr(indm,indt1,ilvar2,indt2) = fluxes_rr(indm,indt1,ilvar2,indt2) + subvol
+            END DO
+
+            DO indm = index2, index1-1
+                fluxes_rr(indm,indt1,ilvar2,indt2) = fluxes_rr(indm,indt1,ilvar2,indt2) - subvol
+            END DO
+
+         END IF
+
       END IF
 
       END SUBROUTINE update_stream
@@ -66,6 +82,7 @@ MODULE mod_stream
       CALL open_outstream('yz')
 
       IF (l_tracers) CALL open_outstream('yr')
+      IF (l_tracers) CALL open_outstream('rr')
 
       PRINT*, ' * Computing streamfunctions'
       DO ilvar1 = 1, 9
@@ -84,6 +101,11 @@ MODULE mod_stream
                         psi_yr(:,ilvar2,ilvar3) = psi_yr(:,ilvar2-1,ilvar3) - fluxes_yr(:,ilvar2,ilvar1+1,ilvar3)
                       END IF
                   END DO
+
+                  ! Tracer+tracer Streamfunctions
+                  psi_rr(:,ilvar2,1) = psi_rr(:,ilvar2-1,1) - fluxes_rr(:,ilvar2,ilvar1+1,1)
+                  psi_rr(ilvar2,:,2) = psi_rr(ilvar2-1,:,2) - fluxes_rr(ilvar2,:,ilvar1+1,2)
+
               END DO
           ELSE IF (dirpsi(ilvar1) == -1) THEN
               DO ilvar2 = MAX(jmt-1,km-1,resolution-1), 1, -1
@@ -97,12 +119,18 @@ MODULE mod_stream
                         psi_yr(:,ilvar2, ilvar3) = psi_yr(:,ilvar2+1, ilvar3) + fluxes_yr(:,ilvar2,ilvar1+1, ilvar3)
                       END IF
                   END DO
+
+                  ! Tracer+tracer Streamfunctions
+                  psi_rr(:,ilvar2,1) = psi_rr(:,ilvar2+1,1) + fluxes_rr(:,ilvar2,ilvar1+1,1)
+                  psi_rr(ilvar2,:,2) = psi_rr(ilvar2+1,:,2) + fluxes_rr(ilvar2,:,ilvar1+1,2)
+
               END DO
           END IF
 
           CALL write_stream(imt, jmt,'xy')
           CALL write_stream(jmt,  km,'yz')
           IF (l_tracers) CALL write_stream(jmt,  resolution,'yr')
+          IF (l_tracers) CALL write_stream(resolution,  resolution,'rr')
 
       END DO
 
@@ -110,6 +138,7 @@ MODULE mod_stream
       CALL close_outstream('xy')
       CALL close_outstream('yz')
       IF (l_tracers) CALL close_outstream('yr')
+      IF (l_tracers) CALL close_outstream('rr')
 
       END SUBROUTINE compute_stream
 

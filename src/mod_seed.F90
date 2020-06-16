@@ -33,7 +33,7 @@ MODULE mod_seed
     IMPLICIT NONE
 
     INTEGER                                    :: num, itrac
-    INTEGER                                    :: iist, ijst, ikst
+    INTEGER                                    :: iist, ijst, ikst, iistp
     INTEGER                                    :: ijt,  ikt,  jjt, jkt
     INTEGER                                    :: ji, jii, jj, jjj, jk, jsd
     INTEGER                                    :: ktracer
@@ -481,7 +481,30 @@ MODULE mod_seed
                                 IF (tracers(itrac)%dimension == '2D') ktracer = 1
 
                                 ! Compute the value of the tracer
-                                tracervalue(itrac) = tracers(itrac)%data(ib,jb,ktracer,nsm)
+                                IF (isec == 1) THEN           ! Zonal wall
+                                      iistp = iist + 1
+                                      IF (iist == IMT) iistp = 1
+
+                                      tracervalue(itrac) = 0.5*tracers(itrac)%data(iist,jb,ktracer,nsm) &
+                                                         + 0.5*tracers(itrac)%data(iistp,jb,ktracer,nsm)
+
+                                ELSE IF (isec == 2) THEN      ! Meridional wall
+
+                                      tracervalue(itrac) = 0.5*tracers(itrac)%data(ib,ijst,ktracer,nsm) &
+                                                         + 0.5*tracers(itrac)%data(ib,ijst+1,ktracer,nsm)
+
+                                ELSE IF (isec == 3) THEN      ! Horizontal wall
+
+                                      IF (ikst == KM) THEN
+                                          tracervalue(itrac) = tracers(itrac)%data(ib,jb,ikst,nsm)
+                                      ELSE
+                                          tracervalue(itrac) = 0.5*tracers(itrac)%data(ib,jb,ikst,nsm) &
+                                                             + 0.5*tracers(itrac)%data(ib,jb,ikst+1,nsm)
+                                      END IF
+
+                                END IF
+
+                                tracerbin(itrac,2) =  NINT((tracervalue(itrac) - tracers(itrac)%minimum)/dtracervalue(itrac)) + 1
 
                                 IF ((tracervalue(itrac)<tracer0min(itrac)) .OR. (tracervalue(itrac)>tracer0max(itrac))) THEN
                                         CYCLE kkkLoop

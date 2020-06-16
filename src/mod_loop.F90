@@ -213,9 +213,12 @@ MODULE mod_loop
               IF ((l_psi) .AND. (scrivi .EQV. .FALSE.) .AND. (y1==DBLE(ja-1) .OR. y1==DBLE(ja))) THEN
 
                   DO iloop = 1, numtracers
-                      IF (trajdir ==  1)  CALL update_stream(ja, tracerbin(iloop), trajdir, 'yr', iloop)
-                      IF (trajdir == -1)  CALL update_stream(ja-1, tracerbin(iloop), trajdir, 'yr', iloop)
+                      IF (trajdir ==  1)  CALL update_stream(ja, tracerbin(iloop,2), trajdir, 'yr', iloop)
+                      IF (trajdir == -1)  CALL update_stream(ja-1, tracerbin(iloop,2), trajdir, 'yr', iloop)
                   END DO
+
+                  CALL update_stream(tracerbin(1,1),tracerbin(1,2),1,'rr',tracerbin(2,1),1)
+                  CALL update_stream(tracerbin(2,1),tracerbin(2,2),1,'rr',tracerbin(1,1),2)
 
               END IF
 

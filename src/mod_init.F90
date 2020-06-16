@@ -160,6 +160,11 @@ MODULE mod_init
                 ALLOCATE( fluxes_yr(jmt, resolution, 10, numtracers), psi_yr(jmt, resolution, numtracers))
                 fluxes_yr(:,:,:,:) = 0.
                 psi_yr(:,:,:) = 0.
+
+                ALLOCATE( fluxes_rr(resolution, resolution, 10, 2), psi_rr(resolution, resolution, 2))
+                fluxes_rr(:,:,:,:) = 0.
+                psi_rr(:,:,:)      = 0.
+
               END IF
 
           END IF

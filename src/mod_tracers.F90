@@ -5,7 +5,9 @@ MODULE mod_tracers
     !!
     !!       This module includes subroutines to read the tracers file
     !!              - init_tracers
+    !!              - compute_tracer
     !!              - update_tracer
+    !!              - tracerbin
     !!              - tracers_default
     !!
     !!------------------------------------------------------------------------------
@@ -17,8 +19,15 @@ MODULE mod_tracers
 
     IMPLICIT NONE
 
-    INTEGER                :: itrac
     INTEGER, DIMENSION(20) :: numtracerarray = 0
+
+    INTERFACE
+       FUNCTION thermo_dens0(T,S)
+         REAL, INTENT(IN)                        :: T(:,:,:),S(:,:,:)
+         REAL, ALLOCATABLE, DIMENSION (:,:,:)    :: thermo_dens0
+       END FUNCTION thermo_dens0
+
+    END INTERFACE
 
     PRIVATE :: tracers_default
 
@@ -33,13 +42,15 @@ MODULE mod_tracers
     !
     ! --------------------------------------------------
 
+        INTEGER  :: itrac
+
         ! Calculate the number of tracers
         WHERE (tracername==' ') numtracerarray = 1
         numtracers = 20 - SUM(numtracerarray)
 
         ! Allocate the tracer array
         ALLOCATE(tracers(numtracers), tracervalue(numtracers))
-        ALLOCATE(tracerbin(numtracers,2),dtracervalue(numtracers))
+        ALLOCATE(tracerbinvalue(numtracers,2),dtracervalue(numtracers))
 
         ! Assigned default values
         CALL tracers_default
@@ -75,6 +86,24 @@ MODULE mod_tracers
         END DO
 
     END SUBROUTINE init_tracer
+
+    SUBROUTINE compute_tracer(tracname, var3d)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Compute tracer according to different functions
+    !
+    ! --------------------------------------------------
+
+       CHARACTER(len=100)          :: tracname
+       REAL(DP), DIMENSION(:,:,:)  :: var3d
+
+       IF (tracname == 'sigma0') THEN
+              var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4), REAL(tracers(2)%data(:,:,:,2),4)),8)
+              var3d = var3d - 1000.d0
+       END IF
+
+    END SUBROUTINE compute_tracer
 
     SUBROUTINE update_tracer(ntrac,ia,ja,ka, ib,jb,kb,x1,y1,z1)
     ! --------------------------------------------------
@@ -119,20 +148,37 @@ MODULE mod_tracers
           tracervalue(itrac) = (intrpg*tm + intrpr*tu)
 
           ! Tracerbins
-          tracerbin(itrac,1) =  tracerbin(itrac,2)
-          tracerbin(itrac,2) =  NINT((tracervalue(itrac) - tracers(itrac)%minimum)/dtracervalue(itrac)) + 1
-
-          tracerbin(itrac,2) = MAX(1,tracerbin(itrac,2))
-          tracerbin(itrac,2) = MIN(resolution,tracerbin(itrac,2))
+          tracerbinvalue(itrac,1) =  tracerbinvalue(itrac,2)
+          tracerbinvalue(itrac,2) =  tracerbin(tracervalue(itrac),itrac)
 
         END DO
 
         trajectories(ntrac)%tracerval(:) = tracervalue
 
-
-
-
     END SUBROUTINE update_tracer
+
+    INTEGER FUNCTION tracerbin(tracvalue, itrac)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! Transform tracer value to its bin index
+    !
+    ! --------------------------------------------------
+
+      REAL(DP)             :: tracvalue
+      INTEGER, INTENT(IN)  :: itrac
+
+      INTEGER              :: indexm
+
+      indexm = NINT((tracvalue - tracers(itrac)%minimum)/dtracervalue(itrac)) + 1
+
+      ! Correct the index to be within the bounds
+      indexm = MAX(1,indexm)
+      indexm = MIN(resolution,indexm)
+
+      tracerbin = indexm
+
+    END FUNCTION tracerbin
 
     SUBROUTINE tracers_default()
     ! --------------------------------------------------
@@ -141,6 +187,8 @@ MODULE mod_tracers
     ! Define the default values of the most common tracers.
     !
     ! --------------------------------------------------
+
+      INTEGER  :: itrac
 
       DO itrac = 1, numtracers
 

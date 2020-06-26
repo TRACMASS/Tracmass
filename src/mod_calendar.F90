@@ -8,6 +8,7 @@ MODULE mod_calendar
    !!          Subroutines included:
    !!               - init_calendar
    !!               - end_calendar
+   !!               - previous_calendar
    !!               - update_calendar
    !!               - tt_calendar
    !!
@@ -33,7 +34,7 @@ MODULE mod_calendar
      !
      ! Method:
      ! Populate the daysInMonth array.
-     ! Set startDay,startHour to futDay,futHour etc
+     ! Set startDay,startHour to nextDay,nextHour etc
      !
      ! --------------------------------------------------
 
@@ -63,12 +64,12 @@ MODULE mod_calendar
            END DO
         END IF
 
-        futSec  = startSec
-        futMin  = startMin
-        futHour = startHour
-        futDay  = startDay
-        futMon  = startMon
-        futYear = startYear
+        nextSec  = startSec
+        nextMin  = startMin
+        nextHour = startHour
+        nextDay  = startDay
+        nextMon  = startMon
+        nextYear = startYear
 
         iyear = 1
         ! For forward trajectories, we need the current month to calculate step length
@@ -76,16 +77,16 @@ MODULE mod_calendar
         ! E.g. if we start 1 Feb, currStep is 28 days for fwd trajs
         ! but currStep is 31 days for backwd trajs (duration of Jan)
         IF (nff > 0) THEN
-           imon = futMon
+           imon = nextMon
         ELSE IF (nff < 0) THEN
-           imon = futMon - 1
+           imon = nextMon - 1
            IF (imon <= 0) THEN
               imon = 12
            END IF
         END IF
 
         IF (log_level >=3) THEN
-           print*,'Before setting first time step. futyear, mon,day, iyear, imon ',futYear,futMon,futDay,iyear,imon
+           print*,'Before setting first time step. nextyear, mon,day, iyear, imon ',nextYear,nextMon,nextDay,iyear,imon
         END IF
 
         ! Find current step (secs)
@@ -98,9 +99,9 @@ MODULE mod_calendar
         ELSE IF (ngcm_unit == 4) THEN ! days
            currStep = ngcm_step * 24 * 60 * 60
         ELSE IF (ngcm_unit == 5) THEN ! months
-           currStep = daysInMonth(futYear,imon) * 24 * 60 * 60
+           currStep = daysInMonth(nextYear,imon) * 24 * 60 * 60
         ELSE IF (ngcm_unit == 6) THEN ! years
-           currStep = SUM(daysInMonth(futYear,:)) * 24 * 60 * 60
+           currStep = SUM(daysInMonth(nextYear,:)) * 24 * 60 * 60
         ELSE
            PRINT*," Error [init_calendar]"
            PRINT*," ================================================="
@@ -141,16 +142,54 @@ MODULE mod_calendar
           CALL update_calendar
         END DO
 
-        endYear = currYear
-        endMon  = currMon
-        endDay  = currDay
-        endHour = currHour
-        endMin  = currMin
-        endSec  = currSec
+        endYear = nextYear; currYear = 0;
+        endMon  = nextMon ; currMon  = 0;
+        endDay  = nextDay;  currDay  = 0;
+        endHour = nextHour; currHour = 0;
+        endMin  = nextMin;  currMin  = 0;
+        endSec  = nextSec;  currSec  = 0;
+        loopindex = 0
 
         CALL init_calendar
 
      END SUBROUTINE end_calendar
+
+     SUBROUTINE previous_calendar
+     ! --------------------------------------------------
+     !
+     ! Purpose:
+     ! Compute the previous date to
+     ! the starting date in TRACMASS.
+     !
+     ! --------------------------------------------------
+
+        INTEGER  :: tempLoopstart, tempLoopend
+
+        ! Reverse loopstart and loopend/ and nff
+        nff = -1*nff
+
+        tempLoopstart = loopStartYear; tempLoopend = loopEndYear
+        loopStartYear = tempLoopend; loopEndYear = tempLoopstart
+
+
+        CALL update_calendar
+
+        prevYear = nextYear
+        prevMon  = nextMon
+        prevDay  = nextDay
+        prevHour = nextHour
+        prevMin  = nextMin
+        prevSec  = nextSec
+
+        ! Reset nff, loopstart and loopend and loopindex
+        loopindex = 0
+
+        nff = -1*nff
+        loopStartYear = tempLoopstart; loopEndYear = tempLoopend
+
+        CALL init_calendar
+
+     END SUBROUTINE previous_calendar
 
      SUBROUTINE update_calendar()
      ! ---------------------------------------------------
@@ -170,8 +209,8 @@ MODULE mod_calendar
          END IF
 
          ! Update calendar
-         currSec = futSec; currMin = futMin; currHour = futHour
-         currDay = futDay; currMon = futMon; currYear = futYear
+         currSec = nextSec; currMin = nextMin; currHour = nextHour
+         currDay = nextDay; currMon = nextMon; currYear = nextYear
 
          ! see comment for init_calendar for explanation of the following lines
          ! iyear is corrected if loopYear is True
@@ -187,7 +226,7 @@ MODULE mod_calendar
          END IF
 
          IF (log_level >= 3) THEN
-            print*,'b4 update calendar',futYear,futMon,futDay,iyear,imon
+            print*,'b4 update calendar',nextYear,nextMon,nextDay,iyear,imon
          END IF
 
          ! Find number of minutes to add
@@ -216,85 +255,83 @@ MODULE mod_calendar
          ngcm = currStep / (60*60) ! hours
 
          ! Now update the time and date
-         futSec  = currSec + currStep * nff
+         nextSec  = currSec + currStep * nff
 
          IF (log_level >= 3) THEN
             PRINT*,' set up currStep, ngcm ',currStep,ngcm
          END IF
 
-         ! If futSec > 60 we update the minutes,
-         ! and hours etc until we have futSec < 60 again
-         DO WHILE (futSec >= 60)
-
-            futSec = futSec - 60
-            futMin = futMin + 1
-            IF (futMin >= 60) THEN
-               futMin = futMin - 60
-               futHour = futHour + 1
-               IF (futHour >= 24) THEN
-                  futHour = futHour - 24
-                  futDay  = futDay + 1
-                  IF (futDay > daysInMonth(futYear,futMon)) THEN
-                     futDay = futDay - daysInMonth(futYear,futMon)
-                     futMon = futMon + 1
-                     IF (futMon > 12) THEN
-                        futMon = futMon - 12
-                        futYear = futYear + 1
+         ! If nextSec > 60 we update the minutes,
+         ! and hours etc until we have nextSec < 60 again
+         DO WHILE (nextSec >= 60)
+            nextSec = nextSec - 60
+            nextMin = nextMin + 1
+            IF (nextMin >= 60) THEN
+               nextMin = nextMin - 60
+               nextHour = nextHour + 1
+               IF (nextHour >= 24) THEN
+                  nextHour = nextHour - 24
+                  nextDay  = nextDay + 1
+                  IF (nextDay > daysInMonth(nextYear,nextMon)) THEN
+                     nextDay = nextDay - daysInMonth(nextYear,nextMon)
+                     nextMon = nextMon + 1
+                     IF (nextMon > 12) THEN
+                        nextMon = nextMon - 12
+                        nextYear = nextYear + 1
                         iyear = iyear + 1
                      END IF
                   END IF
                END IF
             END IF
-
          END DO
 
          IF (loopYears) THEN
-            IF (futYear > loopEndYear .and. nff > 0) THEN
+            IF (nextYear > loopEndYear .and. nff > 0) THEN
                IF (log_level >= 3) THEN
-                  PRINT*,' futYear > loopEndYear. Going back to loopStartYear '
+                  PRINT*,' nextYear > loopEndYear. Going back to loopStartYear '
                END IF
-               futYear = loopStartYear
+               nextYear = loopStartYear
                loopIndex = loopIndex + 1
             END IF
          END IF
 
-         ! If futSec < 0 (backward trajs) we update the minutes,
-         ! and hours etc until we have futSec >= 0 again
-         DO WHILE (futSec < 0)
-            futSec = futSec + 60
-            futMin = futMin - 1
-            IF (futMin < 0) THEN
-               futMin = futMin + 60
-               futHour = futHour - 1
-               IF (futHour < 0) THEN
-                  futHour = futHour + 24
-                  futDay  = futDay - 1
-                  IF (futDay <= 0) THEN
-                     futMon = futMon - 1
-                     IF (futMon <= 0) THEN
-                        futMon = futMon + 12
-                        futYear = futYear - 1
+         ! If nextSec < 0 (backward trajs) we update the minutes,
+         ! and hours etc until we have nextSec >= 0 again
+         DO WHILE (nextSec < 0)
+            nextSec = nextSec + 60
+            nextMin = nextMin - 1
+            IF (nextMin < 0) THEN
+               nextMin = nextMin + 60
+               nextHour = nextHour - 1
+               IF (nextHour < 0) THEN
+                  nextHour = nextHour + 24
+                  nextDay  = nextDay - 1
+                  IF (nextDay <= 0) THEN
+                     nextMon = nextMon - 1
+                     IF (nextMon <= 0) THEN
+                        nextMon = nextMon + 12
+                        nextYear = nextYear - 1
                         iyear = iyear + 1
                      END IF
-                     futDay = futDay + daysInMonth(futYear,futMon)
+                     nextDay = nextDay + daysInMonth(nextYear,nextMon)
                   END IF
                END IF
             END IF
          END DO
 
          IF (loopYears) THEN
-            IF (futYear < loopEndYear .and. nff < 0) THEN
+            IF (nextYear < loopEndYear .and. nff < 0) THEN
                IF (log_level >= 3) THEN
-                  PRINT*,' futYear < loopEndYear. Going back to loopStartYear '
+                  PRINT*,' nextYear < loopEndYear. Going back to loopStartYear '
                END IF
-               futYear = loopStartYear
+               nextYear = loopStartYear
                loopIndex = loopIndex + 1
             END IF
          END IF
 
 
          IF (log_level >= 3) THEN
-            print*,'af update calendar',futYear,futMon,futDay,iyear
+            print*,'af update calendar',nextYear,nextMon,nextDay,iyear
          END IF
 
          IF (log_level >= 5) THEN

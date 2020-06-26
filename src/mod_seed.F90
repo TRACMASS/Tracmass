@@ -15,13 +15,14 @@ MODULE mod_seed
     !!
     !!------------------------------------------------------------------------------
 
-    USE mod_log,  only      : log_level
-    USE mod_grid, only      : imt, jmt, km, kmt, nsm, mask, dzt, griddir
-    USE mod_time, only      : ints, tseas, tt, ts, nff
-    USE mod_vel,  only      : uflux, vflux, wflux
-    USE mod_loopvars, only  : subvol
-    USE mod_write, only     : write_data
-    USE mod_domain, only    : l_rerun
+    USE mod_log,  only            : log_level
+    USE mod_grid, only            : imt, jmt, km, kmt, nsm, mask, dzt, griddir
+    USE mod_time, only            : ints, tseas, tt, ts, nff
+    USE mod_vel,  only            : uflux, vflux, wflux
+    USE mod_loopvars, only        : subvol
+    USE mod_write, only           : write_data
+    USE mod_domain, only          : l_rerun
+    USE mod_postprocessvars, only : nsavewrite, l_summary
 
     USE mod_seedvars
     USE mod_traj
@@ -29,6 +30,7 @@ MODULE mod_seed
     USE mod_psi
     USE mod_subdomain
     USE mod_tracervars
+    USE mod_tracers
 
     IMPLICIT NONE
 
@@ -281,6 +283,11 @@ MODULE mod_seed
             trajectories(:)%active = .TRUE.
             trajectories(:)%lbas = 0
 
+
+            ! If postprocessing is activated
+            ALLOCATE( nsavewrite(ntracmax) )
+            nsavewrite = 0
+
         END SUBROUTINE init_seed
 
 
@@ -504,7 +511,7 @@ MODULE mod_seed
 
                                 END IF
 
-                                tracerbin(itrac,2) =  NINT((tracervalue(itrac) - tracers(itrac)%minimum)/dtracervalue(itrac)) + 1
+                                tracerbinvalue(itrac,2) =  tracerbin(tracervalue(itrac),itrac)
 
                                 IF ((tracervalue(itrac)<tracer0min(itrac)) .OR. (tracervalue(itrac)>tracer0max(itrac))) THEN
                                         CYCLE kkkLoop
@@ -523,7 +530,7 @@ MODULE mod_seed
                         END IF
 
                         ! Rerun/streamfunction options
-                        IF (((l_rerun .EQV..TRUE.) .OR. (l_psi .EQV..TRUE.)) .AND. (trajectories(ntrac)%lbas==0)) THEN
+                        IF ((l_rerun .EQV..TRUE.) .AND. (trajectories(ntrac)%lbas==0)) THEN
                           trajectories(ntrac)%active = .FALSE.
                           CYCLE kkkLoop
                         END IF

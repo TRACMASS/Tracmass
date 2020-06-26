@@ -21,6 +21,7 @@ MODULE mod_init
     USE mod_write
     USE mod_domain
     USE mod_tracervars
+    USE mod_psi
 
     IMPLICIT NONE
 
@@ -38,7 +39,7 @@ MODULE mod_init
 
           ! Setup namelists
           namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx,l_onestep, physDataDir, physPrefixForm, &
-                                           tGridName, uGridName, vGridName, &
+                                           dateFormat, tGridName, uGridName, vGridName, &
                                            fileSuffix, hs_name, ueul_name, veul_name, &
                                            usgs_name, vsgs_name
           namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio, &
@@ -65,7 +66,7 @@ MODULE mod_init
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
           namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn, &
                                            tracerchoice, tracere, maxormin
-          namelist /INIT_STREAMFUNCTION/   dirpsi
+          namelist /INIT_STREAMFUNCTION/   l_psi, l_offline, dirpsi
 
           ! Read namelist
           OPEN (8,file='namelist.in',    &
@@ -145,29 +146,6 @@ MODULE mod_init
           ALLOCATE ( wflux(0:km, nst))
           wflux(:,:) = 0.
 #endif
-
-          IF (l_psi) THEN
-
-              ALLOCATE( fluxes_xy(imt, jmt, 10), psi_xy(imt, jmt))
-              fluxes_xy(:,:,:) = 0.
-              psi_xy(:,:) = 0.
-
-              ALLOCATE( fluxes_yz(jmt, km, 10), psi_yz(jmt, km))
-              fluxes_yz(:,:,:) = 0.
-              psi_yz(:,:) = 0.
-
-              IF (l_tracers) THEN
-                ALLOCATE( fluxes_yr(jmt, resolution, 10, numtracers), psi_yr(jmt, resolution, numtracers))
-                fluxes_yr(:,:,:,:) = 0.
-                psi_yr(:,:,:) = 0.
-
-                ALLOCATE( fluxes_rr(resolution, resolution, 10, 2), psi_rr(resolution, resolution, 2))
-                fluxes_rr(:,:,:,:) = 0.
-                psi_rr(:,:,:)      = 0.
-
-              END IF
-
-          END IF
 
       END SUBROUTINE init_alloc
 

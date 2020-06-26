@@ -224,7 +224,7 @@ MODULE mod_pos
              trajdir = 1
 
              ! Streamfunction
-             IF (l_psi) CALL update_stream(ia, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(ia, ja, trajdir, 'xy')
 
           ! Westward grid-cell exit
           ELSE IF (ds==dsw) THEN
@@ -249,7 +249,7 @@ MODULE mod_pos
              trajdir = -1
 
              ! Streamfunction
-             IF (l_psi) CALL update_stream(iam, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(iam, ja, trajdir, 'xy')
 
           ! Northward grid-cell exit
           ELSE IF (ds==dsn) THEN
@@ -274,7 +274,7 @@ MODULE mod_pos
              trajdir = 1
 
              ! Streamfunction
-             IF (l_psi) CALL update_stream(ja, ka, trajdir, 'yz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(ja, ka, trajdir, 'yz')
 
           ! Southward grid-cell exit
           ELSE IF (ds==dss) THEN
@@ -299,7 +299,7 @@ MODULE mod_pos
              trajdir = -1
 
              ! Streamfunction
-             IF (l_psi) CALL update_stream(ja-1, ka, trajdir, 'yz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(ja-1, ka, trajdir, 'yz')
 
           ! Upward grid-cell exit
           ELSE IF (ds==dsu) THEN
@@ -355,7 +355,7 @@ MODULE mod_pos
           ! Shortest time is the time-steping
           ELSE IF (ds==dsc .OR. ds==dsmin) THEN
              scrivi=.TRUE.
-             
+
              ! If there is no spatial solution, i.e. a convergence zone
              IF(dse==UNDEF .AND. dsw==UNDEF .AND. dsn==UNDEF .AND. &
                 dss==UNDEF .AND. dsu==UNDEF .AND. dsd==UNDEF ) THEN

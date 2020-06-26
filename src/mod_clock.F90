@@ -54,7 +54,7 @@ MODULE mod_clock
           ! Update the real time
           ! tt is the only time variable that captures the backward trajectories
           ! ts and tss are absolute values of tt
-          tt = tt + nff*dt
+          tt = tt + dt
 
           ! If the time step is equal to the minimum time step
           IF (dt == dtmin) THEN
@@ -86,7 +86,7 @@ MODULE mod_clock
        ! Update the values of intrpg and intrpr
        !
        !  t1            ts          t2
-       !  |--------------x-----------|  
+       !  |--------------x-----------|
        !   <---intrpg---> <-intrpr-->
        !
 

@@ -10,9 +10,16 @@ MODULE mod_write
     !!
     !!          Subroutines included:
     !!               - open_outfiles
+    !!               - reopen_outfiles
     !!               - close_outfiles
     !!               - write_data
+    !!               - read_data
     !!               - read_rerun
+    !!               - open_outstream
+    !!               - close_outstream
+    !!               - write_stream
+    !!
+    !!               - reverse (P)
     !!
     !!------------------------------------------------------------------------------
 
@@ -25,6 +32,7 @@ MODULE mod_write
     USE mod_psi
     USE mod_grid
     USE mod_tracervars
+    USE mod_postprocessvars
 
     IMPLICIT NONE
 
@@ -60,12 +68,31 @@ MODULE mod_write
           fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
           OPEN(UNIT=50, FILE = TRIM(fullWritePref)//'_ini.csv', STATUS='replace')
-          IF (l_psi .EQV..FALSE.) OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='replace')
+          OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='replace')
           OPEN(UNIT=52, FILE = TRIM(fullWritePref)//'_out.csv', STATUS='replace')
           OPEN(UNIT=53, FILE = TRIM(fullWritePref)//'_err.csv', STATUS='replace')
           OPEN(UNIT=54, FILE = TRIM(fullWritePref)//'_rerun.csv', STATUS='replace')
 
       END SUBROUTINE open_outfiles
+
+      SUBROUTINE reopen_outfiles
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Re-Open outfiles ini, run, out, err, rerun
+      ! for postprocessing.
+      !
+      ! --------------------------------------------------
+
+          fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
+
+          OPEN(UNIT=50, FILE = TRIM(fullWritePref)//'_ini.csv', STATUS='old',ACTION='read')
+          OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='old',ACTION='read')
+          OPEN(UNIT=52, FILE = TRIM(fullWritePref)//'_out.csv', STATUS='old',ACTION='read')
+          OPEN(UNIT=53, FILE = TRIM(fullWritePref)//'_err.csv', STATUS='old',ACTION='read')
+          OPEN(UNIT=54, FILE = TRIM(fullWritePref)//'_rerun.csv', STATUS='old',ACTION='read')
+
+      END SUBROUTINE reopen_outfiles
 
       SUBROUTINE close_outfiles
       ! --------------------------------------------------
@@ -76,7 +103,7 @@ MODULE mod_write
       ! --------------------------------------------------
 
           CLOSE (50)
-          IF (l_psi .EQV..FALSE.) CLOSE (51)
+          CLOSE (51)
           CLOSE (52)
           CLOSE (53)
           CLOSE (54)
@@ -120,11 +147,11 @@ MODULE mod_write
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                       WRITE(outformat(31:32),"(I2)") numtracers
 
-                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt, trajectories(ntrac)%tracerval
+                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),2(',',F20.5))"
 
-                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt
+                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt
                   END IF
 
                   RETURN
@@ -146,7 +173,7 @@ MODULE mod_write
 
                   CASE(2)
                   ! Include time - YYYY MM DD HH MM SS
-                  CALL tt_calendar(tt)
+                  CALL tt_calendar(nff*tt)
                   IF (l_tracers) THEN
                       outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
                       WRITE(outformat(50:51),"(I2)") numtracers
@@ -173,6 +200,8 @@ MODULE mod_write
                    ( write_frec == 4 ) .OR. &
                    ( write_frec == 2 .AND. tt == 0.d0)) THEN
 
+                  ! If postprocessing is activated
+                  nsavewrite(ntrac) = nsavewrite(ntrac) + 1
 
                   IF (write_frec == 1) THEN
                         xw = x0; yw = y0; zw = z0
@@ -193,8 +222,8 @@ MODULE mod_write
 
                       CASE(0)
                       ! Include time - tt in seconds
-                      tout = tt
-                      IF (write_frec == 1) tout = tt-dt
+                      tout = nff*tt
+                      IF (write_frec == 1) tout = nff*(tt-dt)
 
                       IF (l_tracers) THEN
                           outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
@@ -229,9 +258,9 @@ MODULE mod_write
                       CASE(2)
                       ! Include time - YYYY MM DD HH MM SS
                       IF (write_frec == 1) THEN
-                        CALL tt_calendar(REAL(NINT(tt - dt),8))
+                        CALL tt_calendar(nff*REAL(NINT(tt - dt),8))
                       ELSE
-                        CALL tt_calendar(REAL(NINT(tt),8))
+                        CALL tt_calendar(nff*REAL(NINT(tt),8))
                       END IF
 
                       IF (l_tracers) THEN
@@ -255,6 +284,12 @@ MODULE mod_write
           ! OUT file
           CASE ('out')
 
+              ! If postprocessing is activated
+              IF (l_psi .OR. l_summary) THEN
+                  nsave = MAX(nsavewrite(ntrac), nsave)
+              END IF
+
+              ! Correct indexes
               xw = x1; yw = y1; zw = z1
 
               IF (l_subdom) THEN
@@ -274,11 +309,11 @@ MODULE mod_write
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                       WRITE(outformat(31:32),"(I2)") numtracers
 
-                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt, trajectories(ntrac)%tracerval
+                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),2(',',F20.5))"
 
-                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tt
+                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt
                   END IF
 
                   RETURN
@@ -300,7 +335,7 @@ MODULE mod_write
 
                   CASE(2)
                   ! Include time - YYYY MM DD HH MM SS
-                  CALL tt_calendar(tt)
+                  CALL tt_calendar(nff*tt)
                   IF (l_tracers) THEN
                       outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
                       WRITE(outformat(50:51),"(I2)") numtracers
@@ -320,10 +355,56 @@ MODULE mod_write
 
           ! RERUN file
           CASE ('rerun')
-              WRITE(54,"(I8,I3)")  ntrac, nend
+              WRITE(54,"(I8,I3,I10)")  ntrac, nend, nsavewrite(ntrac)
           END SELECT
 
       END SUBROUTINE write_data
+
+      SUBROUTINE read_data(nunit, ierr)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Read data from file unit nunit
+      !
+      ! --------------------------------------------------
+
+      INTEGER, INTENT(IN)  :: nunit
+      INTEGER, INTENT(OUT) :: ierr
+
+        SELECT CASE(timeformat)
+
+          CASE(0)
+
+            ! Include time - tt in seconds
+            IF (l_tracers) THEN
+                READ(nunit,FMT=*,iostat=ierr)  ntrac, x1, y1, z1, subvol, tt, tracervalue
+            ELSE
+                READ(nunit,FMT=*,iostat=ierr)  ntrac, x1, y1, z1, subvol, tt
+            END IF
+
+         CASE(1)
+
+           ! Include time - Fraction ts
+           IF (l_tracers) THEN
+               READ(nunit,FMT=*,iostat=ierr)  ntrac, x1, y1, z1, subvol, ts, tracervalue
+           ELSE
+               READ(nunit,FMT=*,iostat=ierr)  ntrac, x1, y1, z1, subvol, ts
+           END IF
+
+        CASE(2)
+
+           ! Include time - YYYY MM DD HH MM SS
+           IF (l_tracers) THEN
+               READ(nunit,FMT=*,iostat=ierr)  ntrac, x1, y1, z1, &
+                   subvol, dateYear, dateMon, dateDay, dateHour, tracervalue
+           ELSE
+               READ(nunit,FMT=*,iostat=ierr)  ntrac, x1, y1, z1, &
+                   subvol, dateYear, dateMon, dateDay, dateHour
+           END IF
+
+        END SELECT
+
+      END SUBROUTINE read_data
 
       SUBROUTINE read_rerun
       ! --------------------------------------------------
@@ -355,7 +436,7 @@ MODULE mod_write
           REWIND (34)
 
           DO ll = 1, numline
-              READ (UNIT=34, fmt="(I8,I3)") ntrac, lbas
+              READ (UNIT=34, fmt="(I8,I3)") ntrac, lbas, nsavewrite(ntrac)
               trajectories(ntrac)%lbas = lbas
           END DO
 
@@ -384,8 +465,7 @@ MODULE mod_write
           IF (TRIM(ccase) == "xy") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
           IF (TRIM(ccase) == "yz") OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_psiyz.csv', STATUS='replace')
           IF (TRIM(ccase) == "yr") OPEN(UNIT=62, FILE = TRIM(fullWritePref)//'_psiyr.csv', STATUS='replace')
-          IF (TRIM(ccase) == "rr") OPEN(UNIT=63, FILE = TRIM(fullWritePref)//'_psirr1.csv', STATUS='replace')
-          IF (TRIM(ccase) == "rr") OPEN(UNIT=64, FILE = TRIM(fullWritePref)//'_psirr2.csv', STATUS='replace')
+          IF (TRIM(ccase) == "rr") OPEN(UNIT=63, FILE = TRIM(fullWritePref)//'_psirr.csv', STATUS='replace')
 
 
       END SUBROUTINE open_outstream
@@ -403,7 +483,6 @@ MODULE mod_write
           IF (TRIM(ccase) == "yz") CLOSE(61)
           IF (TRIM(ccase) == "yr") CLOSE(62)
           IF (TRIM(ccase) == "rr") CLOSE(63)
-          IF (TRIM(ccase) == "rr") CLOSE(64)
 
       END SUBROUTINE close_outstream
 
@@ -431,8 +510,7 @@ MODULE mod_write
           END DO
       ELSE IF (psicase == 'rr') THEN
           DO ilvar = 1, ijk2
-             WRITE(63,TRIM(psiformat)) psi_rr(:,ilvar,1)
-             WRITE(64,TRIM(psiformat)) psi_rr(:,ilvar,2)
+             WRITE(63,TRIM(psiformat)) psi_rr(:,ilvar)
           END DO
       ELSE
           DO ilvar = 1, ijk2

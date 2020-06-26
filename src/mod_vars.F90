@@ -19,6 +19,7 @@
 !!              - mod_tracerdef
 !!              - mod_tracervars
 !!              - mod_psi
+!!              - mod_postprocessvars
 !!
 !!---------------------------------------------------------------------------
 
@@ -212,6 +213,7 @@ MODULE mod_grid
                                                bathyFile, kmt_name
 
   CHARACTER(LEN=200)                        :: physDataDir, physPrefixForm,  &
+                                               dateFormat, &
                                                bioDataDir, bioPrefixForm, topoDataDir
   CHARACTER(LEN=50), DIMENSION(20)          :: physTracerNames, bioTracerNames
 
@@ -241,15 +243,20 @@ MODULE mod_time
   INTEGER                                   :: endHour,   endMin
   REAL(DP)                                  :: endSec
 
+  ! Previous date
+  INTEGER                                   :: prevYear, prevMon, prevDay
+  INTEGER                                   :: prevHour, prevMin
+  REAL(DP)                                  :: prevSec
+
   ! Current date
   INTEGER                                   :: currYear, currMon, currDay
   INTEGER                                   :: currHour, currMin
   REAL(DP)                                  :: currSec
 
-  ! Future dates
-  INTEGER                                   :: futYear, futMon, futDay
-  INTEGER                                   :: futHour, futMin
-  REAL(DP)                                  :: futSec
+  ! Next date
+  INTEGER                                   :: nextYear, nextMon, nextDay
+  INTEGER                                   :: nextHour, nextMin
+  REAL(DP)                                  :: nextSec
 
   ! Temporary or calendar dates
   INTEGER                                   :: tempYear, tempMon, tempDay
@@ -272,7 +279,7 @@ MODULE mod_time
   REAL(DP)                                  :: tseas     ! GCM time step in seconds
   REAL(DP)                                  :: t0        ! Seeding time step in seconds
   REAL(DP)                                  :: tt        ! Time vector since the beginnig of the simulation in seconds
-  REAL(DP)                                  :: tf        ! Future time vector
+  REAL(DP)                                  :: tf        ! Next time vector
   REAL(DP)                                  :: ts        ! Normalised time
   REAL(DP)                                  :: tss       ! Normalised time between two time steps
   REAL(DP)                                  :: dt        ! Time step in second
@@ -360,7 +367,7 @@ MODULE mod_tracervars
   INTEGER     :: resolution = 501
 
   REAL(DP), DIMENSION(:), ALLOCATABLE   :: dtracervalue
-  INTEGER, DIMENSION(:,:), ALLOCATABLE  :: tracerbin
+  INTEGER, DIMENSION(:,:), ALLOCATABLE  :: tracerbinvalue
 
   ! Particle arrays
   TYPE(tracer), ALLOCATABLE, DIMENSION(:) :: tracers
@@ -372,7 +379,9 @@ END MODULE mod_tracervars
 MODULE mod_psi
   USE mod_precdef
 
-  LOGICAL    :: l_psi = .FALSE.
+  ! Streamfunctions on/off
+  LOGICAL    :: l_psi     = .FALSE.
+  LOGICAL    :: l_offline = .TRUE.
 
   INTEGER , DIMENSION(9)   :: dirpsi = 0
 
@@ -389,7 +398,33 @@ MODULE mod_psi
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_yr
 
   ! Meridional-tracer streamfunction
-  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:) :: fluxes_rr
-  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_rr
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_rr
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_rr
 
 END MODULE mod_psi
+
+MODULE mod_postprocessvars
+
+  USE mod_precdef
+
+  LOGICAL                                 :: l_norun = .FALSE.      ! Run only postprocessing
+  LOGICAL                                 :: l_summary = .FALSE.    ! Extended information about killing zones
+
+  INTEGER, DIMENSION(:),ALLOCATABLE       :: nsavewrite
+  INTEGER                                 :: nsave
+
+  INTEGER, DIMENSION(10)                  :: ntrajout = 0
+  INTEGER                                 :: ntrajtot = 0
+  INTEGER                                 :: maxlbas = 0
+
+  REAL(DP), DIMENSION(10)                 :: volout = 0
+  REAL(DP)                                :: voltot = 0
+
+  ! Temporary trajectory information
+  REAL(DP), DIMENSION(:,:,:), ALLOCATABLE   :: traj_t
+  REAL(DP), DIMENSION(:,:), ALLOCATABLE     :: traj_x, traj_y, traj_z
+  REAL(DP), DIMENSION(:), ALLOCATABLE       :: traj_subvol
+  INTEGER, DIMENSION(:), ALLOCATABLE        :: traj_out
+  INTEGER, DIMENSION(:), ALLOCATABLE        :: counter
+
+END MODULE mod_postprocessvars

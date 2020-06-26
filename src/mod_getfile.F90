@@ -7,8 +7,11 @@ MODULE mod_getfile
   !!
   !!          Functions included:
   !!
+  !!              - filledFileName
   !!              - get2DfieldNC
   !!              - get3DfieldNC
+  !!
+  !!              - error_getfieldNC (P)
   !!
   !!------------------------------------------------------------------------------
 
@@ -17,6 +20,7 @@ MODULE mod_getfile
   USE mod_grid
   USE mod_log
   USE netcdf
+  USE mod_time
 
   IMPLICIT NONE
 
@@ -25,6 +29,58 @@ MODULE mod_getfile
   PRIVATE :: error_getfieldNC
 
   CONTAINS
+
+      FUNCTION filledFileName(filePattern, inyear, inmon, inday)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Take filepattern and fill in year, month, day etc.
+      !
+      ! --------------------------------------------------
+
+          CHARACTER (len=*)                       :: filePattern
+          CHARACTER (len=LEN(filePattern))        :: filledFileName
+          CHARACTER (len=8)                       :: timestamp_yyyymmdd
+
+          INTEGER                                 :: inyear, inmon, inday
+          INTEGER                                 :: ichar
+
+          filledFileName = filePattern
+
+          WRITE(timestamp_yyyymmdd(1:4),'(i4)') inyear
+          WRITE(timestamp_yyyymmdd(5:6),'(i2)') imon
+          WRITE(timestamp_yyyymmdd(7:8),'(i2)') inday
+
+
+          ! Filled with calendar
+          ichar = INDEX(filledFileName,'YYYYMMDD')
+          DO WHILE (ichar /= 0)
+              filledFileName = trim(filledFileName(:ichar-1))//trim(timestamp_yyyymmdd)//trim(filledFileName(ichar+8:))
+              ichar = INDEX(filledFileName,'YYYYMMDD')
+          END DO
+
+          ! Filled with years
+          ichar = INDEX(filledFileName,'YYYY')
+          DO WHILE (ichar /= 0)
+              WRITE(filledFileName(ichar:ichar+3),'(i4)') inyear
+              ichar = INDEX(filledFileName,'YYYY')
+          END DO
+
+          ! Filled with month
+          ichar = INDEX(filledFileName,'MM')
+          DO WHILE (ichar /= 0)
+              WRITE(filledFileName(ichar:ichar+1),'(i2.2)') inmon
+              ichar = INDEX(filledFileName,'MM')
+          END DO
+
+          ! Filled with day
+          ichar = INDEX(filledFileName,'DD')
+          DO WHILE (ichar /= 0)
+              write(filledFileName(ichar:ichar+1),'(i2.2)') inday
+              ichar = INDEX(filledFileName,'DD')
+          END DO
+
+      END FUNCTION filledFileName
 
       FUNCTION get2DfieldNC(fieldFile ,varName, start2D, count2D, cextend)
       ! --------------------------------------------------
@@ -186,7 +242,6 @@ MODULE mod_getfile
            END IF
 
         END FUNCTION get3DfieldNC
-
 
         SUBROUTINE error_getfieldNC(ierror,fieldFile,varName)
         ! --------------------------------------------------

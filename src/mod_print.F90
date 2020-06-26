@@ -7,10 +7,12 @@ MODULE mod_print
   !!
   !!          Subroutines included:
   !!               - print_header_main
+  !!               - print_header_postprocess
   !!               - writesetup_main
   !!               - print_start_loop
   !!               - print_cycle_loop
   !!               - print_end_loop
+  !!               - print_end_main
   !!
   !!               - write_lines (PRIVATE)
   !!
@@ -39,13 +41,70 @@ MODULE mod_print
       !
       ! --------------------------------------------------
 
+       CHARACTER (len=15)                           :: currDate ,currTime
+
        CALL write_lines
        PRINT *, thickline!=================================================
        PRINT *,'             TRACMASS Lagrangian off-line particle tracking '
        PRINT *, thickline!=================================================
 
+       CALL write_lines
+       CALL date_and_time(currDate, currTime) ! Fortran internal function
+
+       Project  = PROJECT_NAME
+       Case     = CASE_NAME
+
+       IF ((IARGC() > 0) )  THEN
+          CALL getarg(1,Case)
+       END IF
+
+       CALL getenv('TRMPROJDIR',projdir)
+       IF (len(TRIM(projdir)) == 0) THEN
+          CALL getenv('TRMDIR',ormdir)
+          IF (len(TRIM(ormdir)) .ne. 0) THEN
+             projdir = TRIM(ormdir)//'/projects/'//TRIM(Project)//'/'
+          ELSE
+             projdir = 'projects/'//TRIM(Project)
+          END IF
+       END IF
+
+
+       PRINT *,''
+       PRINT *,'Start date  : '//currDate(1:4)//'-'//currDate(5:6)//'-'//currDate(7:8)
+       PRINT *,'Start time  : '//currTime(1:2)// ':'//currTime(3:4)// ':'//currTime(5:6)
+       PRINT *, thinline !---------------------------------------------------
+       PRINT *,''
+       PRINT *,'Model information:'
+       PRINT *,'Project code  : '//TRIM(Project)
+       PRINT *,'Case name     : '//TRIM(Case)
+       PRINT *,'Namelist file : '//TRIM(projdir)//'/namelist_'//TRIM(Case)//'.in'
+
+       PRINT *, thinline !---------------------------------------------------
+       PRINT *,''
+       PRINT *,'Output information:'
+       PRINT *,'Directory for output files : ' ,TRIM(outDataDir)
+       PRINT *,'Prefix for output files    : ' ,TRIM(outDataFile)
+       PRINT *, thinline !---------------------------------------------------
+       PRINT *,''
+
      END SUBROUTINE print_header_main
 
+     SUBROUTINE print_header_postprocess
+       ! --------------------------------------------------
+       !
+       ! Purpose:
+       ! Prints main header of postprocessing
+       !
+       ! --------------------------------------------------
+
+        CALL write_lines
+
+        PRINT *, ''
+        PRINT *, thickline!=================================================
+        PRINT *,'                           TRACMASS postprocesing  '
+        PRINT *, thickline!=================================================
+
+     END SUBROUTINE print_header_postprocess
 
      SUBROUTINE  writesetup_main
      ! --------------------------------------------------
@@ -56,47 +115,10 @@ MODULE mod_print
      ! --------------------------------------------------
          INTEGER                                      :: itrac
 
-         CHARACTER (len=15)                           :: currDate ,currTime, cloneparticle
+         CHARACTER (len=15)                           :: cloneparticle
          CHARACTER (len=5), DIMENSION(4)              :: csubdomain
 
-         CALL write_lines
-         CALL date_and_time(currDate, currTime) ! Fortran internal function
 
-         Project  = PROJECT_NAME
-         Case     = CASE_NAME
-
-         IF ((IARGC() > 0) )  THEN
-            CALL getarg(1,Case)
-         END IF
-
-         CALL getenv('TRMPROJDIR',projdir)
-         IF (len(TRIM(projdir)) == 0) THEN
-            CALL getenv('TRMDIR',ormdir)
-            IF (len(TRIM(ormdir)) .ne. 0) THEN
-               projdir = TRIM(ormdir)//'/projects/'//TRIM(Project)//'/'
-            ELSE
-               projdir = 'projects/'//TRIM(Project)
-            END IF
-         END IF
-
-
-         PRINT *,''
-         PRINT *,'Start date  : '//currDate(1:4)//'-'//currDate(5:6)//'-'//currDate(7:8)
-         PRINT *,'Start time  : '//currTime(1:2)// ':'//currTime(3:4)// ':'//currTime(5:6)
-         PRINT *, thinline !---------------------------------------------------
-         PRINT *,''
-         PRINT *,'Model information:'
-         PRINT *,'Project code  : '//TRIM(Project)
-         PRINT *,'Case name     : '//TRIM(Case)
-         PRINT *,'Namelist file : '//TRIM(projdir)//'/namelist_'//TRIM(Case)//'.in'
-
-         PRINT *, thinline !---------------------------------------------------
-         PRINT *,''
-         PRINT *,'Output information:'
-         PRINT *,'Directory for output files : ' ,TRIM(outDataDir)
-         PRINT *,'Prefix for output files    : ' ,TRIM(outDataFile)
-         PRINT *, thinline !---------------------------------------------------
-         PRINT *,''
          PRINT *,"Configuration options:"
 
          ! Subdomain
@@ -174,6 +196,10 @@ MODULE mod_print
                   '       tot                 model date'
           PRINT *, thinline !---------------------------------------------------
 
+          PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", 1, ntractot-nout-nerror-nloop, &
+                  nout, nerror+nloop, ntractot, &
+                  prevYear,prevMon,prevDay,prevHour,prevMin,INT(prevSec)
+
      END SUBROUTINE print_start_loop
 
      SUBROUTINE print_cycle_loop()
@@ -185,7 +211,7 @@ MODULE mod_print
      ! --------------------------------------------------
 
 
-          PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", ints, ntractot-nout-nerror-nloop, &
+          PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", ints+1, ntractot-nout-nerror-nloop, &
                   nout, nerror+nloop, ntractot, &
                   currYear,currMon,currDay,currHour,currMin,INT(currSec)
      END SUBROUTINE print_cycle_loop
@@ -194,12 +220,9 @@ MODULE mod_print
      ! --------------------------------------------------
      !
      ! Purpose:
-     ! Prints the header of the main loop
+     ! Prints the ending information  of the main loop
      !
      ! --------------------------------------------------
-
-
-       CHARACTER (len=15)                           :: currDate ,currTime
 
        CALL write_lines
        PRINT *, thickline!=================================================
@@ -209,12 +232,29 @@ MODULE mod_print
        PRINT *, ntractot-nout-nerror-nloop,' particles in domain'
        PRINT *, thinline !---------------------------------------------------
 
+     END SUBROUTINE print_end_loop
+
+     SUBROUTINE print_end_main()
+     ! --------------------------------------------------
+     !
+     ! Purpose:
+     ! Prints the end time of simulation
+     !
+     ! --------------------------------------------------
+
+       CHARACTER (len=15)                           :: currDate ,currTime
+
+       CALL write_lines
+
        CALL date_and_time(currDate, currTime)
+
+       PRINT *, ''
+       PRINT *, thickline
        PRINT *,'End date  : '//currDate(1:4)//'-'//currDate(5:6)//'-'//currDate(7:8)
        PRINT *,'End time  : '//currTime(1:2)// ':'//currTime(3:4)// ':'//currTime(5:6)
        PRINT *, thickline
 
-     END SUBROUTINE print_end_loop
+     END SUBROUTINE print_end_main
 
      SUBROUTINE write_lines
 

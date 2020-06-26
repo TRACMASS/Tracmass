@@ -47,9 +47,9 @@ MODULE mod_loop
         PRINT*,' Entering loop '
     END IF
 
+    ! Compute the end calendar
     CALL end_calendar
-
-    CALL print_start_loop
+    CALL previous_calendar
 
     ! Time sub steps
     dstep = 1.d0 / DBLE(iter)
@@ -64,6 +64,7 @@ MODULE mod_loop
     ! =======================================================================
     intsTimeLoop: DO ints=1, intrun-1
 
+        ! Update calendar
         CALL update_calendar()
 
         ! Read fields
@@ -71,6 +72,8 @@ MODULE mod_loop
 
         ! Seed trajectories
         CALL seed()
+
+        IF (ints==1) CALL print_start_loop
 
         ! Loop over all trajectories and calculate a new position for this time step
         ntracLoop: DO ntrac=1, ntractot
@@ -179,7 +182,7 @@ MODULE mod_loop
             ! time variables (ds,...) are in seconds/m^3   !
             !==============================================!
 
-            dtreg = dtmin* (DBLE(INT(DBLE(iter)*tt/tseas,8)) + &
+            dtreg = dtmin*(DBLE(INT(DBLE(iter)*tt/tseas,8)) + &
                     1.d0 - DBLE(iter)*tt/tseas)
             dt    = dtreg
             dsmin = dtreg/dxyz
@@ -205,20 +208,24 @@ MODULE mod_loop
             ! Update time tt and ts
             CALL update_time
 
-            ! Update the value of the tracer
             IF (l_tracers) THEN
+
+              ! Update the value of the tracer
               CALL update_tracer(ntrac,ia,ja,ka, ib,jb,kb,x1,y1,z1)
 
-              ! If the streamfunctions are computed
-              IF ((l_psi) .AND. (scrivi .EQV. .FALSE.) .AND. (y1==DBLE(ja-1) .OR. y1==DBLE(ja))) THEN
+              ! If streamfunctions are computed
+              IF ((l_psi) .AND. (scrivi .EQV. .FALSE.) .AND. (l_offline .EQV. .FALSE.)) THEN
 
-                  DO iloop = 1, numtracers
-                      IF (trajdir ==  1)  CALL update_stream(ja, tracerbin(iloop,2), trajdir, 'yr', iloop)
-                      IF (trajdir == -1)  CALL update_stream(ja-1, tracerbin(iloop,2), trajdir, 'yr', iloop)
-                  END DO
+                  IF (y1==DBLE(ja-1) .OR. y1==DBLE(ja)) THEN
+                    DO iloop = 1, numtracers
+                        IF (trajdir ==  1)  CALL update_fluxes(  ja, tracerbinvalue(iloop,2),  1, 'yr', iloop)
+                        IF (trajdir == -1)  CALL update_fluxes(ja-1, tracerbinvalue(iloop,2), -1, 'yr', iloop)
+                    END DO
+                  END IF
 
-                  CALL update_stream(tracerbin(1,1),tracerbin(1,2),1,'rr',tracerbin(2,1),1)
-                  CALL update_stream(tracerbin(2,1),tracerbin(2,2),1,'rr',tracerbin(1,1),2)
+                  IF (numtracers>1) THEN
+                    CALL update_fluxes(tracerbinvalue(1,1),tracerbinvalue(1,2),1,'rr',tracerbinvalue(2,1),tracerbinvalue(2,2))
+                  END IF
 
               END IF
 
@@ -236,7 +243,7 @@ MODULE mod_loop
                 trajectories(ntrac)%lbas = nend
                 EXIT niterLoop
 
-            ELSE IF (l_psi .EQV..FALSE.) THEN
+            ELSE
                CALL write_data('run')
 
             END IF
@@ -247,7 +254,7 @@ MODULE mod_loop
 
           ! Write out/run/rerun data
           CALL write_data('rerun')
-          IF (l_psi .EQV..FALSE.) CALL write_data('run')
+          CALL write_data('run')
           CALL write_data('out')
 
           trajectories(ntrac)%active = .FALSE.
@@ -262,7 +269,6 @@ MODULE mod_loop
 
     END DO intsTimeLoop
 
-    CALL print_cycle_loop()
     CALL print_end_loop
 
   END SUBROUTINE loop

@@ -8,7 +8,6 @@ MODULE mod_stream
     !!       Subroutines included in this modules:
     !!              - compute_stream
     !!              - init_stream
-    !!              - update_stream
     !!              - update_fluxes
     !!              - compute_fluxes
     !!

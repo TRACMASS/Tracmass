@@ -32,24 +32,15 @@ SUBROUTINE read_field
 
    INTEGER        :: ii, jj, ip, jp
 
-   REAL(DP)       :: scaleFactor = 0.0001
-   REAL(DP)       :: FillValue = -214748
+   REAL(DP)              :: scaleFactor = 0.0001
+   REAL(DP)              :: FillValue = -214748
 
-   CHARACTER (len=200)                    :: fieldFile, dataprefix
+   CHARACTER (len=200)   :: fieldFile, dateprefix
 
    ! Data files
-   dataprefix = 'YYYY/dt_global_allsat_phy_l4_YYYYMMDD_YYYYMMDD'
-   WRITE(dataprefix(36:37),'(i2.2)') dateDay
-   WRITE(dataprefix(34:35),'(i2.2)') dateMon
-   WRITE(dataprefix(1:4),'(i4.4)')   dateYear
-   WRITE(dataprefix(30:33),'(i4.4)') dateYear
-   WRITE(dataprefix(34:35),'(i2.2)') dateMon
-   WRITE(dataprefix(39:42),'(i4.4)')   2018
-   WRITE(dataprefix(43:44),'(i2.2)')   5
-   WRITE(dataprefix(45:46),'(i2.2)')   16
-
-   fieldFile = TRIM(physDataDir)//TRIM(dataprefix)//TRIM(fileSuffix)
-
+   dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
+   fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(fileSuffix)
+   
    uvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, ueul_name,[1,1,1,1],[imt,jmt,1,1])
    vvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, veul_name,[1,1,1,1],[imt,jmt,1,1])
 

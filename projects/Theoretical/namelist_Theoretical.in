@@ -15,7 +15,11 @@
 
       ! Boundary conditions
       iperio  = 1,                         ! zonal periodic
-      jperio  = 1                          ! meridional boundary conditions
+      jperio  = 1,                         ! meridional boundary conditions
+/
+
+&INIT_GRID_SUBDOMAIN
+
 /
 
 &INIT_GRID_TIME
@@ -110,8 +114,39 @@
       timefile       = '',				         ! name of seed file
 /
 
+&INIT_TRACERS
+
+/
+
+&INIT_TRACERS_SEEDING
+
+/
+
 &INIT_KILLZONES
       timax = 100                          ! time limit for traj [days]
+
+      exitType = 1
+
+      ! If exitType = 1: killing zone defined by a box
+      ! IMPORTANT -> The maximum number of boxes than can be defined are 10
+      ! ienw,iene are western and eastern i indices of killzone
+      ! jens,jenn are southern and northern j indices of killzone
+      ! ienw =   0,  500,
+      ! iene = 100, 1000,
+      ! jens = 200,  450,
+      ! jenn = 300,  470,
+      ! sets up two killzones, the first i = [0,100], j = [200,300]
+      ! the other i = [500,1000], j = [450,470]
+
+      ! If exitType = 2: killing zone defined by tracer value
+      ! Tracerchoice defines which tracer is used for the killing zone
+      ! it could be different
+      !tracerchoice = 1,2
+      !tracere      = 25,35
+      !maxormin     =  1, -1
+      ! This set up defines a killing zone by the 25C isotherm (maximum)
+      ! and the 35psu isohaline (minimum)
+
 /
 
 &INIT_STREAMFUNCTION

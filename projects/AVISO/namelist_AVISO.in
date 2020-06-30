@@ -1,6 +1,8 @@
 &INIT_GRID_DESCRIPTION
         ! Describe filenames
-        physDataDir    = '',               ! directory of physical data (u,v,T,S,MLD,etc)
+        physDataDir    = '/Volumes/Seagate Bac/TRACMASS_data/aviso/',               ! directory of physical data (u,v,T,S,MLD,etc)
+        physPrefixForm = '',
+        dateFormat     = 'YYYY/dt_global_allsat_phy_l4_YYYYMMDD_20180516',
         fileSuffix     = '.nc',            ! suffix of files, e.g. ".nc"
 
         ! Describe variable names
@@ -17,6 +19,10 @@
 
       iperio  = 1                          ! zonal periodic
       jperio  = 1                          ! meridional boundary conditions
+/
+
+&INIT_GRID_SUBDOMAIN
+
 /
 
 &INIT_GRID_TIME
@@ -60,7 +66,7 @@
 
 
 
-     outDataDir    = '',
+     outDataDir    = '/Users/aitoraldama/Desktop/',
      outDataFile   = 'AVISO_test'
 
      timeformat    = 2            ! Format of the time array
@@ -110,10 +116,19 @@
       timefile       = '',            ! name of seed file
 /
 
+&INIT_TRACERS
+      l_tracers = .FALSE.
+/
+
+&INIT_TRACERS_SEEDING
+
+/
+
 &INIT_KILLZONES
-      timax = 3650 ! time limit for traj [days]
+      timax = 365                          ! time limit for traj [days]
 
       exitType = 1
+
       ! If exitType = 1: killing zone defined by a box
       ! IMPORTANT -> The maximum number of boxes than can be defined are 10
       ! ienw,iene are western and eastern i indices of killzone
@@ -124,13 +139,16 @@
       ! jenn = 300,  470,
       ! sets up two killzones, the first i = [0,100], j = [200,300]
       ! the other i = [500,1000], j = [450,470]
-      ienw           =  1, 90,	180, 1	         ! west indices of killzones
-      iene           =  90, 180, 180, 1  	       ! east indices of killzones
-      jens           =  250, 250, 0	, 0          ! south indices of killzones
-      jenn           =  250, 250, 250, 250       ! north indices of killzones
+
+      ! If exitType = 2: killing zone defined by tracer value
+      ! Tracerchoice defines which tracer is used for the killing zone
+      ! it could be different
+      !tracerchoice = 1,2
+      !tracere      = 25,35
+      ! This set up defines a killing zone by the 25C isotherm and the 35psu isohaline
 
 /
 
 &INIT_STREAMFUNCTION
-      dirpsi     = 1,1,1,1  ! Direction of integration
+
 /

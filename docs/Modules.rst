@@ -5,7 +5,7 @@ Main modules
 mod_calendar.F90
 ----------------
 
-The module **mod_calendar** contains all the subroutines that initialise and update the calendar of the simulation. This module contains four subroutines: **init_calendar**, **update_calendar**, **end_calendar** and **tt_calendar**.
+The module **mod_calendar** contains all the subroutines that initialise and update the calendar of the simulation. This module contains five subroutines: **init_calendar**, **previous_calendar**, **update_calendar**, **end_calendar** and **tt_calendar**.
 
 * The subroutine **init_calendar** defines the starting date of the calendar as well as the time step of the simulation **tseas**.
 
@@ -19,7 +19,7 @@ The module **mod_calendar** contains all the subroutines that initialise and upd
 
   .. warning::  Note than in backward simulations in time, **loopStartYear>loopEndYear**. The start year (**StartYear**) is always larger or equal to the current year (**currYear**) - unless **loopYears** is activated.  If **loopYears** is activated, the calendar is corrected in similar way to the forward simulations (see Figure above).
 
-* **end_calendar** computes the final date of simulation defined by the time step **intrun**.
+* **end_calendar** computes the final date of simulation defined by the time step **intrun**, while **previous_calendar** computes the date previous to the starting date. The latter is required when **loopYears** is activated.
 
 * **tt_calendar** uses the starting date as a reference and translates the time step **tt** into a date (year, month, day) and time (hour, minute, second).
 
@@ -30,6 +30,8 @@ This module contains four subroutines:
 .. f:autosubroutine:: update_calendar
 
 .. f:autosubroutine:: end_calendar
+
+.. f:autosubroutine:: previous_calendar
 
 .. f:autofunction:: tt_calendar
 
@@ -102,10 +104,11 @@ and a private function:
 mod_getfile.F90
 ---------------
 
-The module **mod_getfile** consists on two functions: **get2DfieldNC** to extract 2D data fields, and **get3DfieldNC** to extract 3D data fields.
+The module **mod_getfile** consists on three functions: **filledFileName** which updates the dateprefix according to the calendar, **get2DfieldNC** to extract 2D data fields, and **get3DfieldNC** to extract 3D data fields.
+
+* The function **filledFileName** has four arguments: *filedPattern* a character string that contains the dateprefix, and *inyear*, *inmon* and *inday* representing the year, month and day of the calendar. The function will find the string YYYYMMDD and replace it with the corresponding year, month or/and day.
 
 * The function **get2DfieldNC** has five arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start2D* a 4D array that describes the starting indexes, *count2D* a 4D array that describes how many indexes are read, and *cextend* an optional argument to read 2D fields in v points (an extra j index).
-
 
 * The function **get3DfieldNC** has six arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start3D* a 4D array that describes the starting indexes, *count3D* a 4D array that describes how many indexes are read, *stcase* describes the order data is stored in the netCDF file:
 
@@ -127,7 +130,9 @@ The module **mod_getfile** consists on two functions: **get2DfieldNC** to extrac
       :alt: Description of mod_pos
 
 
-This module contains two functions:
+This module contains three functions:
+
+.. f:autosubroutine:: filledFileName
 
 .. f:autosubroutine:: get2DfieldNC
 
@@ -262,9 +267,9 @@ The module **mod_pos** calculates the new position of a trajectory and the time 
 
 If **ds** is smaller than any of the crossing times and equal to the time stepping, or if the trajectory is inside a convergence zone where all the crossing times are **UNDEF**. The trajectory remains inside the box.
 
-.. note :: If stream functions are computed, this subroutine will transfer the required information to compute geographical streamfunctions.
+.. note :: If stream functions are computed online (*l_offline* is false), this subroutine will transfer the required information to compute geographical streamfunctions.
 
-.. important :: The north fold (**jperio**) is an important feature for original grids that are not based on latitude longitude such as the ORCA grids. The current version includes three possible corrections to the north fold: no correction (0), correction for ORCA1 grids (1) and correction for ORCA025 and ORCA12 grids (2).
+.. important :: The north fold (**jperio**) is an important feature for original grids that are not based on latitude longitude such as the ORCA grids. The current version includes two possible corrections to the north fold: no correction (0), and  correction for ORCA grids (1).
 
 This module contains three subroutines:
 
@@ -273,6 +278,27 @@ This module contains three subroutines:
 .. f:autosubroutine:: calc_pos
 
 .. f:autosubroutine:: update_traj
+
+
+mod_postprocess.F90
+-------------------
+
+The module **mod_postprocess** reads the output files, computes offline streamfunctions and a more detailed summary of the TRACMASS run.
+
+* The subroutine **postprocessing** reads the output files and stores the require information to compute a summary or offline streamfunctions. The following information is read: the initial number of trajectories and total transport (from *_ini.csv*), the number of trajectories that left the domain or exceeded the time limit and the total tranport (from *_out.csv*), and the position indexes and the tracer values (from *_run.csv* if offline streamfunctions are computed).
+
+* **init_alloc_stream** allocates and initialises the required arrays to compute offline streamfunctions.
+
+* **print_summary** prints a short summary of the total number of trajectories that are initialised and the ones that left the domain (organised by the different killing zones). It also prints a summary of the transports. This subroutine is only called if the main program is run with the *summary* argument on (see chapters *Configuration* and *Main program*).
+
+This module contains three subroutines:
+
+.. f:autosubroutine:: postprocessing
+
+.. f:autosubroutine:: init_alloc_stream
+
+.. f:autosubroutine:: print_summary
+
 
 mod_print.F90
 -------------
@@ -283,6 +309,8 @@ This module includes five subroutines:
 
 .. f:autosubroutine:: print_header_main
 
+.. f:autosubroutine:: print_header_postprocess
+
 .. f:autosubroutine:: writesetup_main
 
 .. f:autosubroutine:: print_start_loop
@@ -290,6 +318,8 @@ This module includes five subroutines:
 .. f:autosubroutine:: print_cycle_loop
 
 .. f:autosubroutine:: print_end_loop
+
+.. f:autosubroutine:: print_end_main
 
 mod_seed.F90
 ------------
@@ -363,16 +393,52 @@ and two private subroutine:
 mod_stream.F90
 --------------
 
-The module **mod_stream.F90** is responsible for computing volume/mass fluxes and compute different stream functions. This module is only called if the main program is run with the *streamfunction* argument on (see chapters *Configuration* and *Main program*). This module contains two subroutines **update_stream** and **compute_stream**.
+The module **mod_stream.F90** is responsible for computing volume/mass fluxes and compute different stream functions. This module contains four subroutines **compute_stream**, **init_stream**, **update_fluxes** (online computation of streamfunctions) and **compute_stream** (offline computation of streamfunctions).
 
-* The subrotuine **update_stream** is responsible to compute the fluxes and filter them according to the different kill zones. This subroutine has five arguments: *index1, index2* represent the indexes of the two coordinates of the streamfunction, *dir* is the direction of the trajectory (in the streamfunction coordinate reference system), *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction, *'yr'*: latitude-tracer streamfunction). The fifth argument is optional and it is used whenever a *'yr'* streamfunction is used to represent the different tracer choice.
+* The subroutine **init_stream** initialises and allocates all the fluxes (*fluxes_*) and streamfunction (*psi_*) arrays.
+
+.. table::
+  :align: center
+
+  +----------------------+---------------------------+----------------------------------+
+  | *Flux type*          |   **l_offline** = TRUE    |      **l_offline** = FALSE       |
+  +----------------------+---------------------------+----------------------------------+
+  | Barotropic (x-y)     |    (imt, jmt, 10)         |    (imt, jmt, ntractot)          |
+  +----------------------+---------------------------+----------------------------------+
+  | Meridional (y-z)     |    (jmt,  km, 10)         |    (jmt,  km, ntractot)          |
+  +----------------------+---------------------------+----------------------------------+
+  | Latitude-tracer (y-r)| (jmt, mr, 10, numtracers) | (jmt, mr, ntractot, numtracers)  |
+  +----------------------+---------------------------+----------------------------------+
+  | Tracer-tracer (r-r)  | ( mr, mr, 10, numtracers) | ( mr, mr, ntractot, numtracers)  |
+  +----------------------+---------------------------+----------------------------------+
+
+.. note::
+  *mr* is the tracer space resolution (501 by default) and *numtracers* is the number of tracers.
+
+* If streamfunctions are computed online (*l_offline* is false), the subrotuine **update_fluxes** is responsible to update the fluxes and filter them according to the trajectory number. This subroutine has six arguments: *index1, index2* represent the indexes of the two coordinates of the streamfunction, *dir* is the direction of the trajectory (in the streamfunction coordinate reference system), *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction, *'yr'*: latitude-tracer streamfunction, and *'rr'*: tracer-tracer streamfunction). The fifth argument is optional (*indt1*) and it is used whenever a *'yr'* streamfunction is used to represent the different tracer choice.
+.. math::
+
+    F(\textbf{index1,index2}[, \textbf{indt1}]) = F(\textbf{index1,index2}[, \textbf{indt1}]) + dir \cdot \textbf{subvol}
+|
+
+    If *psicase* is *'rr'*, *index1, index2* are linked to the present and past time step of the first tracer, and *indt1, indt2* are the present and past time step of the second tracer. The computation of the fluxes in this case is more generalised:
 
 .. math::
 
-    F(\textbf{index1,index2}[, \textbf{indt}]) = F(\textbf{index1,index2}[, \textbf{indt}]) + dir \cdot \textbf{subvol}
+    F(\textbf{indm1,indm2}) = \textbf{subvol}
+|
 
+    where :math:`\textbf{indm1}=[index1,index2)` and :math:`\textbf{indm2}=indt1 + slope \cdot(\textbf{indm1}-index1)`. The slope is given by :math:`(indt2-indt1)/(index2-index1)`.
 
-* The subroutine **compute_stream** integrates the fluxes computed by **update_stream** to compute the stream functions. The integration direction is defined by **dirpsi**.
+    .. image:: figs/fig_fluxes.png
+      :width: 350px
+      :align: center
+      :height: 250px
+      :alt: Description of fluxes
+
+* If streamfunctions are computed offline (*l_offline* is true), the subrotuine **compute_fluxes** is responsible to update the fluxes and filter them according to the killing zones. If *write_frec* is 3 (stored everytime it crosses a wall) or 4 (save everytime), the fluxes are computed when the stored index corresponds to a zonal wall (barotropic) or to a meridional wall (meridional or latitude-tracer). The tracer-tracer fluxes are computed as in the online case. For other *write_frec* all the fluxes are computed using the method to compute the tracer-tracer fluxes (see the online case).
+
+* The subroutine **compute_stream** integrates the fluxes computed by **update_fluxes** or **compute_fluxes** to compute the stream functions. In the case of online calculation of stream function, the subroutine filters only the *ntracs* that exited through the killing zones. The integration direction is defined by **dirpsi**.
 
   .. math::
     \Psi(\textbf{index1,index2}[, \textbf{indt}]) &=& \sum^{\text{\textbf{index2}}}_{index=0} -F(\textbf{index1},index[, \textbf{indt}]) \quad \text{(dirpsi = 1)} \\
@@ -389,9 +455,13 @@ The module **mod_stream.F90** is responsible for computing volume/mass fluxes an
       :alt: Description of streamfunctions
 
 
-This module contains two public subroutines:
+This module contains four public subroutines:
 
-.. f:autosubroutine:: update_stream
+.. f:autosubroutine:: update_fluxes
+
+.. f:autosubroutine:: compute_fluxes
+
+.. f:autosubroutine:: init_stream
 
 .. f:autosubroutine:: compute_stream
 
@@ -461,10 +531,17 @@ mod_tracers.F90
 
 If TRACMASS is run with tracers (**l_tracers** is true), the module **mod_tracers.F90** contains all the subroutines needed to initialise, allocate, compute and update tracers.
 
-* **init_tracers** initialise the **tracers** array from the information provided in the namelist. This information consists of a short description of the tracer (**name**), **units**, whether the tracer is read from an input file ( **action** =='read') or computed in TRACMMASS ( **action** ='compute'). If the tracer is read, the name of the variable in the input file is given by **varname** and the number of **dimension**-s.
+* **init_tracer** initialise the **tracers** array from the information provided in the namelist. This information consists of a short description of the tracer (**name**), **units**, whether the tracer is read from an input file ( **action** =='read') or computed in TRACMASS ( **action** ='compute'). If the tracer is read, the name of the variable in the input file is given by **varname** and the number of **dimension**-s.
 
 .. important :: To compute stream functions it is important to define the lower (**minimum**) and the upper (**maximum**) limit of the tracer coordinate.
 
+* If **action** is compute, the subroutine **compute_tracer** will calculate the tracer from other tracers read from input files.
+
++---------------+-----------------+--------------------+----------------+----------------+
+| *tracername*  | Description     | External function  |   Argument 1   |   Argument 2   |
++---------------+-----------------+--------------------+----------------+----------------+
+| sigma0        | sigma-0 density | **thermo_dens0**   |   Temperature  |   Salinity     |
++---------------+-----------------+--------------------+----------------+----------------+
 
 * **update_tracers** updates the value of the tracer in the new position (computed by **update_traj**). The tracers are updated using the nearest point approach where trajectory stores the value of the tracer in the nearest T point. If the trajectory crosses a grid wall the tracer value is the mean value between the two nearest T points. A time interpolation is computed before the spatial interpolation.
 
@@ -497,15 +574,22 @@ If TRACMASS is run with tracers (**l_tracers** is true), the module **mod_tracer
   | p        | hPa    |  0        | 1100      | compute  |           | Atmospheric pressure      |
   +----------+--------+-----------+-----------+----------+-----------+---------------------------+
 
+* The function **tracerbin** translates the tracervalue to an index in the tracer space,
+
+.. math::
+  tracerbin = \frac{tracervalue - min(tracervalue)}{\Delta tracervalue}
 
 This module contains two public subroutines and a private subroutine:
 
 .. f:autosubroutine:: init_tracer
 
+.. f:autosubroutine:: compute_tracer
+
 .. f:autosubroutine:: update_tracer
 
 .. f:autosubroutine:: tracers_default
 
+.. f:autosubroutine:: tracerbin
 
 mod_vars.F90
 ------------
@@ -540,6 +624,8 @@ mod_vars.F90
 
 - **mod_psi**: defines the variables to describe the stream functions.
 
+- **mod_postprocessvars**: the variables part of the postprocessing are defined here.
+
 mod_vertvel.F90
 ---------------
 
@@ -571,21 +657,25 @@ The module **mod_write** creates the outfiles where the information of the traje
 The initial and the final information of the trajectories are always stored. However, the frequency at which data is stored in the *_run.csv* is controlled by **write_frec**: (1) only at GCM time steps, (2) only at GCM and subcycle time steps, (3) only when a trajectory crosses a wall, (4) all time steps, and (5) no data stored.
 The time format of the output files can also be adjusted with **timeformat**: (0) **tt** is stored, (1) **ts** is stored, (2) the time is saved in YYYY-MM-DD HH format.
 
-.. important::  If TRACMASS is run with the streamfunction flag this module also writes the resulting streamfunctions in the files: *_psixy.csv* for the barotropic case, and *_psiyz.csv* for the meridional case. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
+.. important::  If TRACMASS is run with the streamfunction flag this module also writes the resulting streamfunctions in the files: *_psixy.csv* for the barotropic case, *_psiyz.csv* for the meridional case, *_psiyr.csv* for the latitude-tracer case, and *_psirr.csv* for the tracer-tracer streamfunctions. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
 
 
-This module contains seven subroutines:
+This module contains nine subroutines:
 
 .. f:autosubroutine:: open_outfiles
 
-.. f:autosubroutine:: write_data
+.. f:autosubroutine:: reopen_outfiles
 
 .. f:autosubroutine:: close_outfiles
+
+.. f:autosubroutine:: write_data
+
+.. f:autosubroutine:: read_data
 
 .. f:autosubroutine:: read_rerun
 
 .. f:autosubroutine:: open_outstream
 
-.. f:autosubroutine:: write_stream
-
 .. f:autosubroutine:: close_outstream
+
+.. f:autosubroutine:: write_stream

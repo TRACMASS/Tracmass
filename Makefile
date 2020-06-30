@@ -2,6 +2,7 @@
 PROJECT	          = Theoretical
 CASE              = Theoretical
 RUNFILE 	        = runtracmass
+ARCH              =
 NETCDFLIBS        =
 #================================================================
 
@@ -28,16 +29,16 @@ LIB_DIR =
 INC_DIR =
 ORM_FLAGS += -Dno_netcdf
 
-else ifeq ($(NETCDFLIBS),"automatic")
+else ifeq ($(NETCDFLIBS),automatic)
 LIB_DIR = $(shell nc-config --flibs)
 INC_DIR = -I$(shell nc-config --includedir)
 
-else ifeq ($(NETCDFLIBS),"automatic-44")
+else ifeq ($(NETCDFLIBS),automatic-44)
 LIB_DIR = $(shell nf-config --flibs)
 INC_DIR = $(shell nf-config --cflags)
 
 else
-NCDF_ROOT = /usr/local/Cellar/netcdf/4.6.2
+NCDF_ROOT = /usr/local/
 
 LIB_DIR = -L$(NCDF_ROOT)/lib -lnetcdf -lnetcdff
 INC_DIR	= -I$(NCDF_ROOT)/include
@@ -45,8 +46,15 @@ INC_DIR	= -I$(NCDF_ROOT)/include
 endif
 
 # Fortran compiler and flags
+ifeq ($(ARCH),tetralith)
+FC = ifort
+FF = -g -O3 -traceback -pg
+
+else
 FC = gfortran
-FF = -g -O3 -fbacktrace -fbounds-check -Wall -Wno-unused-dummy-argument
+FF = -g -O3 -fbacktrace -fbounds-check -Wall -Wno-maybe-uninitialized -Wno-unused-dummy-argument
+
+endif
 
 # Path to sources
 VPATH = src:projects/$(PROJECT)
@@ -67,10 +75,12 @@ endif
 # Object definitions
 OBJDIR := _build
 
+THERMO = thermo_dens0.o
+
 objects := $(addprefix $(OBJDIR)/,mod_vars.o mod_subdomain.o mod_getfile.o mod_calendar.o \
-	setup_grid.o kill_zones.o read_field.o mod_clock.o  \
-	mod_write.o mod_error.o mod_vertvel.o mod_tracers.o mod_seed.o  mod_stream.o \
-	mod_pos.o mod_init.o mod_print.o mod_loop.o TRACMASS.o)
+	mod_tracers.o $(THERMO) setup_grid.o kill_zones.o read_field.o mod_clock.o  \
+	mod_write.o mod_error.o mod_vertvel.o  mod_seed.o  mod_stream.o \
+	mod_pos.o mod_init.o mod_print.o mod_loop.o mod_postprocess.o TRACMASS.o)
 
 $(OBJDIR)/%.o : %.F90
 		$(FC) $(FF) -c $(ORM_FLAGS) $(PROJECT_FLAG) $(CASE_FLAG) $(INC_DIR) $(LIB_DIR) $< -o $@

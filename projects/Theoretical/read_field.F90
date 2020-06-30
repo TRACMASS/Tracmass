@@ -27,8 +27,6 @@ SUBROUTINE read_field
 
       REAL(DP)    :: ug, u0, fcor, gamma, gammag, omtime
 
-      INTEGER     :: jj, ii
-
       ! Parameters for Nicoletta Fabboni velocities.
       ug     = 0.04
       u0     = 0.5
@@ -37,18 +35,14 @@ SUBROUTINE read_field
       gammag = 1./(28.9*24.*3600.)
       omtime = nff * DBLE(ints) * DBLE(ngcm*3600)
 
-      DO jj=1,JMT
-          DO ii=1,IMT
+      ! Definition of fluxes
+      uflux(:,:,1,1) = uflux(:,:,1,2)
+      vflux(:,:,1,1) = vflux(:,:,1,2)
 
-             uflux(ii,jj,1,1) = uflux(ii,jj,1,2)
-             vflux(ii,jj,1,1) = vflux(ii,jj,1,2)
+      uflux(1:imt,1:jmt,1,2) = nff*dyu(1:imt,1:jmt) * dzt(1:imt,1:jmt,1,2) * ( ug*DEXP(-gammag*omtime) + &
+                                            (u0-ug) * DEXP(-gamma*omtime) * COS(fcor*omtime) )
 
-             uflux(ii,jj,1,2) = nff*dyu(ii,jj) * dzt(ii,jj,1,2) * ( ug*DEXP(-gammag*omtime) + &
-                                                   (u0-ug) * DEXP(-gamma*omtime) * COS(fcor*omtime) )
-             vflux(ii,jj,1,2) = nff*dxv(ii,jj) * dzt(ii,jj,1,2) * ( -(u0-ug) * DEXP(-gamma*omtime) * SIN(fcor*omtime) )
-
-          END DO
-      END DO
+      vflux(1:imt,1:jmt,1,2) = nff*dxv(1:imt,1:jmt) * dzt(1:imt,1:jmt,1,2) * ( -(u0-ug) * DEXP(-gamma*omtime) * SIN(fcor*omtime) )
 
       ! zero at north and south boundaries
       vflux(:,0  ,:,:) = 0.d0

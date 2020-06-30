@@ -198,7 +198,7 @@ MODULE mod_print
 
           PRINT "(5(I7,' |  '),I5,2('-',I2.2),'    ',2(I2.2,':'),I2.2)", 1, ntractot-nout-nerror-nloop, &
                   nout, nerror+nloop, ntractot, &
-                  prevYear,prevMon,prevDay,prevHour,prevMin,INT(prevSec)
+                  startYear,startMon,startDay,startHour,startMin,INT(startSec)
 
      END SUBROUTINE print_start_loop
 

@@ -167,7 +167,7 @@ MODULE mod_grid
   LOGICAL                                   :: zeroindx
 
   ! Subdomain grid
-  LOGICAL                                   :: l_subdom
+  LOGICAL                                   :: l_subdom = .FALSE.
   INTEGER                                   :: imindom = 1,  imaxdom, jmindom = 1, jmaxdom
 
   ! Regular size
@@ -359,7 +359,7 @@ MODULE mod_tracervars
   CHARACTER(len=2), DIMENSION(20)     :: tracerdimension = '3D'
 
   REAL(DP), DIMENSION(20)             :: tracermin, tracermax, &
-                                         tracer0min=-999.d0, tracer0max=999.d0, &
+                                         tracer0min=-9999.d0, tracer0max=9999.d0, &
                                          tracere
   REAL(DP), DIMENSION(:), ALLOCATABLE :: tracervalue
 

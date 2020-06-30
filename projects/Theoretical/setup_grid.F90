@@ -8,8 +8,7 @@ SUBROUTINE setup_grid
   ! The following arrays has to be populated:
   !
   !  dxdy - Area of horizontal cell-walls.
-  !  dz   - Height of k-cells in 3 dim (if z_timevar not used)
-  !  dzt  - Height of k-cells in 4 dim (if z_timevar used)
+  !  dzt  - Height of k-cells in 4 dim
   !  kmt  - Number of k-cells from surface to seafloor.
   !
   ! The following might be needed to calculate

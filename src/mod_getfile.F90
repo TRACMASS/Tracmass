@@ -49,34 +49,35 @@ MODULE mod_getfile
 
           WRITE(timestamp_yyyymmdd(1:4),'(i4)') inyear
           WRITE(timestamp_yyyymmdd(5:6),'(i2)') imon
+          IF (imon<10) WRITE(timestamp_yyyymmdd(5:6),'(A1,I1)') '0',imon
           WRITE(timestamp_yyyymmdd(7:8),'(i2)') inday
-
+          IF (inday<10) WRITE(timestamp_yyyymmdd(7:8),'(A1,I1)') '0',inday
 
           ! Filled with calendar
           ichar = INDEX(filledFileName,'YYYYMMDD')
           DO WHILE (ichar /= 0)
-              filledFileName = trim(filledFileName(:ichar-1))//trim(timestamp_yyyymmdd)//trim(filledFileName(ichar+8:))
+              filledFileName = TRIM(filledFileName(:ichar-1))//TRIM(timestamp_yyyymmdd)//TRIM(filledFileName(ichar+8:))
               ichar = INDEX(filledFileName,'YYYYMMDD')
           END DO
 
           ! Filled with years
           ichar = INDEX(filledFileName,'YYYY')
           DO WHILE (ichar /= 0)
-              WRITE(filledFileName(ichar:ichar+3),'(i4)') inyear
+              WRITE(filledFileName(ichar:ichar+3),'(A4)') timestamp_yyyymmdd(1:4)
               ichar = INDEX(filledFileName,'YYYY')
           END DO
 
           ! Filled with month
           ichar = INDEX(filledFileName,'MM')
           DO WHILE (ichar /= 0)
-              WRITE(filledFileName(ichar:ichar+1),'(i2.2)') inmon
+              WRITE(filledFileName(ichar:ichar+1),'(A2)') timestamp_yyyymmdd(5:6)
               ichar = INDEX(filledFileName,'MM')
           END DO
 
           ! Filled with day
           ichar = INDEX(filledFileName,'DD')
           DO WHILE (ichar /= 0)
-              write(filledFileName(ichar:ichar+1),'(i2.2)') inday
+              write(filledFileName(ichar:ichar+1),'(A2)') timestamp_yyyymmdd(7:8)
               ichar = INDEX(filledFileName,'DD')
           END DO
 

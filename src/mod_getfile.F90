@@ -48,8 +48,8 @@ MODULE mod_getfile
           filledFileName = filePattern
 
           WRITE(timestamp_yyyymmdd(1:4),'(i4)') inyear
-          WRITE(timestamp_yyyymmdd(5:6),'(i2)') imon
-          IF (imon<10) WRITE(timestamp_yyyymmdd(5:6),'(A1,I1)') '0',imon
+          WRITE(timestamp_yyyymmdd(5:6),'(i2)') inmon
+          IF (inmon<10) WRITE(timestamp_yyyymmdd(5:6),'(A1,I1)') '0',inmon
           WRITE(timestamp_yyyymmdd(7:8),'(i2)') inday
           IF (inday<10) WRITE(timestamp_yyyymmdd(7:8),'(A1,I1)') '0',inday
 

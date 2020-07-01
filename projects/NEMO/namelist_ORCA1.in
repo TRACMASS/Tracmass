@@ -1,15 +1,13 @@
 &INIT_GRID_DESCRIPTION
-
         ! Direction of the grid (1 - E->W, S->N, B->U)
         griddir = 1,1,-1
 
         ! Does the netcdf data start with a zero index?
         zeroindx = .TRUE.
-
         ! Describe filenames
         physDataDir    = '',                            ! directory of physical data (u,v,T,S,MLD,etc)
         physPrefixForm = 'ORCA1-N406_',
-
+        dateformat     = 'YYYYMM'
         tGridName      = 'T',                           ! name of Tgrid, e.g. grid_T
         uGridName      = 'U',                           ! name of Ugrid
         vGridName      = 'V',                           ! name of Vgrid                                 ! suffix of files, e.g. ".nc"
@@ -53,11 +51,11 @@
 /
 
 &INIT_GRID_SUBDOMAIN
-      l_subdom    = .FALSE.                             ! Define a subdomain?
-      imindom     = 309,
-      imaxdom     = 359,
-      jmindom     = 20,
-      jmaxdom     = 140,
+     l_subdom    = .FALSE.                              ! Initialise subdomain
+     imindom     = 50                                   ! Eastern and western wall for subdomain
+     imaxdom     = 100
+     jmindom     = 50                                   ! Southern and northern wall for subdomain
+     jmaxdom     = 100
 /
 
 &INIT_GRID_TIME
@@ -65,7 +63,7 @@
                                                         ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
      ngcm_unit      = 5,                                ! units of ngcm
                                                         !
-     iter           = 10,                               ! number of subcycles between time levels                                                             ! stopped
+     iter           = 100,                              ! number of subcycles between time levels                                                             ! stopped
 /
 
 &INIT_START_DATE
@@ -93,7 +91,7 @@
 /
 
 &INIT_WRITE_TRAJ
-     write_frec    = 4     ! 1 = write at time intervals of gcm datasets (each ints)
+     write_frec    = 1     ! 1 = write at time intervals of gcm datasets (each ints)
                            ! 2 = write at each time iteration
                            ! 3 = write each spatial grid-crossing
                            ! 4 = write all the time steps
@@ -103,7 +101,7 @@
      outDataDir    = '',
      outDataFile   = 'NEMO_test'
 
-     timeformat    = 2     ! Format of the time array
+     timeformat    = 0     ! Format of the time array
                            ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
 /
 
@@ -205,12 +203,14 @@
       ! it could be different
       !tracerchoice = 1,2
       !tracere      = 25,35
-      ! This set up defines a killing zone by the 25C isotherm and the 35psu isohaline
+      !maxormin     =  1, -1
+      ! This set up defines a killing zone by the 25C isotherm (maximum)
+      ! and the 35psu isohaline (minimum)
 
-      tracerchoice = 1
-      tracere = 30
 /
 
 &INIT_STREAMFUNCTION
+      l_psi      = .TRUE.       ! Compute stream Functions
+      l_ offline = .TRUE.       ! Offline computation
       dirpsi     = -1,-1,-1,-1  ! Direction of integration
 /

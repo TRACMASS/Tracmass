@@ -38,9 +38,10 @@ SUBROUTINE read_field
    CHARACTER (len=200)   :: fieldFile, dateprefix
 
    ! Data files
+
    dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
    fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(fileSuffix)
-   
+
    uvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, ueul_name,[1,1,1,1],[imt,jmt,1,1])
    vvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, veul_name,[1,1,1,1],[imt,jmt,1,1])
 

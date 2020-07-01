@@ -1,8 +1,12 @@
 &INIT_GRID_DESCRIPTION
+
+        ! Does the netcdf data start with a zero index?
+        zeroindx = .FALSE.
+
         ! Describe filenames
-        physDataDir    = '/Volumes/Seagate Bac/TRACMASS_data/aviso/',               ! directory of physical data (u,v,T,S,MLD,etc)
-        physPrefixForm = '',
-        dateFormat     = 'YYYY/dt_global_allsat_phy_l4_YYYYMMDD_20180516',
+        physDataDir    = '',               ! directory of physical data (u,v,T,S,MLD,etc)
+        physPrefixForm = 'dt_global_allsat_phy_l4_',
+        dateFormat     = '_YYYYMMDD_20180516',
         fileSuffix     = '.nc',            ! suffix of files, e.g. ".nc"
 
         ! Describe variable names
@@ -54,7 +58,7 @@
      log_level    = 0
 
      ! Information of run time
-     intrun         = 3650                 ! number of time steps for run
+     intrun         = 100                 ! number of time steps for run
 /
 
 &INIT_WRITE_TRAJ
@@ -66,10 +70,10 @@
 
 
 
-     outDataDir    = '/Users/aitoraldama/Desktop/',
+     outDataDir    = '',
      outDataFile   = 'AVISO_test'
 
-     timeformat    = 2            ! Format of the time array
+     timeformat    = 0            ! Format of the time array
                                   ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
 /
 

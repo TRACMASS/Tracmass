@@ -5,7 +5,7 @@ SUBROUTINE setup_grid
     ! Subroutine for defining the grid of the GCM. Run once
     ! before the loop starts.
     ! -------------------------------------------------------------
-    ! The following arrays has to be populated:
+    ! The following arrays have to be populated:
     !
     !  dxdy - Area of horizontal cell-walls.
     !  dzt  - Height of k-cells in 4 dim.

@@ -1,4 +1,4 @@
-# Makefile for test run
+# Makefile for NEMO run
 #========================================================================
 
 # Vertical velocities

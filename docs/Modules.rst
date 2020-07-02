@@ -2,6 +2,8 @@ Main modules
 ============
 .. _md_program:
 
+The present chapter will introduce all the modules in the *src* directory. The modules are organised in alphabetical order.
+
 mod_calendar.F90
 ----------------
 
@@ -416,6 +418,7 @@ The module **mod_stream.F90** is responsible for computing volume/mass fluxes an
   *mr* is the tracer space resolution (501 by default) and *numtracers* is the number of tracers.
 
 * If streamfunctions are computed online (*l_offline* is false), the subrotuine **update_fluxes** is responsible to update the fluxes and filter them according to the trajectory number. This subroutine has six arguments: *index1, index2* represent the indexes of the two coordinates of the streamfunction, *dir* is the direction of the trajectory (in the streamfunction coordinate reference system), *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction, *'yr'*: latitude-tracer streamfunction, and *'rr'*: tracer-tracer streamfunction). The fifth argument is optional (*indt1*) and it is used whenever a *'yr'* streamfunction is used to represent the different tracer choice.
+
 .. math::
 
     F(\textbf{index1,index2}[, \textbf{indt1}]) = F(\textbf{index1,index2}[, \textbf{indt1}]) + dir \cdot \textbf{subvol}

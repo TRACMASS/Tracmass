@@ -43,6 +43,23 @@ kill_zones.F90
 
 This subroutine defines the limits of the domain. If a trajectory is outside the domain the subroutine will identify it with a flag (**nend**). **nend** = 1 is reserved to the time exceeding case.
 
+There are four types of killing zones defined by **exitType** :
+
+.. image:: figs/fig_kzone.png
+    :width: 550px
+    :align: center
+    :height: 400px
+    :alt: Description of killing zones.
+
+* **exitType=1** : killing zone defined by a geographical domain given by [ **iene, ienw** ]x[ **jens, jenn** ]. If a trajectory is within those indexes it will be terminated.
+
+* **exitType=2** : killing zone defined by a tracer value **tracere**. If **maxormin** = 1 (-1) the isoline is the maximum (minimum) value of the tracer.
+
+* **exitType=3** : killing zone defined by both a geographical domain and tracer isolines.
+
+* **exitType=4** : the killing zone is hard coded by the user.
+
+
 Makefile.prj
 ------------
 

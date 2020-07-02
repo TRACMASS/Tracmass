@@ -12,9 +12,10 @@ Welcome to TRACMASS's documentation!
 
    Introduction.rst
    Configuration.rst
-   Project.rst
    TRACMASS.rst
    Modules.rst
+   Project.rst
+   Output.rst
    Examples.rst
    References.rst
 

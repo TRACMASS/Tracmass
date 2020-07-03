@@ -1,14 +1,26 @@
+WARNING
+=======
+
+This TRACMASS version is a beta version.
+It is still under development.
+
+
+TRACMASS v7
+===========
+
 TRACMASS is a Lagrangian trajectory code for ocean and atmospheric general circulation models. The code makes it possible to estimate water paths, Lagrangian stream functions (barotropic, overturning, etc.), exchange times, etc. TRACMASS has been used in studies of the global ocean circulation, of sea circulation in the Baltic Sea, the Mediterranean Sea and in coastal regions.
 
 The code is written in FORTRAN 90 with modules and runs on UNIX platforms such as MAC OS X and Linux.
 
 TRACMASS has been set up to run with velocities integrated with models such as NEMO or IFS-ECMWF, of satellite datasets such as AVISO.
 
-WARNING
-=======
+Documentation
+=============
 
-This TRACMASS version is a beta version.
-It is still under development.
+You can find documentation about TRACMASS in
+
+https://tracmass-light.readthedocs.io/en/latest/ [![Documentation Status](https://readthedocs.org/projects/tracmass-light/badge/?version=latest)](https://tracmass-light.readthedocs.io/en/latest/?badge=latest)
+
 
 Quickstart
 ==========

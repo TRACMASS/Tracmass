@@ -51,6 +51,8 @@ MODULE mod_param
   REAL(DP), PARAMETER                       :: UNDEF=1.d20
   REAL(DP), PARAMETER                       :: EPS=1.d-10
 
+  REAL(DP)                                  :: trunit = 1.d0
+
   REAL(DP), PARAMETER                       :: grav = 9.81
   REAL(DP), PARAMETER                       :: PI = 4.d0*ATAN(1.d0)
   REAL(DP), PARAMETER                       :: radius = 6371229.d0
@@ -204,8 +206,8 @@ MODULE mod_grid
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: hs
 
   ! Info about input data
-  CHARACTER(LEN=50)                         :: RunID, tGridName, uGridName, vGridName, &
-                                               fileSuffix,  hs_name, ueul_name, veul_name, &
+  CHARACTER(LEN=50)                         :: RunID, tGridName = '', uGridName = '', vGridName = '', &
+                                               fileSuffix = '',  hs_name = '', ueul_name = '', veul_name = '', &
                                                usgs_name = '', vsgs_name = ''
 
   CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
@@ -371,6 +373,12 @@ MODULE mod_tracervars
 
   ! Particle arrays
   TYPE(tracer), ALLOCATABLE, DIMENSION(:) :: tracers
+
+
+  ! Salt/water trajectories
+  LOGICAL                                     :: l_swtraj = .FALSE.
+  REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE   :: tracertraj
+  REAL(DP)                                    :: tracertrajscale = 1.d0
 
 
 END MODULE mod_tracervars

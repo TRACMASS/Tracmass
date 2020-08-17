@@ -1,9 +1,25 @@
+#================================================================
+#                     TRACMASS MAKEFILE
+#================================================================
+
 # Project and case definition
 PROJECT	          = Theoretical
 CASE              = Theoretical
 RUNFILE 	        = runtracmass
 ARCH              =
 NETCDFLIBS        =
+#================================================================
+
+# Possible architectures:
+# tetralith    (Swedish HPC with intel)
+
+# Possible netCDF settings:
+# automatic    (set by nc-config)
+# automatic-44 (set by nf-config, for netCDF version >4.4)
+# none         (no netCDF library)
+
+#================================================================
+# ***************************************************************
 #================================================================
 
 # Read the project Makefile

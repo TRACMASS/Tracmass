@@ -38,7 +38,7 @@ MODULE mod_init
       ! --------------------------------------------------
 
           ! Setup namelists
-          namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx,l_onestep, physDataDir, physPrefixForm, &
+          namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx, trunit, l_onestep, physDataDir, physPrefixForm, &
                                            dateFormat, tGridName, uGridName, vGridName, &
                                            fileSuffix, hs_name, ueul_name, veul_name, &
                                            usgs_name, vsgs_name
@@ -59,7 +59,7 @@ MODULE mod_init
                                            loneparticle, SeedType, ist1,  &
                                            ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
                                            seedDir, seedFile, seedTime, timeFile
-          namelist /INIT_TRACERS/          l_tracers, &
+          namelist /INIT_TRACERS/          l_tracers, l_swtraj, tracertrajscale, &
                                            tracername, tracerunit, tracervarname,&
                                            traceraction,tracermin, tracermax, &
                                            tracerdimension
@@ -84,6 +84,11 @@ MODULE mod_init
           READ (8,nml=INIT_KILLZONES)
           READ (8,nml=INIT_STREAMFUNCTION)
           CLOSE(8)
+
+          ! If input data is on a A grid
+#ifdef A_grid
+          jmt = jmt-1
+#endif
 
           ! Reverse killing zones
           CALL reverse()
@@ -146,6 +151,10 @@ MODULE mod_init
           ALLOCATE ( wflux(0:km, nst))
           wflux(:,:) = 0.
 #endif
+
+          ! Allocate Water/salt trajectories
+          ALLOCATE(tracertraj(imt,0:jmt,km,-1:1))
+          tracertraj(:,:,:,:) = 1.d0
 
       END SUBROUTINE init_alloc
 

@@ -65,6 +65,9 @@ MODULE mod_write
       !
       ! --------------------------------------------------
 
+          ! Call mkdir to create directory if it does not exist
+          CALL SYSTEM( 'mkdir -p '//TRIM(outDataDir) )
+
           fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
           OPEN(UNIT=50, FILE = TRIM(fullWritePref)//'_ini.csv', STATUS='replace')
@@ -83,6 +86,9 @@ MODULE mod_write
       ! for postprocessing.
       !
       ! --------------------------------------------------
+
+          ! Call mkdir to create directory if it does not exist
+          CALL SYSTEM( 'mkdir -p '//TRIM(outDataDir) )
 
           fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
@@ -147,11 +153,11 @@ MODULE mod_write
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                       WRITE(outformat(31:32),"(I2)") numtracers
 
-                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt, trajectories(ntrac)%tracerval
+                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),2(',',F20.5))"
 
-                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt
+                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt
                   END IF
 
                   RETURN
@@ -162,11 +168,11 @@ MODULE mod_write
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                       WRITE(outformat(31:32),"(I2)") numtracers+1
 
-                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts, trajectories(ntrac)%tracerval
+                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
 
-                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts
+                      WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts
                   END IF
 
                   RETURN
@@ -179,12 +185,12 @@ MODULE mod_write
                       WRITE(outformat(50:51),"(I2)") numtracers
 
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
-                          subvol, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
+                          subvol/trunit, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
 
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
-                          subvol, dateYear, dateMon, dateDay, dateHour
+                          subvol/trunit, dateYear, dateMon, dateDay, dateHour
                   END IF
 
                   RETURN
@@ -228,11 +234,11 @@ MODULE mod_write
                       IF (l_tracers) THEN
                           outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                           WRITE(outformat(31:32),"(I2)") numtracers
-                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout, trajectories(ntrac)%tracerval
+                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout, trajectories(ntrac)%tracerval
                       ELSE
                           outformat = "(I8,3(',',F13.5),2(',',F20.5))"
 
-                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout
+                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout
                       END IF
 
                       RETURN
@@ -246,11 +252,11 @@ MODULE mod_write
                           outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                           WRITE(outformat(31:32),"(I2)") numtracers+1
 
-                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout, trajectories(ntrac)%tracerval
+                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout, trajectories(ntrac)%tracerval
                       ELSE
                           outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
 
-                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, tout
+                          WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout
                       END IF
 
                       RETURN
@@ -268,12 +274,12 @@ MODULE mod_write
                           WRITE(outformat(50:51),"(I2)") numtracers
 
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
-                              subvol, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
+                              subvol/trunit, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
                       ELSE
                           outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
 
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
-                              subvol, dateYear, dateMon, dateDay, dateHour
+                              subvol/trunit, dateYear, dateMon, dateDay, dateHour
                       END IF
 
                       RETURN
@@ -309,11 +315,11 @@ MODULE mod_write
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                       WRITE(outformat(31:32),"(I2)") numtracers
 
-                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt, trajectories(ntrac)%tracerval
+                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),2(',',F20.5))"
 
-                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, nff*tt
+                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt
                   END IF
 
                   RETURN
@@ -324,11 +330,11 @@ MODULE mod_write
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
                       WRITE(outformat(31:32),"(I2)") numtracers+1
 
-                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts, trajectories(ntrac)%tracerval
+                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
 
-                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol, ts
+                      WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts
                   END IF
 
                   RETURN
@@ -341,12 +347,12 @@ MODULE mod_write
                       WRITE(outformat(50:51),"(I2)") numtracers
 
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
-                          subvol, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
+                          subvol/trunit, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
                   ELSE
                       outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
 
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
-                          subvol, dateYear, dateMon, dateDay, dateHour
+                          subvol/trunit, dateYear, dateMon, dateDay, dateHour
                   END IF
 
                   RETURN

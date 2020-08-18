@@ -58,7 +58,7 @@ MODULE mod_init
           namelist /INIT_SEEDING/          nff, isec, idir, nqua, partQuant,             &
                                            loneparticle, SeedType, ist1,  &
                                            ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
-                                           seedDir, seedFile, seedTime, timeFile
+                                           seedDir, seedFile, maskFile, seedTime, timeFile
           namelist /INIT_TRACERS/          l_tracers, l_swtraj, tracertrajscale, &
                                            tracername, tracerunit, tracervarname,&
                                            traceraction,tracermin, tracermax, &

@@ -79,9 +79,10 @@ MODULE mod_seedvars
 
   INTEGER                                    :: seedType, seedTime
 
-  CHARACTER(LEN=200)                         :: seedDir      ! Directory where seed files are stored
-  CHARACTER(LEN=200)                         :: seedFile     ! space seed file
-  CHARACTER(LEN=200)                         :: timeFile     ! time seed file
+  CHARACTER(LEN=200)                         :: seedDir       ! Directory where seed files are stored
+  CHARACTER(LEN=200)                         :: seedFile      ! space seed file
+  CHARACTER(LEN=200)                         :: maskFile =' ' ! mask file
+  CHARACTER(LEN=200)                         :: timeFile      ! time seed file
 
 END MODULE mod_seedvars
 

@@ -85,6 +85,8 @@ MODULE mod_seed
             numsd = 0
             landsd = 0
 
+            IF (maskFile .NE. '')  CALL read_mask()
+
             DO ji=ist1,ist2
                DO jj=jst1,jst2
 
@@ -578,6 +580,31 @@ MODULE mod_seed
               END IF
 
         END SUBROUTINE seed
+
+        SUBROUTINE read_mask()
+        ! --------------------------------------------------
+        !
+        ! Purpose:
+        ! Read the mask file if any
+        !
+        ! --------------------------------------------------
+
+          INQUIRE (FILE = TRIM(seedDir)//TRIM(maskFile), exist=fileexists)
+
+          IF (fileexists) THEN
+              OPEN (UNIT=10, FILE= TRIM(seedDir)//TRIM(maskFile), ACTION = 'READ')
+              READ (UNIT=10, FMT=*) mask(:,:)
+              CLOSE (UNIT=10)
+          ELSE
+              PRINT *,'-----------------------------------------------------'
+              PRINT *,'*** ERROR!                                        ***'
+              PRINT *,'*** Mask file does not exist                     ***'
+              PRINT *,'File name    : '//trim(maskFile)
+              PRINT *,'*** Run terminated.                               ***'
+              STOP
+          END IF
+
+        END SUBROUTINE
 
         SUBROUTINE split_grid()
         ! --------------------------------------------------

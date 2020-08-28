@@ -132,7 +132,7 @@ MODULE mod_init
           zstot(:,:,:) = 1.; zstou(:,:) = 1.; zstov(:,:) = 1.
 
           ! Allocate surface parameter (SSH ocean, surface pressure atmosphere)
-          ALLOCATE ( hs(imt+1,jmt+1,-1:1))
+          ALLOCATE ( hs(imt+1,0:jmt+1,-1:1))
           hs(:,:,:) = 0.
 
           ! Allocate velocity fields

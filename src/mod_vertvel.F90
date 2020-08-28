@@ -36,11 +36,11 @@ MODULE mod_vertvel
             IF (k> km - kmt(ix,jy)) THEN
                 wflux(k, 1) = wflux(k-1, 1) - &
                       ( uflux(ix,jy,k,1) - uflux(ixm,jy,k,1) + vflux(ix,jy,k,1) - vflux(ix,jy-1,k,1) ) &
-                      + dzdt(ix,jy,k,1)*dxdy(ix,jy)
+                      - dzdt(ix,jy,k,1)*dxdy(ix,jy)
 
                 wflux(k, 2) = wflux(k-1, 2) - &
                       ( uflux(ix,jy,k,2) - uflux(ixm,jy,k,2) + vflux(ix,jy,k,2) - vflux(ix,jy-1,k,2) ) &
-                      + dzdt(ix,jy,k,2)*dxdy(ix,jy)
+                      - dzdt(ix,jy,k,2)*dxdy(ix,jy)
             ELSE
                 wflux(k,:) = 0.d0
             END IF

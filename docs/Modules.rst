@@ -326,7 +326,7 @@ This module includes five subroutines:
 mod_seed.F90
 ------------
 
-The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and two private subroutines (**split_grid** and **reverse**)
+The module **mod_seed** defines all the variables and arrays neccesary for the seeding of particles. This modules contains two public subroutines (**init_seed** and **seed**) and three private subroutines (**split_grid** , **read_mask**, and **reverse**)
 
 The subroutine **init_seed** defines the grid points and the time steps where the particles are going to be initialised, the wall of the grid where they are going to be placed (**isec**), and their direction (**idir**). There are three options for **isec**: (1) on the east wall of the grid cell, (2) on the north wall of the grid cell, and (3) on the top wall of the grid cell. idir selects the initial direction of the trajectories eastward/northward/upward (**idir = 1**) or westward/southward/downward (**idir = -1**).
 
@@ -340,7 +340,18 @@ The subroutine **init_seed** defines the grid points and the time steps where th
 
 The initial seeding location, time, and direction can be defined directly in the namelist or read from a file. This is control by **seedType** and **seedTime**.
 
-* **seedType**: (1) the seeding location is defined by the grid points within the volume described by **(ist2-ist1+1)x(jst2-jst1+1)x(kst2-kst1+1)**, all these trajectories will shared the **idir** and **isec** defined in the namelist, or (2) the seeding location and the direction is read from an external file **seedDir/seedfile**.
+* **seedType**: (1) the seeding location is defined by the grid points within the volume described by **(ist2-ist1+1)x(jst2-jst1+1)x(kst2-kst1+1)**, all these trajectories will shared the **idir** and **isec** defined in the namelist, (2) the seeding location and the direction is read from an external file **seedDir/seedfile**.
+
+.. important:: The mask file only will be read if **seedType** is set to one. The **mask** array is two dimensional and has the dimensions *imt x jmt*. If a mask file is provided (**maskFile**), only the values where **mask=1** (marked in orange in the figure) will be selected for seeding.
+
+  .. image:: figs/fig_mask.png
+      :width: 300px
+      :align: center
+      :height: 150px
+      :alt: Description of how the mask is applied.
+
+  The reading of the mask file is done by the internal subroutine **read_mask**. The indexes in the mask file are in the original file reference system.
+
 
 * **seedTime**: (1) the seeding happens in the time interval defined between **tst2** and **tst1**, or (2) it is read from a external file **seedDir/timeFile**.
 
@@ -386,9 +397,11 @@ This module contains two public subroutines:
 
 .. f:autosubroutine:: seed
 
-and two private subroutine:
+and three private subroutine:
 
 .. f:autosubroutine:: split_grid
+
+.. f:autosubroutine:: read_mask
 
 .. f:autosubroutine:: reverse
 
@@ -472,7 +485,7 @@ This module contains four public subroutines:
 mod_subdomain.F90
 -----------------
 
-The module **mod_subdomain.F90** is responsible to define a subdomain and updating the indexes according to the new domain. Defining a subdomain is useful to run TRACMASS with high resolution data especially if the area of study does not cover the whole original domain. Two types of subdomain can be declared: a regular box (**imindom** < **imaxdom**) and a split box (**imaxdom** < **imindom**).
+The module **mod_subdomain.F90** is responsible for defining a subdomain and updating the indexes according to the new domain. Defining a subdomain is useful to run TRACMASS with high resolution data especially if the area of study does not cover the whole original domain. Two types of subdomain can be declared: a regular box (**imindom** < **imaxdom**) and a split box (**imaxdom** < **imindom**).
 
 .. image:: figs/fig_subdomain_1.png
   :width: 600px
@@ -527,6 +540,15 @@ This module contains two subroutines:
 .. f:autosubroutine:: init_subdomain
 
 .. f:autosubroutine:: update_subindex
+
+mod_swap.F90
+------------
+
+The module **mod_swap.F90** is responsible for updating the time indexes for those variables that are time dependent (for more information check the description of **read_field.F90**) and reversing the fluxes if the trajectories are run backward in time. This module contains two subroutines:
+
+.. f:autosubroutine:: swap_time
+
+.. f:autosubroutine:: swap_sign
 
 
 mod_tracers.F90
@@ -638,7 +660,7 @@ This module contains a single subroutine **vertvel** that computes the vertical 
 
 .. math::
 
-   W^n_{i,j,k,n} = W^n_{i,j,k-1} - ( U^n_{i,j,k,n}-U^n_{i-1,j,k} + V^n_{i,j,k} - V^n_{i,j-1,k}) + area(i,j)\frac{\Delta z^{n+1}_{i,j,k}-\Delta z^{n-1}_{i,j,k}}{2\Delta t}
+   W^n_{i,j,k,n} = W^n_{i,j,k-1} - ( U^n_{i,j,k,n}-U^n_{i-1,j,k} + V^n_{i,j,k} - V^n_{i,j-1,k}) - area(i,j)\frac{\Delta z^{n+1}_{i,j,k}-\Delta z^{n-1}_{i,j,k}}{2\Delta t}
 
 This equation is integrated from the bottom (ocean) or the TOA (atmosphere) to the level **ka**.
 
@@ -647,7 +669,7 @@ This equation is integrated from the bottom (ocean) or the TOA (atmosphere) to t
 mod_write.F90
 -------------
 
-The module **mod_write** creates the outfiles where the information of the trajectories is stored. This module is responsible for writing four important files: *_ini.csv* where the initial positions are stored, *_out.csv* where the final positions are stored, *_run.csv* where the new positions of the trajectory are stored, and  *_rerun.csv* where the trajectory number and the flag corresponding to the kill zone is stored.
+The module **mod_write** creates the outfiles where the information of the trajectories is stored. This module is responsible for writing four important files: *_ini.csv* where the initial positions are stored, *_out.csv* where the final positions are stored, *_run.csv* where the new positions of the trajectory are stored, and  *_rerun.csv* where the trajectory number and the flag corresponding to the kill zone is stored. The output data is stored in the directory given by **outDataDir** and the output files start with the prefix given by **outDataFile**. If those values are not specified, the current working directory becomes the default output directory.
 
 .. warning:: If a particle is not terminated it will not be stored in the *_rerun.csv* file.
 
@@ -660,7 +682,7 @@ The module **mod_write** creates the outfiles where the information of the traje
 The initial and the final information of the trajectories are always stored. However, the frequency at which data is stored in the *_run.csv* is controlled by **write_frec**: (1) only at GCM time steps, (2) only at GCM and subcycle time steps, (3) only when a trajectory crosses a wall, (4) all time steps, and (5) no data stored.
 The time format of the output files can also be adjusted with **timeformat**: (0) **tt** is stored, (1) **ts** is stored, (2) the time is saved in YYYY-MM-DD HH format.
 
-.. important::  If TRACMASS is run with the streamfunction flag this module also writes the resulting streamfunctions in the files: *_psixy.csv* for the barotropic case, *_psiyz.csv* for the meridional case, *_psiyr.csv* for the latitude-tracer case, and *_psirr.csv* for the tracer-tracer streamfunctions. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
+.. important::  If TRACMASS is run with the stream function flag this module also writes the resulting stream functions in the files: *_psixy.csv* for the barotropic case, *_psiyz.csv* for the meridional case, *_psiyr.csv* for the latitude-tracer case, and *_psirr.csv* for the tracer-tracer stream functions. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
 
 
 This module contains nine subroutines:

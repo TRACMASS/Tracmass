@@ -46,7 +46,7 @@ The number of columns depends on both the time format (**timeformat**) and the n
 The rerun file contains information about the trajectories that exited through the domains defined by **kill_zones.F90**. This file is read to rerun the code or to compute offline streamfunctions. It consists of three columns:
 
 * Column 1: trajectory number (**ntrac**).
-* Column 2: kill zone flag (1 for time exceeded, 2- for the criterias defined in **kill_zones.F90**.
+* Column 2: kill zone flag (0 for time exceeded, 1 for trajectories reaching surface, 2 - for the criterias defined in **kill_zones.F90**).
 * Column 3: number of times information of the trajectory has been saved in an output file.
 
 
@@ -54,14 +54,14 @@ The rerun file contains information about the trajectories that exited through t
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If streamfunctions are computed, four files are created where the output is stored.
 
-+---------+-------------------+---------------------+
-| Case    | Number of columns |  Number of rows     |
-+---------+-------------------+---------------------+
-| *psixy* |        imt        | jmt x 9             |
-+---------+-------------------+---------------------+
-| *psiyz* |        jmt        | km x 9              |
-+---------+-------------------+---------------------+
-| *psiyr* |        jmt        | mr x 9 x numtracers |
-+---------+-------------------+---------------------+
-| *psirr* |        mr         | mr x 9              |
-+---------+-------------------+---------------------+
++---------+-------------------+----------------------+
+| Case    | Number of columns |  Number of rows      |
++---------+-------------------+----------------------+
+| *psixy* |        imt        | jmt x 10             |
++---------+-------------------+----------------------+
+| *psiyz* |        jmt        | km x 10              |
++---------+-------------------+----------------------+
+| *psiyr* |        jmt        | mr x 10 x numtracers |
++---------+-------------------+----------------------+
+| *psirr* |        mr         | mr x 10              |
++---------+-------------------+----------------------+

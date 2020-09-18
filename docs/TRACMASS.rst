@@ -37,6 +37,7 @@ TRACMASS can be run with different arguments that can be combined:
 
 * **summary**: include a more detailed summary of the trajectories and their transport at the end of the run.
 
+* **A_grid**: Only used if the original data is based on a *A-grid*. Adjust the number of meridional gridpoints in the original data to the TRACMASS reference system. 
 
 TRACMASS unix file tree
 -----------------------

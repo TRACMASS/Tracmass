@@ -17,31 +17,57 @@ The following variables are initialised in this subroutine:
 
 * **dyu**:  size of the meridional wall computed in U points.
 
-* **dzt** [*mandatory*]: size of the vertical wall computed in T points.
+* **kmt**: number of vertical level from surface to bottom topography.
 
 * **dzu**: size of the vertical wall computed in U points.
 
 * **dzv**: size of the vertical wall computed in V points.
 
-* **kmt**: number of vertical level from surface to bottom topography.
+* **dzt** [*mandatory*]: size of the vertical wall computed in T points.
+
+.. warning::
+     **dzt** is a mandatory variable that needs to be defined either in **setup_grid.F90** or in **read_field.F90**.
+
 
 read_field.F90
 --------------
 
 This subroutine reads velocities and optionally some tracers from netCDF files and computes the mass/volume fluxes for TRACMASS.
 
+There are two kind of variables that are stored at different time steps: 2-step variables and 3-step variables:
+
+* The 2-step variables are those used to compute the time interpolation in between two time steps. These variables include all the mass/volume fluxes, tracer values, grid mass/volume tendecies, or scale factors. These variables have two time steps that represent: the "previous" time step (1) and the "current" time step (2). The data is read and stored in index **2**, in the following time step the subroutine **swap_time** will reassign the former "current" time step into the new "previous" time step.
+
+  .. image:: figs/fig_swap_1.png
+      :width: 600px
+      :align: center
+      :height: 300px
+      :alt: Description of how the reading of fields work (2 step variables).
+
+* The 3-step variables are those used to compute the mass/volume change **dzdt**. These variables include the size of the vertical grid **dzt**, surface boundary **hs**, or the tracer value **tracertraj**. These variables have there time steps that represent: the "previous" time step (-1), the "current" time step (0), and the "next" time step (1). The data is read and stored in index **1**, in the following time step the subroutine **swap_time** will reassign the former "current" time step into the new "previous" time step, and the former "next" into the new "current" time step. In the first iteration of TRACMASS (**ints** equals to zero) the three time steps are read.
+
+  .. image:: figs/fig_swap_2.png
+      :width: 600px
+      :align: center
+      :height: 300px
+      :alt: Description of how the reading of fields work (3 step variables).
+
 The following variables are initialised in this subroutine:
 
-* **uflux** [*mandatory*]: zonal volume/mass flux.
+    * **uflux** [*mandatory*, 2-step variable]: zonal volume/mass flux.
 
-* **vflux** [*mandatory*]: meridional volume/mass flux.
+    * **vflux** [*mandatory*, 2-step variable]: meridional volume/mass flux.
 
-* **dzdt**: time derivate of the vertical grid.
+    * **dzt** [*mandatory*, see warning in **setup_grid**, 3-step variable]: size of the vertical wall computed in T points.
+
+    * **dzdt** [2-step variable]: time derivate of the vertical grid.
+
+    * **tracers(:)%data** [2-step variable] and **tracertraj** [3-step variable]: tracer values if **l_tracers** is **TRUE**.
 
 kill_zones.F90
 --------------
 
-This subroutine defines the limits of the domain. If a trajectory is outside the domain the subroutine will identify it with a flag (**nend**). **nend** = 1 is reserved to the time exceeding case.
+This subroutine defines the limits of the domain. If a trajectory is outside the domain the subroutine will identify it with a flag (**nend**). **nend** = 0 is reserved to the time exceeding case and **nend** = 1 is reserved to the trajectories reach the surface (**z1** == **km**).
 
 There are four types of killing zones defined by **exitType** :
 
@@ -76,6 +102,8 @@ This is a list of the current pre-processing options:
   +----------------+------------------------------------------------+
   | **no_netcdf**  | Run TRACMASS without netcdf libraries          |
   +----------------+------------------------------------------------+
+  | **A_grid**     | Original dataset on a A grid                   |
+  +----------------+------------------------------------------------+
 
 Namelist
 --------
@@ -90,6 +118,8 @@ INIT_GRID_DESCRIPTION
 * **griddir** [*integer, array*]: the direction of the input data indexes referenced to the TRACMASS reference system. It's a three element array; the first element corresponds to the zonal direction, the second one to the meridional direction and the third one to the vertical direction. Two possible values are possible (1) eastward/northward/upward or (-1) westward/southward/downward. The default values are **[1,1,1]**.
 
 * **zeroindx** [*logical*]: the first index in the original dataset is given by zero instead of one. The default value is **FALSE**.
+
+* **trunit** [*real*]: constant to scale the TRACMASS transports.
 
 * **l_onestep** [*logical*]: read one time step per input file. The default value is **FALSE**.
 
@@ -246,6 +276,8 @@ INIT_SEEDING
 
 * **seedfile** [*character*]: name of the seeding file (seedType=2).
 
+* **maskfile** [*character*]: name of the masking file (seedType=1).
+
 * **seedTime** [*integer*]: defines the time seeding type (1) using a time range, or (2) using indexes from a file.
 
 * **tst1** and **tst2** [*integer*]: defines the first and last time steps to seed trajectories (seedTime=1).
@@ -256,6 +288,10 @@ INIT_TRACERS
 ^^^^^^^^^^^^
 
 * **l_tracers** [*logical*]:  activate tracers. Default value is **FALSE**.
+
+* **l_swtraj** [*logical*]: activate salt/water trajectories. Default value is **False**.
+
+* **tracertrajscale** [*real*]: scale factor applied on the tracer which is used to compute salt/water trajectories. Default value is one.
 
 * **tracername** [*character, array*]: name of the tracers.
 
@@ -294,3 +330,12 @@ INIT_KILLZONES
 *  **tracere** [*real, array*]: value of the tracer that defines the killing zone (exitType=2 or exitType=3).
 
 *  **maxormin** [*integer, array*]: sets the value of **tracere** to a (1) maximum or (-1) minimum value.
+
+INIT_STREAMFUNCTION
+^^^^^^^^^^^^^^^^^^^
+
+* **l_psi** [*logical*]: activate stream function calculation.
+
+* **l_offline** [*logical*]: compute the stream functions offline. Default value is **True**.
+
+* **dipsi** [*integer, array*]: direction of integration of streamfunctions.

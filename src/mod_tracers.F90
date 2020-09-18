@@ -85,6 +85,10 @@ MODULE mod_tracers
 
         END DO
 
+
+        ! make sure tracertrajscale is one if l_swtraj is FALSE
+        IF (l_swtraj .EQV. .FALSE.) tracertrajscale = 1.d0
+
     END SUBROUTINE init_tracer
 
     SUBROUTINE compute_tracer(tracname, var3d)

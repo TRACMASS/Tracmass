@@ -54,17 +54,20 @@ MODULE mod_stream
         IF (l_offline .EQV. .FALSE.) ilooptraj = ntractot
 
         DO  intraj = 1, ilooptraj
-          lbasLoop:DO ilvar1 = 1, 9
+          lbasLoop:DO ilvar1 = 1, 10
 
               IF (l_offline .EQV. .FALSE.) THEN
-                  IF (trajectories(intraj)%lbas/=ilvar1+1) CYCLE lbasLoop
+                  IF (trajectories(intraj)%lbas/=ilvar1) CYCLE lbasLoop
               END IF
 
               psi_xy(:,:) = 0.; psi_yz(:,:) = 0.
-              IF (l_tracers) psi_yr(:,:,:) = 0.; psi_rr(:,:) = 0.
+              IF (l_tracers) THEN
+                 psi_yr(:,:,:) = 0.
+                 psi_rr(:,:)   = 0.
+              END IF
 
               ilvar3 = intraj
-              IF (l_offline) ilvar3 = ilvar1+1
+              IF (l_offline) ilvar3 = ilvar1
 
               IF (dirpsi(ilvar1) == 1) THEN
                   DO ilvar2 = 2, MAX(jmt,km,resolution)
@@ -81,7 +84,7 @@ MODULE mod_stream
                       END DO
 
                       ! Tracer+tracer Streamfunctions
-                      psi_rr(:,ilvar2) = psi_rr(:,ilvar2-1) - fluxes_rr(:,ilvar2,ilvar3)
+                      IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2-1) - fluxes_rr(:,ilvar2,ilvar3)
 
                   END DO
               ELSE IF (dirpsi(ilvar1) == -1) THEN
@@ -99,7 +102,7 @@ MODULE mod_stream
                       END DO
 
                       ! Tracer+tracer Streamfunctions
-                      psi_rr(:,ilvar2) = psi_rr(:,ilvar2+1) + fluxes_rr(:,ilvar2,ilvar3)
+                      IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2+1) + fluxes_rr(:,ilvar2,ilvar3)
 
                   END DO
               END IF
@@ -344,28 +347,30 @@ MODULE mod_stream
               END IF
 
               ! Tracer-tracer fluxes
-              IF (l_tracers .AND. numtracers>=2 .AND. traj_t(ilooptraj, iloopsave,1)/=-999. ) THEN
+              IF (l_tracers .AND. numtracers>=2) THEN
 
-                  ! Tracer index
-                  m1a = tracerbin(traj_t(ilooptraj,iloopsave,1),1)
-                  m2a = tracerbin(traj_t(ilooptraj,iloopsave,2),2)
-                  m1b = tracerbin(traj_t(ilooptraj,iloopsave-1,1),1)
-                  m2b = tracerbin(traj_t(ilooptraj,iloopsave-1,2),2)
+                  IF ( traj_t(ilooptraj, iloopsave,1)/=-999. ) THEN
 
-                  DO index1 = m1b, m1a-1
-                    slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
-                    index2 = NINT( slope + m2b)
+                      ! Tracer index
+                      m1a = tracerbin(traj_t(ilooptraj,iloopsave,1),1)
+                      m2a = tracerbin(traj_t(ilooptraj,iloopsave,2),2)
+                      m1b = tracerbin(traj_t(ilooptraj,iloopsave-1,1),1)
+                      m2b = tracerbin(traj_t(ilooptraj,iloopsave-1,2),2)
 
-                    fluxes_rr(index1, index2, index3) =  fluxes_rr(index1, index2, index3) + traj_subvol(ilooptraj)
-                  END DO
+                      DO index1 = m1b, m1a-1
+                        slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
+                        index2 = NINT( slope + m2b)
 
-                  DO index1 = m1a, m1b-1
-                    slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
-                    index2 = NINT( slope + m2b)
+                        fluxes_rr(index1, index2, index3) =  fluxes_rr(index1, index2, index3) + traj_subvol(ilooptraj)
+                      END DO
 
-                    fluxes_rr(index1, index2, index3) =  fluxes_rr(index1, index2, index3) - traj_subvol(ilooptraj)
-                  END DO
+                      DO index1 = m1a, m1b-1
+                        slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
+                        index2 = NINT( slope + m2b)
 
+                        fluxes_rr(index1, index2, index3) =  fluxes_rr(index1, index2, index3) - traj_subvol(ilooptraj)
+                      END DO
+                  END IF
               END IF
 
             END DO

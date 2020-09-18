@@ -78,10 +78,9 @@ MODULE mod_error
 
            errCode = 0
            ! Trajectory leaving a model area
-           IF(ia<1 .OR. ia>imtdom .OR. ib<1 .OR. ib>imtdom .OR.    &
-              ja<1 .OR. ja>jmtdom .OR. jb<1 .OR. jb>jmtdom .OR.    &
-              y0<0 .OR. y0>jmtdom .OR. y1<0 .OR. y1>jmtdom .OR.    &
-              z1>=DBLE(KM) ) THEN
+           IF (ia<1 .OR. ia>imtdom .OR. ib<1 .OR. ib>imtdom .OR.    &
+               ja<1 .OR. ja>jmtdom .OR. jb<1 .OR. jb>jmtdom .OR.    &
+               y0<0 .OR. y0>jmtdom .OR. y1<0 .OR. y1>jmtdom) THEN
 
             nerror = nerror + 1
             errCode = 3
@@ -175,7 +174,7 @@ MODULE mod_error
          INTEGER, INTENT(IN)                 :: errCode
 
          xw = x1; yw = y1; zw = z1
-           
+
          IF (l_subdom) THEN
              xw = xw + imindom - 1;
              yw = yw + jmindom - 1;

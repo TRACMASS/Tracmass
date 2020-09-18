@@ -392,7 +392,7 @@ MODULE mod_psi
   LOGICAL    :: l_psi     = .FALSE.
   LOGICAL    :: l_offline = .TRUE.
 
-  INTEGER , DIMENSION(9)   :: dirpsi = 0
+  INTEGER , DIMENSION(10)   :: dirpsi = 1
 
   ! Barotropic streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xy
@@ -420,13 +420,13 @@ MODULE mod_postprocessvars
   LOGICAL                                 :: l_summary = .FALSE.    ! Extended information about killing zones
 
   INTEGER, DIMENSION(:),ALLOCATABLE       :: nsavewrite
-  INTEGER                                 :: nsave
+  INTEGER                                 :: nsave = 0
 
-  INTEGER, DIMENSION(10)                  :: ntrajout = 0
+  INTEGER, DIMENSION(0:10)                :: ntrajout = 0
   INTEGER                                 :: ntrajtot = 0
   INTEGER                                 :: maxlbas = 0
 
-  REAL(DP), DIMENSION(10)                 :: volout = 0
+  REAL(DP), DIMENSION(0:10)               :: volout = 0
   REAL(DP)                                :: voltot = 0
 
   ! Temporary trajectory information

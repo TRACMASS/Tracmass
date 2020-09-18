@@ -10,8 +10,9 @@ MODULE mod_seed
     !!               - init_seed
     !!               - seed
     !!
+    !!               - read_mask  (PRIVATE)
     !!               - split_grid (PRIVATE)
-    !!               - reverse    (PRIVATE )
+    !!               - reverse    (PRIVATE)
     !!
     !!------------------------------------------------------------------------------
 
@@ -54,7 +55,7 @@ MODULE mod_seed
 
     LOGICAL                                    :: fileexists
 
-    PRIVATE :: split_grid
+    PRIVATE :: split_grid, reverse, read_mask
 
     CONTAINS
 
@@ -283,7 +284,7 @@ MODULE mod_seed
             trajectories(:)%niter = 0
             trajectories(:)%icycle = 0
             trajectories(:)%active = .TRUE.
-            trajectories(:)%lbas = 0
+            trajectories(:)%lbas = -1
 
 
             ! If postprocessing is activated
@@ -532,7 +533,7 @@ MODULE mod_seed
                         END IF
 
                         ! Rerun/streamfunction options
-                        IF ((l_rerun .EQV..TRUE.) .AND. (trajectories(ntrac)%lbas==0)) THEN
+                        IF ((l_rerun .EQV..TRUE.) .AND. (trajectories(ntrac)%lbas==-1)) THEN
                           trajectories(ntrac)%active = .FALSE.
                           CYCLE kkkLoop
                         END IF
@@ -598,7 +599,7 @@ MODULE mod_seed
           ELSE
               PRINT *,'-----------------------------------------------------'
               PRINT *,'*** ERROR!                                        ***'
-              PRINT *,'*** Mask file does not exist                     ***'
+              PRINT *,'*** Mask file does not exist                      ***'
               PRINT *,'File name    : '//trim(maskFile)
               PRINT *,'*** Run terminated.                               ***'
               STOP

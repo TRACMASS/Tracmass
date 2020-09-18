@@ -31,7 +31,7 @@ MODULE mod_postprocess
 
     INTEGER                      :: filestat0, filestat1, filestat2, filestat3
 
-    INTEGER                      :: ntrac1, nkzone, maxnkzone, nn = 0
+    INTEGER                      :: ntrac1, nkzone, maxnkzone = 0, nn = 0
 
     CONTAINS
 
@@ -92,7 +92,7 @@ MODULE mod_postprocess
             CALL read_data(51, filestat2)
 
             ! If stream fuctions are computed
-            IF (l_psi .AND. traj_out(ntrac)>1 .AND. l_offline) THEN
+            IF (l_psi .AND. traj_out(ntrac)>1 .AND. l_offline .AND. filestat2 == 0) THEN
                   counter(ntrac) = counter(ntrac) + 1
 
                   traj_x(ntrac, counter(ntrac)) = x1
@@ -187,12 +187,16 @@ MODULE mod_postprocess
         PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '   Terminated         | ', SUM(ntrajout),' | ',&
                 100*REAL(SUM(ntrajout))/REAL(ntrajtot),' || ',SUM(volout),' | ', 100*SUM(volout)/voltot,' | '
         PRINT*, '-------------------------------------------------------------------------------'
-        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Excess of time  | ',ntrajout(1),' | ',&
+        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Excess of time  | ',ntrajout(0),' | ',&
+                100.*REAL(ntrajout(0))/REAL(ntrajtot),' || ',volout(0),' | ',100.*volout(0)/voltot,' | '
+        PRINT*, '-------------------------------------------------------------------------------'
+
+        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Reach surface   | ',ntrajout(1),' | ',&
                 100.*REAL(ntrajout(1))/REAL(ntrajtot),' || ',volout(1),' | ',100.*volout(1)/voltot,' | '
         PRINT*, '-------------------------------------------------------------------------------'
 
         DO nn = 2, maxnkzone
-          PRINT"(A20,I1,A3,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Reach domain (',nn,')| ',ntrajout(nn),' | ',&
+          PRINT"(A20,I1,A3,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Reach domain (',nn-1,')| ',ntrajout(nn),' | ',&
                   100.*REAL(ntrajout(nn))/REAL(ntrajtot),' || ',volout(nn),' | ',100.*volout(nn)/voltot,' | '
         END DO
 

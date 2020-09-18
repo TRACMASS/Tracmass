@@ -237,9 +237,15 @@ MODULE mod_loop
                 trajectories(ntrac)%lbas = nend
                 EXIT niterLoop
 
+            ! End trajectory if it hits the surface
+            ELSE IF (z1>=DBLE(KM)) THEN
+                nend = 1
+                trajectories(ntrac)%lbas = nend
+                EXIT niterLoop
+
             ! End trajectory if time is exceeded
             ELSE IF (tt-t0 .GT. timax*24*3600) THEN
-                nend = 1
+                nend = 0
                 trajectories(ntrac)%lbas = nend
                 EXIT niterLoop
 
@@ -253,9 +259,9 @@ MODULE mod_loop
           nout = nout + 1
 
           ! Write out/run/rerun data
-          CALL write_data('rerun')
           CALL write_data('run')
           CALL write_data('out')
+          CALL write_data('rerun')
 
           trajectories(ntrac)%active = .FALSE.
 

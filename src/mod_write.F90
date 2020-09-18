@@ -66,6 +66,12 @@ MODULE mod_write
       ! --------------------------------------------------
 
           ! Call mkdir to create directory if it does not exist
+          IF (TRIM(outDataDir)=='') THEN
+                CALL GETCWD(outDataDir)
+                outDataDir = TRIM(outDataDir)//'/'
+          END IF
+          IF (TRIM(outDatafile)=='') outDatafile = 'TRACMASS'
+
           CALL SYSTEM( 'mkdir -p '//TRIM(outDataDir) )
 
           fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
@@ -88,6 +94,12 @@ MODULE mod_write
       ! --------------------------------------------------
 
           ! Call mkdir to create directory if it does not exist
+          IF (TRIM(outDataDir)=='') THEN
+                CALL GETCWD(outDataDir)
+                outDataDir = TRIM(outDataDir)//'/'
+          END IF
+          IF (TRIM(outDatafile)=='') outDatafile = 'TRACMASS'
+
           CALL SYSTEM( 'mkdir -p '//TRIM(outDataDir) )
 
           fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
@@ -361,7 +373,7 @@ MODULE mod_write
 
           ! RERUN file
           CASE ('rerun')
-              WRITE(54,"(I8,I3,I10)")  ntrac, nend, nsavewrite(ntrac)
+              WRITE(54,"(I8,',',I3,',',I10)")  ntrac, nend, nsavewrite(ntrac)
           END SELECT
 
       END SUBROUTINE write_data

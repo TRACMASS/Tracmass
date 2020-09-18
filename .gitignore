@@ -1,19 +1,5 @@
-#DS_Store
-.DS_Store
-
 # Build and statics
 docs/_build
 docs/_static
 docs/_templates
 
-# Build objects and modules
-*.mod
-*.o
-
-
-# ---------- TO ERASE LATER --------------
-
-# Makefiles and src files
-src/Makefile
-*.csv
-*.csv.gz

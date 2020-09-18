@@ -8,8 +8,8 @@
 
 &INIT_GRID_SIZE
      	! Size of global grid
-     	imt            = 100,                ! number of global i points
-     	jmt            = 100,                ! number of global j points
+     	imt            = 300,                ! number of global i points
+     	jmt            = 300,                ! number of global j points
      	km             =  1,                 ! number of global k points
      	nst            =  2,                 ! number of time levels to use (should be = 2)
 
@@ -92,10 +92,10 @@
           		      					             ! = 2 seed using file with start positions
 
       ! when seedtype = 1
-      ist1           = 31,				         ! seed in box in range i = [ist1,ist2]
-      ist2           = 31,				         ! 	       	      	    j = [jst1,jst2]
-      jst1           = 50,				         ! 			                k = [kst1,kst2]
-      jst2           = 50,
+      ist1           = 150,				         ! seed in box in range i = [ist1,ist2]
+      ist2           = 150,				         ! 	       	      	    j = [jst1,jst2]
+      jst1           = 100,				         ! 			                k = [kst1,kst2]
+      jst2           = 100,
       kst1           = 1,
       kst2           = 1,
       ! when seedtype = 2

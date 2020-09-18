@@ -8,7 +8,8 @@ SUBROUTINE kill_zones
   ! If a trajectory is outside the domain the subroutine will identify it
   ! with a flag (nend)
   !
-  ! nend = 1 is reserved to the time limit
+  ! nend = 0 is reserved to the time limit
+  ! nend = 1 is reserved to trajectories reaching the surface
   !
   ! ==========================================================================
 
@@ -21,7 +22,7 @@ SUBROUTINE kill_zones
 
   INTEGER  :: nexit, itrac, numexit
 
-  nend = 0
+  nend = -1
 
   SELECT CASE(exitType)
 
@@ -64,7 +65,7 @@ SUBROUTINE kill_zones
 
       END DO
 
-      ! Geographical killing zone
+      ! Next the geographical killing zone
       DO nexit = 1, 10
          IF(ienw(nexit) <= x1 .AND. x1 <= iene(nexit) .AND. &
               jens(nexit) <= y1 .AND. y1 <= jenn(nexit) ) THEN
@@ -76,8 +77,10 @@ SUBROUTINE kill_zones
   ! - Read from a file
   ! - Defined by curve, no linear shape, ...
   ! This must be hard coded below.
+
   CASE(4)
       PRINT*, 'Hard coded limits of the domain'
+
   END SELECT
 
 END SUBROUTINE kill_zones

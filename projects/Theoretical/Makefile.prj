@@ -8,4 +8,4 @@ fl01  = -Dw_2dim        # Turn off vertical velocities.
 #========================================================================
 
 ORM_FLAGS= -D$(PROJECT) \
-$(fl01)
+$(fl01)$(fl02)

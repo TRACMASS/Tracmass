@@ -1,11 +1,11 @@
 &INIT_GRID_DESCRIPTION
 
         ! Does the netcdf data start with a zero index?
-        zeroindx = .FALSE.
+        zeroindx = .TRUE.
 
         ! Describe filenames
         physDataDir    = '',               ! directory of physical data (u,v,T,S,MLD,etc)
-        physPrefixForm = 'dt_global_allsat_phy_l4_',
+        physPrefixForm = 'dt_global_allsat_phy_l4',
         dateFormat     = '_YYYYMMDD_20180516',
         fileSuffix     = '.nc',            ! suffix of files, e.g. ".nc"
 
@@ -34,7 +34,7 @@
                                            ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
      ngcm_unit      = 4,                   ! units of ngcm
                                            !
-     iter           = 2,                   ! number of subcycles between time levels                                                             ! stopped
+     iter           = 24,                  ! number of subcycles between time levels                                                             ! stopped
 /
 
 &INIT_START_DATE
@@ -49,7 +49,7 @@
 
 &INIT_RUN_TIME
      ! Loop run
-     loopYears      = .TRUE.,				       ! make a time loop to run
+     loopYears      = .FALSE.,				       ! make a time loop to run
      		      					                   ! e.g. 1000 years using only 100 years of data
      loopStartYear  = 2017,				         ! year to start loop from
      loopEndYear    = 2017,				         ! last year of loop
@@ -58,7 +58,7 @@
      log_level    = 0
 
      ! Information of run time
-     intrun         = 100                 ! number of time steps for run
+     intrun         = 731                  ! number of time steps for run
 /
 
 &INIT_WRITE_TRAJ
@@ -71,7 +71,7 @@
 
 
      outDataDir    = '',
-     outDataFile   = 'AVISO_test'
+     outDataFile   = '',
 
      timeformat    = 0            ! Format of the time array
                                   ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
@@ -93,7 +93,7 @@
      														   ! = 3 Each particle reflects air/water mass/volume at seeding.
      														   !     set by partQuant in m3 or kg per particle
 
-      partquant      = 1,          ! particles/gridcell or m3s-1/particle or m3/particle
+      partquant      = 10,         ! particles/gridcell or m3s-1/particle or m3/particle
       loneparticle   = 0, 				 ! start only one trajectory for debugging
       seedtype       = 1,				   ! = 1 seed using ist,jst,kst (below)
           		      					     ! = 2 seed using file with start positions
@@ -143,6 +143,10 @@
       ! jenn = 300,  470,
       ! sets up two killzones, the first i = [0,100], j = [200,300]
       ! the other i = [500,1000], j = [450,470]
+      ienw =   0,  100, 180, 0,
+      iene = 100,  180, 180, 0,
+      jens = 250,  250,   0, 0,
+      jenn = 250,  250, 250, 250,
 
       ! If exitType = 2: killing zone defined by tracer value
       ! Tracerchoice defines which tracer is used for the killing zone
@@ -154,5 +158,6 @@
 /
 
 &INIT_STREAMFUNCTION
-
+      l_psi = .FALSE.
+      dirpsi = 1,1,1,1
 /

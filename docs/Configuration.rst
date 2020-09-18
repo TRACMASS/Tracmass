@@ -10,13 +10,13 @@ Installation
 
   .. code-block:: none
 
-    git clone https://github.com/AitorAldama/Tracmass_light.git
+    git clone https://github.com/AitorAldama/Tracmass.git
 
 2. Enter the TRACMASS directory
 
   .. code-block:: none
 
-    cd Tracmass_light
+    cd Tracmass
 
 3. Modify the *Makefile* to fit your system. You will need to set ARCH, which is the name of your system, i.e. tetralith. You will also need to configure how TRACMASS should find the netCDF libraries, if at all. For most systems, we recommend the option **automatic-44**.
 

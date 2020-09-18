@@ -8,9 +8,7 @@ SUBROUTINE setup_grid
     ! The following arrays has to be populated:
     !
     !  dxdy - Area of horizontal cell-walls.
-    !  dz   - Height of k-cells in 3 dim (if z_timevar not used)
-    !  dzt  - Height of k-cells in 4 dim (if z_timevar used)
-    !  kmt  - Number of k-cells from surface to seafloor.
+    !  dzt  - Height of k-cells in 4 dim
     !
     ! The following might be needed to calculate
     ! dxdy, uflux, and vflux
@@ -32,19 +30,22 @@ SUBROUTINE setup_grid
     REAL(PP)              :: dlon, dlat
 
     ! Quarter degree resolution
-    dlon = 360./imt; dlat = 180./(jmt-1)
+    dlon = 360./imt; dlat = 180./(jmt)
 
     ! dx and dy in u and v points & grid area
+    dxv(:,:) = 0.d0; dyu(:,:) = 0.d0
+
     DO jj = 1, jmt
        DO ii = 1, imt
 
-          dx         = dlon * radian * radius * COS( (-90.+dlat*(jj-0.5))*radian )
-          dy         = dlat * radian * radius
+          dx         = dlon * deg * COS( (-90.+dlat*(jj-0.5))*radian )
+          dy         = dlat * deg
 
-          dxv(ii,jj) = dlon * radian * radius * COS( (-90.+dlat*jj)*radian )
+          dxv(ii,jj) = dlon * deg * COS( (-90.+dlat*jj)*radian )
           dyu(ii,jj) = dy
 
           dxdy(ii,jj) = dx * dy
+
        END DO
     END DO
 

@@ -28,6 +28,7 @@ SUBROUTINE read_field
    USE mod_tracervars
    USE mod_tracers
    USE mod_calendar
+   USE mod_swap
 
    USE netcdf
 
@@ -38,21 +39,15 @@ SUBROUTINE read_field
    REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)  :: tmp3d
    CHARACTER (len=200)                      :: fieldFile, dateprefix
 
-   ! Data swap
-   uflux(:,:,:,1) = uflux(:,:,:,2)
-   vflux(:,:,:,1) = vflux(:,:,:,2)
-
-   hs(:,:,-1)     = hs(:,:,0)
-   hs(:,:,0)      = hs(:,:,1)
-
-   zstot(:,:,-1) = zstot(:,:,0)
-   zstot(:,:, 0) = zstot(:,:,1)
-
-   dzdt(:,:,:,1)  = dzdt(:,:,:,2)
+   ! Reassign the time index of uflux and vflux, dzt, dzdt, hs, ...
+   CALL swap_time()
 
    ! Data files
    dateprefix = ' '
 
+   ! Reading 3-time step variables
+   ! In this case: hs and zstot
+   ! ===========================================================================
    IF (ints == 0) THEN
 
      ! 1 - Past
@@ -80,16 +75,16 @@ SUBROUTINE read_field
      hs(imt+1,:,0)     = hs(1,:,0)
 
      WHERE (SUM(dzt(:,:,:,2),3) /= 0)
-          zstot(1:imt,1:jmt,-1) = hs(:imt,:jmt,-1)/SUM(dzt(:,:,:,2),3) + 1
-          zstot(1:imt,1:jmt,0) = hs(:imt,:jmt,0)/SUM(dzt(:,:,:,2),3) + 1
+          zstot(1:imt,1:jmt,-1) = hs(1:imt,1:jmt,-1)/SUM(dzt(:,:,:,2),3) + 1
+          zstot(1:imt,1:jmt, 0) = hs(1:imt,1:jmt, 0)/SUM(dzt(:,:,:,2),3) + 1
      ELSEWHERE
           zstot(:,:,-1) = 0.d0
-          zstot(:,:,0) = 0.d0
-     END WHERE
+          zstot(:,:, 0) = 0.d0
+     END WHERE     
 
    END IF
 
-   ! 3 - nexture
+   ! 3 - Future
    IF (ints<intrun-1 .OR. loopYears) THEN
 
      nctstep = nextMon
@@ -103,28 +98,29 @@ SUBROUTINE read_field
 
    END IF
 
-   hs(imt+1,:,:)     = hs(1,:,:)
-
    ! Calculate SSH/depth
    WHERE (SUM(dzt(:,:,:,2),3) /= 0)
-        zstot(1:imt,1:jmt,1)  = hs(:imt,:jmt,1)/SUM(dzt(:,:,:,2),3) + 1
+        zstot(1:imt,1:jmt,1)  = hs(1:imt,1:jmt,1)/SUM(dzt(:,:,:,2),3) + 1
    ELSEWHERE
         zstot(:,:,1) = 0.d0
    END WHERE
 
    WHERE (SUM(dzu(:,:,:,2),3) /= 0)
-        zstou(1:imt,1:jmt) = 0.5*(hs(:imt,:jmt,0)+hs(2:imt+1,:jmt,0))/SUM(dzu(:,:,:,2),3) + 1
+        zstou(1:imt,1:jmt) = 0.5*(hs(1:imt,1:jmt,0)+hs(2:imt+1,1:jmt,0))/SUM(dzu(:,:,:,2),3) + 1
    ELSEWHERE
         zstou = 0.d0
    END WHERE
 
-   WHERE (SUM(dzv(:,:,:,2),3) /= 0)
-        zstov(1:imt,1:jmt) = 0.5*(hs(:imt,:jmt,0)+hs(:imt,2:jmt+1,0))/SUM(dzv(:,:,:,2),3) + 1
+
+   WHERE (SUM(dzv(:,1:jmt-1,:,2),3) /= 0)
+        zstov(1:imt,1:jmt-1) = 0.5*(hs(1:imt,1:jmt-1,0)+hs(1:imt,2:jmt,0))/SUM(dzv(:,1:jmt-1,:,2),3) + 1
    ELSEWHERE
         zstov = 0.d0
    END WHERE
 
-   ! Velocity files
+   ! Reading 2-time step variables
+   ! In this case: velocities and tracers
+   ! ===========================================================================
    ALLOCATE(tmp3d(imt,jmt,km))
 
    nctstep = currMon
@@ -156,9 +152,6 @@ SUBROUTINE read_field
         ! Make sure the data array is empty
         tmp3d(:,:,:) = 0.d0
 
-        ! Reassign temporal indexes
-        tracers(itrac)%data(:,:,:,1) = tracers(itrac)%data(:,:,:,2)
-
         IF (tracers(itrac)%action == 'read') THEN
 
             ! Read the tracer from a netcdf file
@@ -183,13 +176,15 @@ SUBROUTINE read_field
 
         ! Store the information
         IF (tracers(itrac)%dimension == '3D') THEN
-          tracers(itrac)%data(:,:,:,2) = tmp3d(:,:,:)
+          tracers(itrac)%data(:,1:jmt,:,2) = tmp3d(:,:,:)
         ELSE IF (tracers(itrac)%dimension == '2D') THEN
-          tracers(itrac)%data(:,:,1,2) = tmp3d(:,:,1)
+          tracers(itrac)%data(:,1:jmt,1,2) = tmp3d(:,:,1)
         END IF
 
      END DO
    END IF
+
+   ! ===========================================================================
 
    ! uflux and vflux computation
    FORALL (kk = 1:km) uflux(:,:,kk,2)     = uvel(:,:,kk)*dyu(:,:)*dzu(:,:,kk,2)*zstou(:,:)
@@ -204,14 +199,12 @@ SUBROUTINE read_field
       FORALL (kk = 1:km) dzdt(:,:,kk,2) = 0.5*dzt(:,:,kk,2)*(zstot(:,:,1) - zstot(:,:,-1))/tseas
    END IF
 
-   !! Time reversal if nff = -1
-   uflux(:,:,:,2) = nff*uflux(:,:,:,2)
-   vflux(:,:,:,2) = nff*vflux(:,:,:,2)
-   dzdt(:,:,:,2)  = nff*dzdt(:,:,:,2)
-
    !! Zero meridional flux at j=0 and j=jmt
    vflux(:,0  ,:,:) = 0.d0
    vflux(:,jmt,:,:) = 0.d0
+
+   ! Reverse the sign of fluxes if trajectories are run backward in time.
+   CALL swap_sign()
 
 
 END SUBROUTINE read_field

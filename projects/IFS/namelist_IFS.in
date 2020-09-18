@@ -1,11 +1,12 @@
 &INIT_GRID_DESCRIPTION
       ! Direction of the grid (1 - E->W, S->N, B->U)
       griddir = 1,-1,1
+      zeroindx = .TRUE.
 
       ! Describe filenames
       physDataDir    = '',              ! directory of physical data (u,v,T,S,MLD,etc)
       physPrefixForm = 'era',
-
+      dateformat     = 'YYYYMM',
 
       fileSuffix     = '.nc',           ! suffix of files, e.g. ".nc"
 
@@ -18,7 +19,7 @@
 &INIT_GRID_SIZE
      	! Size of global grid
      	imt            = 480,               ! number of global i points
-     	jmt            = 240,               ! number of global j points
+     	jmt            = 241,               ! number of global j points
      	km             = 60,                ! number of global k points
      	nst            = 2,                 ! number of time levels to use (should be = 2)
 
@@ -31,12 +32,16 @@
 
 /
 
+&INIT_GRID_SUBDOMAIN
+     l_subdom    = .FALSE.                              ! Initialise subdomain
+/
+
 &INIT_GRID_TIME
      ngcm_step      = 6,                  ! time between two time levels
                                           ! if ncgcm_unit = 5, then ngcm_step = 3 means 3 months
      ngcm_unit      = 3,                  ! units of ngcm
                                           !
-     iter           = 6,                  ! number of subcycles between time levels                                                             ! stopped
+     iter           = 120,                ! number of subcycles between time levels
 /
 
 &INIT_START_DATE
@@ -44,7 +49,7 @@
      startmin       = 0,
      starthour      = 0,
      startday       = 1,                  ! start date
-     startmon       = 1,
+     startmon       = 7,
      startyear      = 2018,
      noleap         = .FALSE.,            ! don't use leap years?
 /
@@ -60,7 +65,7 @@
      log_level    = 0
 
      ! Information of run time
-     intrun         = 124                 ! number of time steps for run
+     intrun         = 124                ! number of time steps for run
 /
 
 &INIT_WRITE_TRAJ
@@ -71,16 +76,16 @@
                                 ! 5 = write only start and end positions
 
      outDataDir    = '',
-     outDataFile   = 'IFS_test'
+     outDataFile   = '',
 
-     timeformat    = 2     ! Format of the time array
+     timeformat    = 0     ! Format of the time array
                            ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
 /
 
 &INIT_SEEDING
       nff            = 1,          ! = 1 run forward trajectories
           		      					     ! = -1 run backwards
-      isec           = 2,				   ! = 1 start on zonal cell wall
+      isec           = 3,				   ! = 1 start on zonal cell wall
           		      					     ! = 2 start on meridional cell wall
      							                 ! = 3 start on vertical wall
       idir           = -1, 				 ! = 1 start only when flux > 0
@@ -99,31 +104,63 @@
           		      					     ! = 2 seed using file with start positions
 
      	! when seedtype = 1
-      ist1           = 1,				    ! seed in box in range i = [ist1,ist2]
-      ist2           = 480,				  ! 	       	      	   j = [jst1,jst2]
-      jst1           = 70,				  ! 			               k = [kst1,kst2]
-      jst2           = 70,
-      kst1           = 1,
+      ist1           = 70,				    ! seed in box in range i = [ist1,ist2]
+      ist2           = 140,				    ! 	       	      	   j = [jst1,jst2]
+      jst1           = 70,				    ! 			               k = [kst1,kst2]
+      jst2           = 120,
+      kst1           = 60,
       kst2           = 60,
+
       ! when seedtype = 2
       seeddir        = '',				  ! directory for seed files
       seedfile       = '',				  ! name of seed file
-
-
+      maskFile       = '',
 
       seedtime       =  1,				  ! = 1 seed only for specific times
                                     ! = 2 seed using file with start positions
 
       ! when seedtime = 1
       tst1           = 1,				    ! seed only between tst1 and tst2
-      tst2           = 24,
+      tst2           = 120,
 
       ! when seedtime = 2
       timefile       = '',          ! name of seed file
 /
 
+&INIT_TRACERS
+      l_tracers = .TRUE.               ! Should we evaluate tracers along the trajectories?
+
+      l_swtraj  = .FALSE.              ! Activate water/salt trajectories
+      tracertrajscale = 1000.          ! If l_swtraj is FALSE,  TRACMASS will set this value to one.
+
+      ! Tracer name (description)
+      tracername = 'q'
+      ! Tracer unit (description)
+      tracerunit = 'kg/kg'
+
+      ! Name of the variable in the netcdf (if it's read)
+      tracervarname = 'q'
+
+      ! Action (read or compute)
+      traceraction = 'read'
+
+      ! Minimum and maximum value of the binning
+      tracermin = 0.
+      tracermax = 0.04
+
+      ! Dimension of the tracer
+      tracerdimension = 3D
+/
+
+&INIT_TRACERS_SEEDING
+      ! minimum and maximum value for seeding
+      ! same order as in tracername
+      !tracer0min = 0, 32
+      !tracer0max = 10, 38
+/
+
 &INIT_KILLZONES
-      timax = 100 ! time limit for traj [days]
+      timax = 7500 ! time limit for traj [days]
 
       exitType = 1
       ! If exitType = 1: killing zone defined by a box
@@ -136,13 +173,22 @@
       ! jenn = 300,  470,
       ! sets up two killzones, the first i = [0,100], j = [200,300]
       ! the other i = [500,1000], j = [450,470]
-      ienw           =  0, 0,    	       ! west indices of killzones
-      iene           =  500,500,  	     ! east indices of killzones
-      jens           =  70, 140,         ! south indices of killzones
-      jenn           =  70, 140,         ! north indices of killzones
+      !ienw           =  282,	       ! west indices of killzones
+      !iene           =  282,  	     ! east indices of killzones
+      !jens           =  150,         ! south indices of killzones
+      !jenn           =  300,         ! north indices of killzones
+
+      ! If exitType = 2: killing zone defined by tracer value
+      ! Tracerchoice defines which tracer is used for the killing zone
+      ! it could be different
+      !tracerchoice = 1,
+      !tracere      = 10,
+      !maxormin     =  -1,
+      ! This set up defines a killing zone by the 10 g/kg isohume (minimum)
 
 /
 
 &INIT_STREAMFUNCTION
-      dirpsi     = 1,1,1,1  ! Direction of integration
+      l_psi      = .FALSE.       ! Compute stream Functions
+      dirpsi     = -1,-1,-1,-1  ! Direction of integration
 /

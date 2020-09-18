@@ -5,6 +5,7 @@
 #------------------------------------------------------------------------
 #fl01  = -Dw_2dim       # Turn off vertical velocities.
 fl01  = -Dw_3dim       # Compute 3D vertical velocities.
+
 #========================================================================
 
 ORM_FLAGS= -D$(PROJECT) \

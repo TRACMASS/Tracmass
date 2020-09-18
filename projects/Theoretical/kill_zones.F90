@@ -8,7 +8,8 @@ SUBROUTINE kill_zones
   ! If a trajectory is outside the domain the subroutine will identify it
   ! with a flag (nend)
   !
-  ! nend = 1 is reserved to the time limit
+  ! nend = 0 is reserved to the time limit
+  ! nend = 1 is reserved to trajectories reaching the surface
   !
   ! ==========================================================================
 
@@ -21,7 +22,7 @@ SUBROUTINE kill_zones
 
   INTEGER  :: nexit, itrac, numexit
 
-  nend = 0
+  nend = -1
 
   SELECT CASE(exitType)
 

@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) [2020] [Kristofer Döös, Aitor Aldama-Campino, Joakim Kjellsson]
+Copyright (c) [2020] [Kristofer Döös, Aitor Aldama-Campino, Joakim Kjellsson, Bror Jonsson]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

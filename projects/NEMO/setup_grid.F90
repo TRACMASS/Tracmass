@@ -8,8 +8,7 @@ SUBROUTINE setup_grid
     ! The following arrays have to be populated:
     !
     !  dxdy - Area of horizontal cell-walls.
-    !  dz   - Height of k-cells in 3 dim (if z_timevar not used)
-    !  dzt  - Height of k-cells in 4 dim (if z_timevar used)
+    !  dzt  - Height of k-cells in 4 dim
     !  kmt  - Number of k-cells from surface to seafloor.
     !
     ! The following might be needed to calculate
@@ -31,9 +30,9 @@ SUBROUTINE setup_grid
 
     INTEGER               :: jj, ii, ip, jp, kk
 
-    REAL(DP), ALLOCATABLE, DIMENSION(:,:)      :: dx_t, dy_t
     INTEGER, ALLOCATABLE, DIMENSION(:,:)       :: tmp2d
     REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)    :: tmp3d
+    REAL(DP), ALLOCATABLE, DIMENSION(:,:)      :: dx_t, dy_t
 
     ! Allocate and define kmu and kmv, and kmt
     ALLOCATE ( kmu(imt,jmt), kmv(imt,jmt), tmp2d(imt,jmt) )
@@ -80,25 +79,25 @@ SUBROUTINE setup_grid
     ALLOCATE(tmp3d(imt,jmt,km))
     tmp3d(:,:,:) = get3DfieldNC(TRIM(topoDataDir)//TRIM(zgridFile), dzt_name,[imindom,jmindom,1,1],[imt,jmt,km,1],'st')
     DO kk = 1, km
-      dzt(:,:,km-kk+1,1) = tmp3d(:,:,kk); dzt(:,:,km-kk+1,2) = tmp3d(:,:,kk)
+      dzt(:,:,km-kk+1,1) = tmp3d(:,:,kk); dzt(:,:,km-kk+1,2) = tmp3d(:,:,kk); dzt(:,:,km-kk+1,3) = tmp3d(:,:,kk)
       WHERE (kk > kmt(1:imt,1:jmt))
-        dzt(:,:,km-kk+1,1) = 0; dzt(:,:,km-kk+1,2) = 0
+        dzt(:,:,km-kk+1,1) = 0.; dzt(:,:,km-kk+1,2) = 0.; dzt(:,:,km-kk+1,3) = 0.
       END WHERE
     END DO
 
     tmp3d(:,:,:) = get3DfieldNC(TRIM(topoDataDir)//TRIM(zgridFile), dzu_name,[imindom,jmindom,1,1],[imt,jmt,km,1],'st')
     DO kk = 1, km
-      dzu(:,:,km-kk+1,1) = tmp3d(:,:,kk); dzu(:,:,km-kk+1,2) = tmp3d(:,:,kk)
+      dzu(:,:,km-kk+1,1) = tmp3d(:,:,kk); dzu(:,:,km-kk+1,2) = tmp3d(:,:,kk);
       WHERE (kk > kmu(1:imt,1:jmt))
-          dzu(:,:,km-kk+1,1) = 0; dzu(:,:,km-kk+1,2) = 0
+          dzu(:,:,km-kk+1,1) = 0.; dzu(:,:,km-kk+1,2) = 0.;
       END WHERE
     END DO
 
     tmp3d(:,:,:) = get3DfieldNC(TRIM(topoDataDir)//TRIM(zgridFile), dzv_name,[imindom,jmindom,1,1],[imt,jmt,km,1],'st')
     DO kk = 1, km
-      dzv(:,:,km-kk+1,1) = tmp3d(:,:,kk); dzv(:,:,km-kk+1,2) = tmp3d(:,:,kk)
+      dzv(:,:,km-kk+1,1) = tmp3d(:,:,kk); dzv(:,:,km-kk+1,2) = tmp3d(:,:,kk);
       WHERE (kk > kmv(1:imt,1:jmt))
-          dzv(:,:,km-kk+1,1) = 0; dzv(:,:,km-kk+1,2) = 0
+          dzv(:,:,km-kk+1,1) = 0.; dzv(:,:,km-kk+1,2) = 0.;
       END WHERE
     END DO
 

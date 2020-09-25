@@ -8,6 +8,8 @@ MODULE mod_getfile
   !!          Functions included:
   !!
   !!              - filledFileName
+  !!              - getScalarNC
+  !!              - get1DfieldNC
   !!              - get2DfieldNC
   !!              - get3DfieldNC
   !!
@@ -83,7 +85,61 @@ MODULE mod_getfile
 
       END FUNCTION filledFileName
 
-      FUNCTION get2DfieldNC(fieldFile ,varName, start2D, count2D, cextend)
+      FUNCTION getScalarNC(fieldFile ,varName)
+        CHARACTER (len=*)                       :: fieldFile ,varName
+        REAL                                    :: getScalarNC
+        INTEGER                                 :: varid ,ncid
+
+        ierr=NF90_OPEN(TRIM(fieldFile) ,NF90_NOWRITE ,ncid)
+        IF(ierr .NE. 0) CALL error_getfieldNC(1,fieldFile,varName)
+        ierr=NF90_INQ_VARID(ncid ,varName ,varid)
+        IF(ierr .NE. 0) CALL error_getfieldNC(2,fieldFile,varName)
+        ierr=NF90_GET_VAR(ncid ,varid ,getScalarNC)
+        IF(ierr .NE. 0) CALL error_getfieldNC(3,fieldFile,varName)
+        ierr=NF90_CLOSE(ncid)
+        IF(ierr .NE. 0) CALL error_getfieldNC(4,fieldFile,varName)
+
+      END FUNCTION getScalarNC
+
+      FUNCTION get1DfieldNC(fieldFile ,varName, start1D, count1D)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Get 1D field data
+      !
+      ! --------------------------------------------------
+
+          REAL, ALLOCATABLE,   DIMENSION(:)       :: get1DfieldNC
+          REAL, ALLOCATABLE,   DIMENSION(:)       :: field
+          REAL                                    :: scale_factor, add_offset
+
+          INTEGER                                 :: start1D  ,count1D
+
+          CHARACTER (len=*)                       :: fieldFile ,varName
+
+          ALLOCATE(field(count1D),get1DfieldNC(count1D))
+
+          ierr=NF90_OPEN(TRIM(fieldFile) ,NF90_NOWRITE ,ncid)
+          IF(ierr .NE. 0) CALL error_getfieldNC(1,fieldFile,varName)
+          ierr=NF90_INQ_VARID(ncid ,varName ,varid)
+          IF(ierr .NE. 0) CALL error_getfieldNC(2,fieldFile,varName)
+
+          ierr=NF90_GET_VAR(ncid ,varid ,field, [start1D], [count1D] )
+          IF(ierr .NE. 0) CALL error_getfieldNC(3,fieldFile,varName)
+
+          ierr = NF90_GET_ATT(ncid, varid,"scale_factor", scale_factor)
+          IF(ierr .NE. 0) scale_factor = 1.0
+          ierr = NF90_GET_ATT(ncid, varid,"add_offset", add_offset)
+          IF(ierr .NE. 0) add_offset = 0.0
+
+          ierr=NF90_CLOSE(ncid)
+          IF(ierr .NE. 0) CALL error_getfieldNC(4,fieldFile,varName)
+
+          get1DfieldNC(:) = field(:)*scale_factor + add_offset
+
+      END FUNCTION get1DfieldNC
+
+      FUNCTION get2DfieldNC(fieldFile ,varName, start2D, count2D)
       ! --------------------------------------------------
       !
       ! Purpose:
@@ -97,17 +153,10 @@ MODULE mod_getfile
 
           INTEGER, DIMENSION(4)                   :: start2D  ,count2D
 
-          CHARACTER (len=6), OPTIONAL             :: cextend
-
           CHARACTER (len=*)                       :: fieldFile ,varName
 
           ALLOCATE(field(count2D(1), count2D(2)))
-
-          IF ( PRESENT(cextend)) THEN
-                ALLOCATE(get2DfieldNC(1:imt, 1:jmt+1))
-          ELSE
-                ALLOCATE(get2DfieldNC(1:imt, 1:jmt))
-          END IF
+          ALLOCATE(get2DfieldNC(count2D(1),count2D(2)))
 
           ierr=NF90_OPEN(TRIM(fieldFile) ,NF90_NOWRITE ,ncid)
           IF(ierr .NE. 0) CALL error_getfieldNC(1,fieldFile,varName)
@@ -136,7 +185,7 @@ MODULE mod_getfile
 
        END FUNCTION get2DfieldNC
 
-       FUNCTION get3DfieldNC(fieldFile ,varName, start3D, count3D, stcase, cextend)
+       FUNCTION get3DfieldNC(fieldFile ,varName, start3D, count3D, stcase)
        ! --------------------------------------------------
        !
        ! Purpose:
@@ -152,18 +201,20 @@ MODULE mod_getfile
            INTEGER, DIMENSION(4)                     :: start3D,count3D, ss, cc
            INTEGER                                   :: ii, kk
 
-           CHARACTER (len=6), OPTIONAL               :: cextend
            CHARACTER (len=*)                         :: fieldFile ,varName, stcase
 
            IF (stcase == 'st')  THEN
                 ALLOCATE(field(count3D(1), count3D(2),count3D(3)))
            ELSE IF (stcase == 'ts')  THEN
                 ALLOCATE(field4(1,count3D(1), count3D(2),count3D(3)))
+                ALLOCATE(field4(1,count3D(1), count3D(2),count3D(3)))
            ELSE IF (stcase == 'st_r') THEN
                 ALLOCATE(field(count3D(3), count3D(2),count3D(1)))
            ELSE IF (stcase == 'ts_r') THEN
                 ALLOCATE(field4(1,count3D(3), count3D(2),count3D(1)))
            END IF
+
+           ALLOCATE(get3DfieldNC(count3D(1), count3D(2),count3D(3)))
 
            IF (stcase == 'st') THEN
               ss = start3D
@@ -177,12 +228,6 @@ MODULE mod_getfile
            ELSE IF (stcase == 'ts_r') THEN
               ss(1) = start3D(4); ss(2) = start3D(3); ss(3) = start3D(2); ss(4) = start3D(1)
               cc(1) = count3D(4); cc(2) = count3D(3); cc(3) = count3D(2); cc(4) = count3D(1)
-           END IF
-
-           IF ( PRESENT(cextend)) THEN
-                 ALLOCATE(get3DfieldNC(1:imt, 1:jmt+1, 1:km))
-           ELSE
-                 ALLOCATE(get3DfieldNC(1:imt, 1:jmt, 1:km))
            END IF
 
            ierr=NF90_OPEN(TRIM(fieldFile), NF90_NOWRITE, ncid)
@@ -234,8 +279,8 @@ MODULE mod_getfile
            ELSE IF (stcase == 'ts') THEN
               get3DfieldNC(:,:,:) = field4(1,:,:,:)*scale_factor + add_offset
            ELSE IF (stcase == 'st_r' .OR. stcase == 'ts_r') THEN
-              DO ii = 1, imt
-                 DO kk = 1, km
+              DO ii = 1, count3D(1)
+                 DO kk = 1, count3D(3)
                    IF (stcase == 'st_r') get3DfieldNC(ii,:,kk) = field(kk,:,ii)*scale_factor + add_offset
                    IF (stcase == 'ts_r') get3DfieldNC(ii,:,kk) = field4(1,kk,:,ii)*scale_factor + add_offset
                  END DO

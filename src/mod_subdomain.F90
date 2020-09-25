@@ -27,6 +27,13 @@ MODULE mod_subdomain
       !
       ! --------------------------------------------------
 
+          ! Make sure killing zones are on
+          IF (exitType==2) THEN
+              exitType = 3 ! Include both thermodynamic and geographical killing zones
+          ELSE IF (exitType/=3) THEN
+              exitType = 1
+          END IF
+
           ! imtdom and jmtdom definition equal to imt/jmt
           imtdom = imt; jmtdom = jmt
 

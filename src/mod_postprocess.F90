@@ -187,16 +187,16 @@ MODULE mod_postprocess
         PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '   Terminated         | ', SUM(ntrajout),' | ',&
                 100*REAL(SUM(ntrajout))/REAL(ntrajtot),' || ',SUM(volout),' | ', 100*SUM(volout)/voltot,' | '
         PRINT*, '-------------------------------------------------------------------------------'
-        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Excess of time  | ',ntrajout(0),' | ',&
+        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '   - Excess of time   | ',ntrajout(0),' | ',&
                 100.*REAL(ntrajout(0))/REAL(ntrajtot),' || ',volout(0),' | ',100.*volout(0)/voltot,' | '
         PRINT*, '-------------------------------------------------------------------------------'
 
-        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Reach surface   | ',ntrajout(1),' | ',&
+        PRINT"(A24,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '   - Reach surface    | ',ntrajout(1),' | ',&
                 100.*REAL(ntrajout(1))/REAL(ntrajtot),' || ',volout(1),' | ',100.*volout(1)/voltot,' | '
         PRINT*, '-------------------------------------------------------------------------------'
 
         DO nn = 2, maxnkzone
-          PRINT"(A20,I1,A3,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '    - Reach domain (',nn-1,')| ',ntrajout(nn),' | ',&
+          PRINT"(A19,I2,A3,I12,A3,F7.3,A4,F18.2,A3,F7.3,A3)", '  - Reach domain (',nn-1,')| ',ntrajout(nn),' | ',&
                   100.*REAL(ntrajout(nn))/REAL(ntrajtot),' || ',volout(nn),' | ',100.*volout(nn)/voltot,' | '
         END DO
 

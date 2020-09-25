@@ -19,7 +19,7 @@ MODULE mod_tracers
 
     IMPLICIT NONE
 
-    INTEGER, DIMENSION(20) :: numtracerarray = 0
+    INTEGER, DIMENSION(10) :: numtracerarray = 0
 
     INTERFACE
        FUNCTION thermo_dens0(T,S)
@@ -46,7 +46,7 @@ MODULE mod_tracers
 
         ! Calculate the number of tracers
         WHERE (tracername==' ') numtracerarray = 1
-        numtracers = 20 - SUM(numtracerarray)
+        numtracers = 10 - SUM(numtracerarray)
 
         ! Allocate the tracer array
         ALLOCATE(tracers(numtracers), tracervalue(numtracers))

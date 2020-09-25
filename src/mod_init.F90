@@ -45,7 +45,7 @@ MODULE mod_init
           namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio, &
                                            topoDataDir, &
                                            hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
-                                           zgridFile, dzt_name, dzu_name, dzv_name,&
+                                           zgridFile, dzt_name, dzu_name, dzv_name, dep_name,&
                                            bathyFile, kmt_name
           namelist /INIT_GRID_SUBDOMAIN/   l_subdom, imindom, imaxdom, jmindom, jmaxdom
           namelist /INIT_GRID_TIME/        ngcm_step, ngcm_unit, iter

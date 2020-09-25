@@ -1,8 +1,14 @@
-WARNING
-=======
+:warning: Warning
+-----------------
+This TRACMASS version is a **beta** version.
+It is currently under development. The following features from older versions are not available yet in this version:
 
-This TRACMASS version is a beta version.
-It is still under development.
+* Time analytical scheme
+* Subgrid turbulence parameterisations
+
+Previous versions of TRACMASS are stored in the following repository:
+
+https://github.com/TRACMASS/Tracmass_prev.git
 
 
 TRACMASS v7
@@ -27,7 +33,7 @@ Quickstart
 1. Download the code
 
 ```bash
-git clone https://github.com/AitorAldama/Tracmass.git
+git clone https://github.com/TRACMASS/Tracmass.git
 ```
 
 2. Enter the TRACMASS directory

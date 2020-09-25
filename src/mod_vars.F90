@@ -197,7 +197,7 @@ MODULE mod_grid
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:)   :: dzt, dzu, dzv, dzdt
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)       :: zstou, zstov
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: zstot
-  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: botbox
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)       :: depth
   REAL(DP), ALLOCATABLE, DIMENSION(:)         :: aa, bb
 
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: kmt, kmu, kmv
@@ -212,13 +212,12 @@ MODULE mod_grid
                                                usgs_name = '', vsgs_name = ''
 
   CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
-                                               zgridFile, dzt_name, dzu_name, dzv_name, &
+                                               zgridFile, dzt_name, dzu_name, dzv_name, dep_name, &
                                                bathyFile, kmt_name
 
   CHARACTER(LEN=200)                        :: physDataDir, physPrefixForm,  &
                                                dateFormat, &
                                                bioDataDir, bioPrefixForm, topoDataDir
-  CHARACTER(LEN=50), DIMENSION(20)          :: physTracerNames, bioTracerNames
 
   CHARACTER (LEN=23)                        :: Project, Case
   CHARACTER (LEN=200)                       :: projdir="", ormdir=""
@@ -353,15 +352,15 @@ MODULE mod_tracervars
   INTEGER                             :: numtracers = 0
 
   ! Tracer choice
-  INTEGER, DIMENSION(20)              :: tracerchoice = 999, maxormin = 1
+  INTEGER, DIMENSION(10)              :: tracerchoice = 999, maxormin = 1
 
   ! Tracer characteristics
-  CHARACTER(len=100), DIMENSION(20)   :: tracername = '', tracerunit, &
+  CHARACTER(len=100), DIMENSION(10)   :: tracername = '', tracerunit, &
                                          tracervarname,traceraction
 
-  CHARACTER(len=2), DIMENSION(20)     :: tracerdimension = '3D'
+  CHARACTER(len=2), DIMENSION(10)     :: tracerdimension = '3D'
 
-  REAL(DP), DIMENSION(20)             :: tracermin, tracermax, &
+  REAL(DP), DIMENSION(10)             :: tracermin, tracermax, &
                                          tracer0min=-9999.d0, tracer0max=9999.d0, &
                                          tracere
   REAL(DP), DIMENSION(:), ALLOCATABLE :: tracervalue
@@ -392,7 +391,7 @@ MODULE mod_psi
   LOGICAL    :: l_psi     = .FALSE.
   LOGICAL    :: l_offline = .TRUE.
 
-  INTEGER , DIMENSION(10)   :: dirpsi = 1
+  INTEGER , DIMENSION(21)   :: dirpsi = 1
 
   ! Barotropic streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xy
@@ -422,11 +421,11 @@ MODULE mod_postprocessvars
   INTEGER, DIMENSION(:),ALLOCATABLE       :: nsavewrite
   INTEGER                                 :: nsave = 0
 
-  INTEGER, DIMENSION(0:10)                :: ntrajout = 0
+  INTEGER, DIMENSION(0:21)                :: ntrajout = 0
   INTEGER                                 :: ntrajtot = 0
   INTEGER                                 :: maxlbas = 0
 
-  REAL(DP), DIMENSION(0:10)               :: volout = 0
+  REAL(DP), DIMENSION(0:21)               :: volout = 0
   REAL(DP)                                :: voltot = 0
 
   ! Temporary trajectory information

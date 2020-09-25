@@ -54,7 +54,7 @@ MODULE mod_stream
         IF (l_offline .EQV. .FALSE.) ilooptraj = ntractot
 
         DO  intraj = 1, ilooptraj
-          lbasLoop:DO ilvar1 = 1, 10
+          lbasLoop:DO ilvar1 = 1, 21
 
               IF (l_offline .EQV. .FALSE.) THEN
                   IF (trajectories(intraj)%lbas/=ilvar1) CYCLE lbasLoop
@@ -107,9 +107,9 @@ MODULE mod_stream
                   END DO
               END IF
 
-              CALL write_stream(imt, jmt,'xy')
-              CALL write_stream(jmt,  km,'yz')
-              IF (l_tracers) CALL write_stream(jmt,  resolution,'yr')
+              CALL write_stream(imtdom, jmtdom,'xy')
+              CALL write_stream(jmtdom,  km,'yz')
+              IF (l_tracers) CALL write_stream(jmtdom,  resolution,'yr')
               IF (l_tracers) CALL write_stream(resolution,  resolution,'rr')
 
           END DO lbasLoop
@@ -133,14 +133,14 @@ MODULE mod_stream
 
           INTEGER :: index
 
-          index = 10
+          index = 21
           IF (l_offline .EQV. .FALSE.) index = ntracmax
 
           ! Allocate flux arrays
-          ALLOCATE( fluxes_xy(imt, jmt, index), psi_xy(imt, jmt))
-          ALLOCATE( fluxes_yz(jmt, km, index), psi_yz(jmt, km))
+          ALLOCATE( fluxes_xy(imtdom, jmtdom, index), psi_xy(imtdom, jmtdom))
+          ALLOCATE( fluxes_yz(jmtdom, km, index), psi_yz(jmtdom, km))
           IF (l_tracers) THEN
-              ALLOCATE( fluxes_yr(jmt, resolution, index, numtracers), psi_yr(jmt, resolution, numtracers))
+              ALLOCATE( fluxes_yr(jmtdom, resolution, index, numtracers), psi_yr(jmtdom, resolution, numtracers))
               ALLOCATE( fluxes_rr(resolution, resolution, index), psi_rr(resolution, resolution))
           END IF
 

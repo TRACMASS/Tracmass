@@ -454,7 +454,7 @@ MODULE mod_write
           REWIND (34)
 
           DO ll = 1, numline
-              READ (UNIT=34, fmt="(I8,I3)") ntrac, lbas, nsavewrite(ntrac)
+              READ (UNIT=34, fmt="(I8,I3,I10)") ntrac, lbas, nsavewrite(ntrac)
               trajectories(ntrac)%lbas = lbas
           END DO
 

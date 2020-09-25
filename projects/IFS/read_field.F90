@@ -62,7 +62,7 @@ SUBROUTINE read_field
        dateprefix = filledFileName(dateFormat, prevYear, prevMon, prevDay)
 
        fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-       hs(1:imt,jmt:0:-1,-1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1],'extend'))
+       hs(1:imt,jmt:0:-1,-1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1]))
 
        IF (l_tracers .AND. l_swtraj) THEN
 
@@ -86,7 +86,7 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,jmt:0:-1,0) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1],'extend'))
+     hs(1:imt,jmt:0:-1,0) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1]))
 
      IF (l_tracers .AND. l_swtraj) THEN
 
@@ -112,7 +112,7 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, nextYear, nextMon, nextDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,jmt:0:-1,1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1],'extend'))
+     hs(1:imt,jmt:0:-1,1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1]))
 
      IF (l_tracers .AND. l_swtraj) THEN
 
@@ -135,10 +135,10 @@ SUBROUTINE read_field
    dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
 
    fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(uGridName)//TRIM(fileSuffix)
-   tmpuflux(1:imt,jmt:0:-1,1:km) = get3DfieldNC(fieldFile, ueul_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,km,1],'st','extend')
+   tmpuflux(1:imt,jmt:0:-1,1:km) = get3DfieldNC(fieldFile, ueul_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,km,1],'st')
 
    fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(vGridName)//TRIM(fileSuffix)
-   tmpvflux(1:imt,jmt:0:-1,1:km) = get3DfieldNC(fieldFile, veul_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,km,1],'st','extend')
+   tmpvflux(1:imt,jmt:0:-1,1:km) = get3DfieldNC(fieldFile, veul_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,km,1],'st')
 
 
    !! Tracers

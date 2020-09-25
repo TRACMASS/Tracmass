@@ -57,11 +57,11 @@ If streamfunctions are computed, four files are created where the output is stor
 +---------+-------------------+----------------------+
 | Case    | Number of columns |  Number of rows      |
 +---------+-------------------+----------------------+
-| *psixy* |        imt        | jmt x 10             |
+| *psixy* |        imt        | jmt x 21             |
 +---------+-------------------+----------------------+
-| *psiyz* |        jmt        | km x 10              |
+| *psiyz* |        jmt        | km x 21              |
 +---------+-------------------+----------------------+
-| *psiyr* |        jmt        | mr x 10 x numtracers |
+| *psiyr* |        jmt        | mr x 21 x numtracers |
 +---------+-------------------+----------------------+
-| *psirr* |        mr         | mr x 10              |
+| *psirr* |        mr         | mr x 21              |
 +---------+-------------------+----------------------+

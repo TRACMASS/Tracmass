@@ -114,7 +114,7 @@ TRACMASS features: stream functions II (**psiyz** - meridional)
 If stream function calculation (**l_psi**) is activated, a stream function will be calculated to each of the killing zones. This way one is able to separate the total Lagrangian meridional stream function into the different components depending of the killing zone. All the stream functions showed in the figure below are computed offline and with **dirpsi** equal to minus one. Trajectories are starting both in the northern and southern boundary.
 
 .. image:: figs/fig_orca1_4.png
-    :width: 100%
+    :width: 80%
     :align: center
     :alt: An example of meridional stream functions.
 

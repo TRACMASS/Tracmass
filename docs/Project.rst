@@ -1,7 +1,7 @@
 The *Projects* folder
 =====================
 
-The present chapter will introduce all the files in the *projects* folder. Currently four projects are available: **Theoretical, NEMO, AVISO, IFS**.
+The present chapter will introduce all the files in the *projects* folder. Currently four projects are available: **Theoretical, NEMO, AVISO, IFS, ROMS**.
 
 setup_grid.F90
 --------------
@@ -182,6 +182,8 @@ INIT_GRID_SIZE
 
 * **dzv_name** [*character*]:  variable name for dz in V points.
 
+* **dep_name** [*character*]:  variable name for total depth.
+
 * **bathyFile** [*character*]: name of the file that contains variables linked to bathymetry/topography.
 
 * **kmt_name** [*character*]:  variable name for bathymetry.
@@ -338,4 +340,4 @@ INIT_STREAMFUNCTION
 
 * **l_offline** [*logical*]: compute the stream functions offline. Default value is **True**.
 
-* **dipsi** [*integer, array*]: direction of integration of streamfunctions.
+* **dirpsi** [*integer, array*]: direction of integration of streamfunctions.

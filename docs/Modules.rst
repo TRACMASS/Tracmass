@@ -43,9 +43,8 @@ mod_clock.F90
 The module **mod_clock** calculates the new time step referenced to the initial time step. This module contains one subroutine **update_time**.
 
 .. image:: figs/fig_time.png
-    :width: 500px
+    :width: 80%
     :align: center
-    :height: 250px
     :alt: Description of mod_time
 
 The subroutine updates **tt** and **ts** based on the value of **ds**. This is transform to a time step in seconds **dt** by multiplying **ds** with the volume **dxyz**. The subroutine chooses between the smallest of three different time steps:
@@ -106,20 +105,22 @@ and a private function:
 mod_getfile.F90
 ---------------
 
-The module **mod_getfile** consists on three functions: **filledFileName** which updates the dateprefix according to the calendar, **get2DfieldNC** to extract 2D data fields, and **get3DfieldNC** to extract 3D data fields.
+The module **mod_getfile** consists on five functions: **filledFileName** which updates the dateprefix according to the calendar, **getScalarNC** to extract scalars, **get1DfieldNC** to extract 1D data fields, **get2DfieldNC** to extract 2D data fields, and **get3DfieldNC** to extract 3D data fields.
 
 * The function **filledFileName** has four arguments: *filedPattern* a character string that contains the dateprefix, and *inyear*, *inmon* and *inday* representing the year, month and day of the calendar. The function will find the string YYYYMMDD and replace it with the corresponding year, month or/and day.
 
-* The function **get2DfieldNC** has five arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start2D* a 4D array that describes the starting indexes, *count2D* a 4D array that describes how many indexes are read, and *cextend* an optional argument to read 2D fields in v points (an extra j index).
+* The function **getScalarNC** has two arguments: *fieldFile* the path to the netCDF file, and *varName* name of the variable to be extracted.
 
-* The function **get3DfieldNC** has six arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start3D* a 4D array that describes the starting indexes, *count3D* a 4D array that describes how many indexes are read, *stcase* describes the order data is stored in the netCDF file:
+* The function **get1DfieldNC** has four arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start1D* a 4D array that describes the starting indexes, and *count1D* a 4D array that describes how many indexes are read.
+
+* The function **get2DfieldNC** has four arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start2D* a 4D array that describes the starting indexes, and *count2D* a 4D array that describes how many indexes are read.
+
+* The function **get3DfieldNC** has five arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start3D* a 4D array that describes the starting indexes, *count3D* a 4D array that describes how many indexes are read, and *stcase* describes the order data is stored in the netCDF file:
 
     - *'ts'*:  [time, x, y, z]
     - *'st'*:  [x, y, z, time]
     - *'ts_r'*: [time, z, y, x]
     - *'st_r'*: [z, y, x, time]
-
-  and *cextend* an optional argument to read 3D fields in v points (an extra j index).
 
 .. note ::
 
@@ -132,9 +133,13 @@ The module **mod_getfile** consists on three functions: **filledFileName** which
       :alt: Description of mod_pos
 
 
-This module contains three functions:
+This module contains five functions:
 
 .. f:autosubroutine:: filledFileName
+
+.. f:autosubroutine:: getScalarNC
+
+.. f:autosubroutine:: get1DfieldNC
 
 .. f:autosubroutine:: get2DfieldNC
 
@@ -418,13 +423,13 @@ The module **mod_stream.F90** is responsible for computing volume/mass fluxes an
   +----------------------+---------------------------+----------------------------------+
   | *Flux type*          |   **l_offline** = TRUE    |      **l_offline** = FALSE       |
   +----------------------+---------------------------+----------------------------------+
-  | Barotropic (x-y)     |    (imt, jmt, 10)         |    (imt, jmt, ntractot)          |
+  | Barotropic (x-y)     |    (imt, jmt, 21)         |    (imt, jmt, ntractot)          |
   +----------------------+---------------------------+----------------------------------+
-  | Meridional (y-z)     |    (jmt,  km, 10)         |    (jmt,  km, ntractot)          |
+  | Meridional (y-z)     |    (jmt,  km, 21)         |    (jmt,  km, ntractot)          |
   +----------------------+---------------------------+----------------------------------+
-  | Latitude-tracer (y-r)| (jmt, mr, 10, numtracers) | (jmt, mr, ntractot, numtracers)  |
+  | Latitude-tracer (y-r)| (jmt, mr, 21, numtracers) | (jmt, mr, ntractot, numtracers)  |
   +----------------------+---------------------------+----------------------------------+
-  | Tracer-tracer (r-r)  | ( mr, mr, 10, numtracers) | ( mr, mr, ntractot, numtracers)  |
+  | Tracer-tracer (r-r)  | ( mr, mr, 21, numtracers) | ( mr, mr, ntractot, numtracers)  |
   +----------------------+---------------------------+----------------------------------+
 
 .. note::

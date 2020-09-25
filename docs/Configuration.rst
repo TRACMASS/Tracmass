@@ -10,7 +10,7 @@ Installation
 
   .. code-block:: none
 
-    git clone https://github.com/AitorAldama/Tracmass.git
+    git clone https://github.com/TRACMASS/Tracmass.git
 
 2. Enter the TRACMASS directory
 

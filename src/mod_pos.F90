@@ -240,8 +240,8 @@ MODULE mod_pos
              CALL calc_pos(3,ia,ja,ka,z0,z1,ds) ! vertical position
 
              ! In case of corners
-             IF (ds == dse) ib = ia + 1
-             IF (ds == dsw) ib = iam
+             IF (ds == dsn) jb = ja + 1
+             IF (ds == dss) jb = ja - 1
              IF (ds == dsu) kb = ka + 1
              IF (ds == dsd) kb = ka - 1
 
@@ -375,7 +375,7 @@ MODULE mod_pos
 
           !  East-west cyclic
           IF (iperio /= 0) THEN
-              IF (x1 <  0.d0) THEN
+              IF (x1 <=  0.d0) THEN
                   x1 = x1 + DBLE(IMT)
               ELSE IF (x1 > DBLE(IMT)) THEN
                   x1 = x1 - DBLE(IMT)

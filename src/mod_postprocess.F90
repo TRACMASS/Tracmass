@@ -92,7 +92,7 @@ MODULE mod_postprocess
             CALL read_data(51, filestat2)
 
             ! If stream fuctions are computed
-            IF (l_psi .AND. traj_out(ntrac)>1 .AND. l_offline .AND. filestat2 == 0) THEN
+            IF (l_psi .AND. traj_out(ntrac)>0 .AND. l_offline .AND. filestat2 == 0) THEN
                   counter(ntrac) = counter(ntrac) + 1
 
                   traj_x(ntrac, counter(ntrac)) = x1
@@ -161,7 +161,7 @@ MODULE mod_postprocess
 
         ! Counter
         ALLOCATE(counter(ntractot)); counter = 0
-        ALLOCATE(traj_out(ntractot)); traj_out = 0
+        ALLOCATE(traj_out(ntractot)); traj_out = -1
 
       END SUBROUTINE
 

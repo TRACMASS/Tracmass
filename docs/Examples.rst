@@ -98,8 +98,8 @@ Trajectories can be initialised using a tracer value criteria by defining the mi
     :align: center
     :alt: An example of tracermin0 and tracermax0.
 
-TRACMASS features: **exitType=2** and **exitType=3**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TRACMASS features: killing zones II (**exitType=2** and **exitType=3**)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Trajectories can be terminated using different conditions set by **exitType**. By setting **exitType** to one, trajectories are terminated based on a geographical condition (solid and dashed black lines). By setting **exitType** to two, a value of tracer is used to terminate trajectories. This is harder to see in the geographical projection of trajectories, but it is easily seen in the tracer space. In the example below we impose a killing zone along the :math:`15^\circ C` isotherm (red trajectories). **exitType=3** is a combination of both trajectory and tracer conditions (green trajectories).
 
@@ -114,7 +114,7 @@ TRACMASS features: stream functions II (**psiyz** - meridional)
 If stream function calculation (**l_psi**) is activated, a stream function will be calculated to each of the killing zones. This way one is able to separate the total Lagrangian meridional stream function into the different components depending of the killing zone. All the stream functions showed in the figure below are computed offline and with **dirpsi** equal to minus one. Trajectories are starting both in the northern and southern boundary.
 
 .. image:: figs/fig_orca1_4.png
-    :width: 80%
+    :width: 100%
     :align: center
     :alt: An example of meridional stream functions.
 
@@ -138,3 +138,25 @@ The IFS data is stored on a Arakawa's A-grid while TRACMASS is defined on a Arak
     :width: 60%
     :align: center
     :alt: An example of a run with IFS data.
+
+ROMS (3D dataset)
+-----------------
+
+The ROMS data is defined on the same grid as the  TRACMASS grid. Therefore, there is no need to interpolate velocities or tracer on the TRACMASS grid. However, ghosts u and v points are defined around the frame to adjust to the TRACMASS grid. The default setup of this project initialises trajectories west of Sri Lanka only for northward fluxes (solid blue line). The seeding takes place every month (12 seeding steps) and one trajectory is initialised in the location. Trajectories are terminated when exiting the ROMS domain, the maximum time for trajectories is 100 years.
+
+.. image:: figs/fig_roms_1.png
+    :width: 60%
+    :align: center
+    :alt: An example of a run with ROMS data.
+
+TRACMASS features: online/offline calculation of stream functions (**l_offline**)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Stream functions can be calculated in two ways in TRACMASS either online (**l_offline=FALSE**), while trajectories are computed, or offline (**l_offline=TRUE**) as a part of the postprocessing of the results. The online case is the same regardless of the choice of **write_frec**. However, for the offline case the choice of **write_frec** is relevant. For low writing frequencies **write_frec=1** and **write_frec=2** the online calculation is less accurate. The figure below shows an example of different calculations of the barotropic stream function for different writing frequencies.
+
+.. image:: figs/fig_roms_2.png
+    :width: 80%
+    :align: center
+    :alt: An example of l_offline use.
+
+.. warning:: Offline calculation of stream functions may give a wrong result for **write_frec=1** and **write_frec=2**. For an accurate calculation of stream functions use **write_frec=3** or **write_frec=4** or an online calculation.

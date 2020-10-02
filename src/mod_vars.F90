@@ -167,7 +167,7 @@ MODULE mod_grid
 
   ! Grid description
   INTEGER, DIMENSION(3)                     :: griddir = 1
-  LOGICAL                                   :: zeroindx
+  LOGICAL                                   :: zeroindx = .FALSE.
 
   ! Subdomain grid
   LOGICAL                                   :: l_subdom = .FALSE.

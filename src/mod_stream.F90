@@ -35,8 +35,6 @@ MODULE mod_stream
       !
       ! --------------------------------------------------
 
-        INTEGER :: ilooptraj
-
         PRINT*, ''
         PRINT*, '- Computing streamfunctions'
 
@@ -50,69 +48,91 @@ MODULE mod_stream
         IF (l_tracers) CALL open_outstream('yr')
         IF (l_tracers) CALL open_outstream('rr')
 
-        ilooptraj = 1
-        IF (l_offline .EQV. .FALSE.) ilooptraj = ntractot
+        DO ilvar1 = 1, 21
 
-        DO  intraj = 1, ilooptraj
-          lbasLoop:DO ilvar1 = 1, 21
+            psi_xy(:,:) = 0.; psi_yz(:,:) = 0.
+            IF (l_tracers) THEN
+               psi_yr(:,:,:) = 0.
+               psi_rr(:,:)   = 0.
+            END IF
 
-              IF (l_offline .EQV. .FALSE.) THEN
-                  IF (trajectories(intraj)%lbas/=ilvar1) CYCLE lbasLoop
-              END IF
+            ! For online calculation - adding fluxes
+            IF (l_offline .EQV. .FALSE.) THEN
 
-              psi_xy(:,:) = 0.; psi_yz(:,:) = 0.
-              IF (l_tracers) THEN
-                 psi_yr(:,:,:) = 0.
-                 psi_rr(:,:)   = 0.
-              END IF
+              ! Cleaning of fluxes
+              fluxes_xy(:,:,0) = 0.d0;   fluxes_yz(:,:,0) = 0.d0
+              IF (l_tracers) fluxes_yr(:,:,0,:) = 0.d0;
+              IF (l_tracers) fluxes_rr(:,:,0)   = 0.d0
 
-              ilvar3 = intraj
-              IF (l_offline) ilvar3 = ilvar1
+              intrajLoop: DO  intraj = 1, ntractot
 
-              IF (dirpsi(ilvar1) == 1) THEN
-                  DO ilvar2 = 2, MAX(jmt,km,resolution)
+                IF (trajectories(intraj)%lbas/=ilvar1) CYCLE intrajLoop
 
-                      ! Geographical streamfunctions
-                      IF (ilvar2<=jmt) psi_xy(:,ilvar2) = psi_xy(:,ilvar2-1) - fluxes_xy(:,ilvar2,ilvar3)
-                      IF (ilvar2<=km)  psi_yz(:,ilvar2) = psi_yz(:,ilvar2-1) - fluxes_yz(:,ilvar2,ilvar3)
+                ! Geographical fluxes
+                fluxes_xy(:,:,0) = fluxes_xy(:,:,0) + fluxes_xy(:,:,intraj)
+                fluxes_yz(:,:,0) = fluxes_yz(:,:,0) + fluxes_yz(:,:,intraj)
 
-                      ! Geographical+tracer streamfunctions
-                      DO ilvar4 = 1, numtracers
-                          IF (ilvar2<=resolution .AND. l_tracers)  THEN
-                            psi_yr(:,ilvar2,ilvar4) = psi_yr(:,ilvar2-1,ilvar4) - fluxes_yr(:,ilvar2,ilvar3,ilvar4)
-                          END IF
-                      END DO
+                IF (l_tracers)  THEN
 
-                      ! Tracer+tracer Streamfunctions
-                      IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2-1) - fluxes_rr(:,ilvar2,ilvar3)
-
+                  ! Geographical+tracer fluxes
+                  DO ilvar4 = 1, numtracers
+                    fluxes_yr(:,:,0,ilvar4) = fluxes_yr(:,:,0,ilvar4) + fluxes_yr(:,:,intraj,ilvar4)
                   END DO
-              ELSE IF (dirpsi(ilvar1) == -1) THEN
-                  DO ilvar2 = MAX(jmt-1,km-1,resolution-1), 1, -1
 
-                      ! Geographical streamfunctions
-                      IF (ilvar2<=jmt-1) psi_xy(:,ilvar2) = psi_xy(:,ilvar2+1) + fluxes_xy(:,ilvar2,ilvar3)
-                      IF (ilvar2<=km-1)  psi_yz(:,ilvar2) = psi_yz(:,ilvar2+1) + fluxes_yz(:,ilvar2,ilvar3)
+                  ! Tracer+tracer fluxes
+                  fluxes_rr(:,:,0) = fluxes_rr(:,:,0) + fluxes_rr(:,:,intraj)
 
-                      ! Geographical+tracer streamfunctions
-                      DO ilvar4 = 1, numtracers
-                          IF (ilvar2<=resolution-1 .AND. l_tracers) THEN
-                            psi_yr(:,ilvar2, ilvar4) = psi_yr(:,ilvar2+1, ilvar4) + fluxes_yr(:,ilvar2,ilvar3,ilvar4)
-                          END IF
-                      END DO
+                END IF
 
-                      ! Tracer+tracer Streamfunctions
-                      IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2+1) + fluxes_rr(:,ilvar2,ilvar3)
+              END DO intrajLoop
+            END IF
 
-                  END DO
-              END IF
+            ilvar3 = 0
+            IF (l_offline) ilvar3 = ilvar1
 
-              CALL write_stream(imtdom, jmtdom,'xy')
-              CALL write_stream(jmtdom,  km,'yz')
-              IF (l_tracers) CALL write_stream(jmtdom,  resolution,'yr')
-              IF (l_tracers) CALL write_stream(resolution,  resolution,'rr')
+            IF (dirpsi(ilvar1) == 1) THEN
+                DO ilvar2 = 2, MAX(jmtdom,km,resolution)
 
-          END DO lbasLoop
+                    ! Geographical streamfunctions
+                    IF (ilvar2<=jmtdom) psi_xy(:,ilvar2) = psi_xy(:,ilvar2-1) - fluxes_xy(:,ilvar2,ilvar3)
+                    IF (ilvar2<=km)     psi_yz(:,ilvar2) = psi_yz(:,ilvar2-1) - fluxes_yz(:,ilvar2,ilvar3)
+
+                    ! Geographical+tracer streamfunctions
+                    DO ilvar4 = 1, numtracers
+                        IF (ilvar2<=resolution .AND. l_tracers)  THEN
+                          psi_yr(:,ilvar2,ilvar4) = psi_yr(:,ilvar2-1,ilvar4) - fluxes_yr(:,ilvar2,ilvar3,ilvar4)
+                        END IF
+                    END DO
+
+                    ! Tracer+tracer Streamfunctions
+                    IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2-1) - fluxes_rr(:,ilvar2,ilvar3)
+
+                END DO
+            ELSE IF (dirpsi(ilvar1) == -1) THEN
+                DO ilvar2 = MAX(jmtdom-1,km-1,resolution-1), 1, -1
+
+                    ! Geographical streamfunctions
+                    IF (ilvar2<=jmtdom-1) psi_xy(:,ilvar2) = psi_xy(:,ilvar2+1) + fluxes_xy(:,ilvar2,ilvar3)
+                    IF (ilvar2<=km-1)     psi_yz(:,ilvar2) = psi_yz(:,ilvar2+1) + fluxes_yz(:,ilvar2,ilvar3)
+
+                    ! Geographical+tracer streamfunctions
+                    DO ilvar4 = 1, numtracers
+                        IF (ilvar2<=resolution-1 .AND. l_tracers) THEN
+                          psi_yr(:,ilvar2, ilvar4) = psi_yr(:,ilvar2+1, ilvar4) + fluxes_yr(:,ilvar2,ilvar3,ilvar4)
+                        END IF
+                    END DO
+
+                    ! Tracer+tracer Streamfunctions
+                    IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2+1) + fluxes_rr(:,ilvar2,ilvar3)
+
+                END DO
+            END IF
+
+            CALL write_stream(imtdom, jmtdom,'xy')
+            CALL write_stream(jmtdom,  km,'yz')
+            IF (l_tracers) CALL write_stream(jmtdom,  resolution,'yr')
+            IF (l_tracers) CALL write_stream(resolution,  resolution,'rr')
+
         END DO
 
         PRINT*, '- Saving  streamfunctions'
@@ -134,14 +154,16 @@ MODULE mod_stream
           INTEGER :: index
 
           index = 21
-          IF (l_offline .EQV. .FALSE.) index = ntracmax
+          IF (l_offline .EQV. .FALSE.) THEN
+              index  = ntracmax
+          END IF
 
           ! Allocate flux arrays
-          ALLOCATE( fluxes_xy(imtdom, jmtdom, index), psi_xy(imtdom, jmtdom))
-          ALLOCATE( fluxes_yz(jmtdom, km, index), psi_yz(jmtdom, km))
+          ALLOCATE( fluxes_xy(imtdom, jmtdom, 0:index), psi_xy(imtdom, jmtdom))
+          ALLOCATE( fluxes_yz(jmtdom, km, 0:index), psi_yz(jmtdom, km))
           IF (l_tracers) THEN
-              ALLOCATE( fluxes_yr(jmtdom, resolution, index, numtracers), psi_yr(jmtdom, resolution, numtracers))
-              ALLOCATE( fluxes_rr(resolution, resolution, index), psi_rr(resolution, resolution))
+              ALLOCATE( fluxes_yr(jmtdom, resolution, 0:index, numtracers), psi_yr(jmtdom, resolution, numtracers))
+              ALLOCATE( fluxes_rr(resolution, resolution, 0:index), psi_rr(resolution, resolution))
           END IF
 
           fluxes_xy(:,:,:) = 0.;  psi_xy(:,:) = 0.
@@ -221,7 +243,7 @@ MODULE mod_stream
           ! lbas
           index3 = traj_out(ilooptraj)
 
-          IF (index3 > 1) THEN
+          IF (index3 > 0) THEN
             DO iloopsave = 2, nsave
 
               ! If trajectories are stored when crossing a wall
@@ -234,7 +256,7 @@ MODULE mod_stream
                       ! Direction of trajectory
                       idir = 1
                       IF ( traj_x(ilooptraj,iloopsave) <  traj_x(ilooptraj,iloopsave-1) &
-                          .AND.  traj_x(ilooptraj,iloopsave-1)/=360.) idir = -1
+                          .AND.  traj_x(ilooptraj,iloopsave-1)/=imtdom) idir = -1
                       IF ( traj_x(ilooptraj,iloopsave) == traj_x(ilooptraj,iloopsave-1) ) idir = 0
 
                       ! Barotropic streamfunction (x-y)

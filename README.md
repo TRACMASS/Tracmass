@@ -8,7 +8,7 @@ It is currently under development. The following features from older versions ar
 
 Previous versions of TRACMASS are stored in the following repository:
 
-https://github.com/TRACMASS/Tracmass_prev.git
+https://github.com/TRACMASS/Tracmass_previous.git
 
 
 TRACMASS v7

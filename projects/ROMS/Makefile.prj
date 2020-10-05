@@ -1,4 +1,4 @@
-# Makefile for NEMO run
+# Makefile for ROMS run
 #========================================================================
 
 # Vertical velocities

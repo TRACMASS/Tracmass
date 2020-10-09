@@ -1,0 +1,77 @@
+# This is a basic workflow to help you get started with Actions
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Compilation 
+      - name: Compile case - Theoretical
+        run : make
+          
+      # Default run
+      - name: Run TRACMASS (default configuration)
+        run : ./runtracmass
+
+      # Netcdf library
+      - name: Install netcdf
+        run : sudo apt-get install libnetcdf-dev libnetcdff-dev
+
+      # Compilation of other projects
+      - name: Compile case 2D dataset - AVISO
+        run : |
+          
+          cp Makefile Makefile_original
+          
+          sed '7s/.*/CASE           = AVISO/' Makefile_original > dum1
+          sed '6s/.*/PROJECT        = AVISO/' dum1 > dum2
+          sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
+          
+          make clean
+          make
+
+      - name: Compile 3D dataset - NEMO
+        run : |
+
+          sed '7s/.*/CASE           = ORCA1/' Makefile_original > dum1
+          sed '6s/.*/PROJECT        = NEMO/' dum1 > dum2
+          sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
+
+          make clean
+          make
+
+      - name: Compile 3D dataset - IFS
+        run : |
+
+          sed '7s/.*/CASE           = IFS/' Makefile_original > dum1
+          sed '6s/.*/PROJECT        = IFS/' dum1 > dum2
+          sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
+
+          make clean
+          make
+
+      - name: Compile 3D dataset - ROMS 
+        run : |
+
+          sed '7s/.*/CASE           = ROMS/' Makefile_original > dum1
+          sed '6s/.*/PROJECT        = ROMS/' dum1 > dum2
+          sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
+
+          make clean
+          make

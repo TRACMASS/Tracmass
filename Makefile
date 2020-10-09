@@ -54,7 +54,7 @@ LIB_DIR = $(shell nf-config --flibs)
 INC_DIR = $(shell nf-config --cflags)
 
 else
-NCDF_ROOT = /usr/local/Cellar/netcdf/4.6.2/
+NCDF_ROOT = /usr
 
 LIB_DIR = -L$(NCDF_ROOT)/lib -lnetcdf -lnetcdff
 INC_DIR	= -I$(NCDF_ROOT)/include

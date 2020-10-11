@@ -381,7 +381,7 @@ MODULE mod_calendar
                      IF (dateMon > 12) THEN
                         dateMon = dateMon - 12
                         dateYear = dateYear + 1
-                        IF (dateYear > loopEndYear .AND. nff > 0) THEN
+                        IF (dateYear > loopEndYear .AND. nff > 0 .AND. loopYears) THEN
                            dateYear = loopStartYear
                         END IF
                      END IF
@@ -413,7 +413,7 @@ MODULE mod_calendar
                      IF (dateMon <= 0) THEN
                         dateMon = dateMon + 12
                         dateYear = dateYear - 1
-                        IF (dateYear < loopEndYear .and. nff < 0) THEN
+                        IF (dateYear < loopEndYear .AND. nff < 0 .AND. loopYears) THEN
                            dateYear = loopStartYear
                         END IF
                      END IF

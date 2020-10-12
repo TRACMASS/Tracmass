@@ -39,6 +39,7 @@ MODULE mod_clock
        ! If time step makes the integration
        ! exceed the time when fields change
        IF (tss + dt/tseas*DBLE(iter) .GE. DBLE(iter)) THEN
+
           dts = ts
 
           dt  = DBLE(INT(ts,8)+1)*tseas-tt
@@ -52,8 +53,6 @@ MODULE mod_clock
 
        ELSE
           ! Update the real time
-          ! tt is the only time variable that captures the backward trajectories
-          ! ts and tss are absolute values of tt
           tt = tt + dt
 
           ! If the time step is equal to the minimum time step
@@ -65,6 +64,7 @@ MODULE mod_clock
 
           ! If the time step is equal to the time step to the next subcycle
           ELSE IF (dt == dtreg) THEN
+
               dts = ts
 
               ts  = NINT((ts + dtreg/tseas)*DBLE(iter),8)/DBLE(iter)

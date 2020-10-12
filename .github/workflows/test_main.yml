@@ -37,46 +37,33 @@ jobs:
       # Compilation of other projects
       - name: Compile 2D dataset - AVISO
         run : |
-
           cp Makefile Makefile_original
-
           sed '7s/.*/CASE           = AVISO/' Makefile_original > dum1
           sed '6s/.*/PROJECT        = AVISO/' dum1 > dum2
           sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
-
           make clean
           make
-
       - name: Compile 3D dataset - NEMO
         run : |
-
           sed '7s/.*/CASE           = ORCA1/' Makefile_original > dum1
           sed '6s/.*/PROJECT        = NEMO/' dum1 > dum2
           sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
-
           make clean
           make
-
       - name: Compile 3D dataset - IFS
         run : |
-
           sed '7s/.*/CASE           = IFS/' Makefile_original > dum1
           sed '6s/.*/PROJECT        = IFS/' dum1 > dum2
           sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
-
           make clean
           make
-
       - name: Compile 3D dataset - ROMS
         run : |
-
           sed '7s/.*/CASE           = ROMS/' Makefile_original > dum1
           sed '6s/.*/PROJECT        = ROMS/' dum1 > dum2
           sed '10s/.*/NETCDFLIB           = automatic-44 /' dum2 > Makefile
-
           make clean
           make
-
   # This workflow contains a single job called "build"
   Test:
     # The type of runner that the job will run on
@@ -93,14 +80,33 @@ jobs:
 
       - name: Test mod_calendar.F90
         run : |
-
               cd src/
               cp _funit/*.fun .
-
               export FC="gfortran"
               export CXX="g++"
               export CC="gcc"
               export FSFLAG=-I
-
               funit mod_calendar
+              funit --clean
+
+      - name: Test mod_clock.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_clock
+              funit --clean
+
+      - name: Test mod_error.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_error
               funit --clean

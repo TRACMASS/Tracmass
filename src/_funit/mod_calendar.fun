@@ -1,9 +1,17 @@
 test_suite mod_calendar
 
-! Global variables can be declared here
+! Test_suite for mod_calendar
+!
+! This test suite contains 19 tests 
+! for the following subroutine/functions:
+!
+! 1 -> init_calendar
+! 2 -> previous_calendar
+! 2 -> end_calendar
+! 8 -> update_calendar
+! 4 -> tt_calendar
 
 SETUP
-  ! Place code here that should run before each test
 
   ! Initial date 01/01/2000 00:00:00
   startYear = 2000; startMon = 1; startDay = 1
@@ -45,7 +53,7 @@ END TEST
 
 TEST test_end_calendar_1
 
-   ! Test for init_calendar
+   ! Test for end_calendar
    ! intrun ---> end_calendar ---> endDate
 
    PRINT*, ' * Test end_calendar      : nff =  1  '
@@ -62,7 +70,7 @@ END TEST
 
 TEST test_end_calendar_2
 
-   ! Test for init_calendar
+   ! Test for end_calendar
    ! intrun ---> end_calendar ---> endDate
 
    PRINT*, ' * Test end_calendar      : nff = -1  '
@@ -454,7 +462,7 @@ END TEST
 
 TEST test_tt_calendar_1
 
-   ! Test for update_calendar
+   ! Test for tt_calendar
    ! tt ---> tt_calendar ---> dateDate
 
    REAL(8) :: tt
@@ -478,7 +486,7 @@ END TEST
 
 TEST test_tt_calendar_2
 
-   ! Test for update_calendar
+   ! Test for tt_calendar
    ! tt ---> tt_calendar ---> dateDate
 
    REAL(8) :: tt
@@ -505,7 +513,7 @@ END TEST
 
 TEST test_tt_calendar_3
 
-   ! Test for update_calendar
+   ! Test for tt_calendar
    ! tt ---> tt_calendar ---> dateDate
 
    REAL(8) :: tt
@@ -532,7 +540,7 @@ END TEST
 
 TEST test_tt_calendar_4
 
-   ! Test for update_calendar
+   ! Test for tt_calendar
    ! tt ---> tt_calendar ---> dateDate
 
    REAL(8) :: tt

@@ -49,10 +49,14 @@ MODULE mod_getfile
 
           filledFileName = filePattern
 
-          WRITE(timestamp_yyyymmdd(1:4),'(i4)') inyear
-          WRITE(timestamp_yyyymmdd(5:6),'(i2)') inmon
+          WRITE(timestamp_yyyymmdd(1:4),'(I4)') inyear
+          IF (inyear<10) WRITE(timestamp_yyyymmdd(1:4),'(A3,I1)') '000',inyear
+          IF (inyear<100  .AND. inyear >=10) WRITE(timestamp_yyyymmdd(1:4),'(A2,I2)') '00',inyear
+          IF (inyear<1000 .AND. inyear >=100) WRITE(timestamp_yyyymmdd(1:4),'(A1,I3)') '0',inyear
+
+          WRITE(timestamp_yyyymmdd(5:6),'(I2)') inmon
           IF (inmon<10) WRITE(timestamp_yyyymmdd(5:6),'(A1,I1)') '0',inmon
-          WRITE(timestamp_yyyymmdd(7:8),'(i2)') inday
+          WRITE(timestamp_yyyymmdd(7:8),'(I2)') inday
           IF (inday<10) WRITE(timestamp_yyyymmdd(7:8),'(A1,I1)') '0',inday
 
           ! Filled with calendar
@@ -207,7 +211,6 @@ MODULE mod_getfile
                 ALLOCATE(field(count3D(1), count3D(2),count3D(3)))
            ELSE IF (stcase == 'ts')  THEN
                 ALLOCATE(field4(1,count3D(1), count3D(2),count3D(3)))
-                ALLOCATE(field4(1,count3D(1), count3D(2),count3D(3)))
            ELSE IF (stcase == 'st_r') THEN
                 ALLOCATE(field(count3D(3), count3D(2),count3D(1)))
            ELSE IF (stcase == 'ts_r') THEN
@@ -243,9 +246,9 @@ MODULE mod_getfile
                   ierr=NF90_GET_VAR(ncid ,varid ,field(imthalf1+1:imt,:,:), ss, cc )
                ELSE IF (stcase == 'st_r') THEN
                   ss(3) = imindom; cc(3) = imthalf1
-                  ierr=NF90_GET_VAR(ncid, varid, field(:,:,1:imtdom), ss, cc)
+                  ierr=NF90_GET_VAR(ncid, varid, field(:,:,1:imthalf1), ss, cc)
                   ss(3) = 1; cc(3) = imthalf2
-                  ierr=NF90_GET_VAR(ncid ,varid ,field(:,:,imtdom+1:imt), ss, cc )
+                  ierr=NF90_GET_VAR(ncid ,varid ,field(:,:,imthalf1+1:imt), ss, cc )
                ELSE IF (stcase == 'ts') THEN
                   ss(2) = imindom; cc(2) = imthalf1
                   ierr=NF90_GET_VAR(ncid, varid, field4(:,1:imthalf1,:,:), ss, cc)

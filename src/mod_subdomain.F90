@@ -8,7 +8,7 @@ MODULE mod_subdomain
     !!
     !!          Subroutines included:
     !!               - init_subdomain
-    !!               - update_index
+    !!               - update_subindex
     !!
     !!------------------------------------------------------------------------------
 
@@ -28,9 +28,9 @@ MODULE mod_subdomain
       ! --------------------------------------------------
 
           ! Make sure killing zones are on
-          IF (exitType==2) THEN
+          IF (exitType==2 .AND. l_subdom) THEN
               exitType = 3 ! Include both thermodynamic and geographical killing zones
-          ELSE IF (exitType/=3) THEN
+          ELSE IF (exitType/=3 .AND. l_subdom) THEN
               exitType = 1
           END IF
 
@@ -52,14 +52,14 @@ MODULE mod_subdomain
 
                   ! The last 4 kill zones are reserved to the Subdomain
                   ! 7 - south wall
-                  ienw(7) = -1; iene(7) = imt + 1; jens(7) = jmindom + 1; jenn(7) = jmindom + 1
+                  ienw(7) = -1; iene(7) = imtdom + 1; jens(7) = jmindom + 1; jenn(7) = jmindom + 1
                   ! 8 - north wall
-                  ienw(8) = -1; iene(8) = imt + 1; jens(8) = jmaxdom - 1; jenn(8) = jmaxdom - 1
+                  ienw(8) = -1; iene(8) = imtdom + 1; jens(8) = jmaxdom - 1; jenn(8) = jmaxdom - 1
 
                   ! 9 - east wall
-                  ienw(9) = imindom + 1; iene(9) = imindom + 1; jens(9) = -1; jenn(9) = jmt + 1
+                  ienw(9) = imindom + 1; iene(9) = imindom + 1; jens(9) = -1; jenn(9) = jmtdom + 1
                   ! 10 - west wall
-                  ienw(10) = imaxdom - 1; iene(10) = imaxdom - 1; jens(10) = - 1; jenn(10) = jmt + 1
+                  ienw(10) = imaxdom - 1; iene(10) = imaxdom - 1; jens(10) = - 1; jenn(10) = jmtdom + 1
 
                   ! Redefine the killing zones in the new reference system
                   ienw = ienw - imindom + 1 ; iene = iene - imindom + 1
@@ -114,7 +114,7 @@ MODULE mod_subdomain
       ! Redifine the size of the domain if a subdomain is chosen.
       !
       ! --------------------------------------------------
-          INTEGER, INTENT(out)       :: ji, jj
+          INTEGER, INTENT(INOUT)       :: ji, jj
 
           ! Shift for the i index
           IF (zeroindx) THEN

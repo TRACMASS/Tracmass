@@ -16,18 +16,11 @@ MODULE mod_tracers
     USE mod_grid
     USE mod_traj
     USE mod_time
+    USE mod_tracerf
 
     IMPLICIT NONE
 
     INTEGER, DIMENSION(10) :: numtracerarray = 0
-
-    INTERFACE
-       FUNCTION thermo_dens0(T,S)
-         REAL, INTENT(IN)                        :: T(:,:,:),S(:,:,:)
-         REAL, ALLOCATABLE, DIMENSION (:,:,:)    :: thermo_dens0
-       END FUNCTION thermo_dens0
-
-    END INTERFACE
 
     PRIVATE :: tracers_default
 

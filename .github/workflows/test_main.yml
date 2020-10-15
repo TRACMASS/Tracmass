@@ -110,3 +110,53 @@ jobs:
               export FSFLAG=-I
               funit mod_error
               funit --clean
+
+      - name: Test mod_pos.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_pos
+              funit --clean
+
+      - name: Test mod_seed.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+
+              cat <<EOF > seedTime
+              1
+              3
+              5
+              11
+              12
+              24
+              EOF
+
+              cat <<EOF > seedFile
+               1  2  3  1 -1
+               4  5 10  1 -1
+               6  7  8  1  1
+              12 14  7  1  1
+              EOF
+
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_seed
+              funit --clean
+
+      - name: Test mod_subdomain.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_subdomain
+              funit --clean

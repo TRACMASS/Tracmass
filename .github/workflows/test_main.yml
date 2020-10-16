@@ -160,3 +160,26 @@ jobs:
               export FSFLAG=-I
               funit mod_subdomain
               funit --clean
+
+
+      - name: Test mod_swap.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_swap
+              funit --clean
+
+      - name: Test mod_tracers.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_tracers
+              funit --clean

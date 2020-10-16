@@ -95,7 +95,7 @@ MODULE mod_tracers
        CHARACTER(len=100)          :: tracname
        REAL(DP), DIMENSION(:,:,:)  :: var3d
 
-       IF (tracname == 'sigma0') THEN
+       IF (TRIM(tracname) == 'sigma0') THEN
               var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4), REAL(tracers(2)%data(:,:,:,2),4)),8)
               var3d = var3d - 1000.d0
        END IF

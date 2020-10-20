@@ -110,10 +110,16 @@ runfile : $(objects)
 
 	$(FC) $(FF) $(ORM_FLAGS) -o $(RUNFILE) $(objects) $(INC_DIR) $(LIB_DIR)
 
+test :
+
+	sed '42s~.*~NCDIR="$(LIB_DIR) $(INC_DIR)" ~' src/_funit/runtest.sh > runtest.sh
+	chmod +x runtest.sh
+
 .PHONY : clean
 
 clean:
 
 	-rm -rf *.o *.mod *.out *.dSYM *.csv fort.* *.x *.in
+	-rm runtest.sh
 	-rm -rf _build
 	-rm $(RUNFILE)

@@ -183,3 +183,14 @@ jobs:
               export FSFLAG=-I
               funit mod_tracers
               funit --clean
+
+      - name: Test mod_vertvel.F90
+        run : |
+              cd src/
+              cp _funit/*.fun .
+              export FC="gfortran"
+              export CXX="g++"
+              export CC="gcc"
+              export FSFLAG=-I
+              funit mod_vertvel
+              funit --clean

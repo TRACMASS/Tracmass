@@ -41,7 +41,7 @@ MODULE mod_init
           namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx, trunit, l_onestep, physDataDir, physPrefixForm, &
                                            dateFormat, tGridName, uGridName, vGridName, &
                                            fileSuffix, hs_name, ueul_name, veul_name, &
-                                           usgs_name, vsgs_name
+                                           usgs_name, vsgs_name, usub_name, vsub_name, w_name
           namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio, &
                                            topoDataDir, &
                                            hgridFile, dy_name, dyu_name, dx_name, dxv_name, &

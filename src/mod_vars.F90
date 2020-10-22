@@ -209,7 +209,8 @@ MODULE mod_grid
   ! Info about input data
   CHARACTER(LEN=50)                         :: RunID, tGridName = '', uGridName = '', vGridName = '', &
                                                fileSuffix = '',  hs_name = '', ueul_name = '', veul_name = '', &
-                                               usgs_name = '', vsgs_name = ''
+                                               usgs_name = '', vsgs_name = '', usub_name = '', vsub_name = '', &
+                                               w_name = ''
 
   CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
                                                zgridFile, dzt_name, dzu_name, dzv_name, dep_name, &

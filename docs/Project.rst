@@ -147,6 +147,12 @@ INIT_GRID_DESCRIPTION
 
 * **vsgs_name** [*character*]: variable name for subgrid meridional velocity. The default value is **' '**.
 
+* **usub_name** [*character*]: variable name for secondary subgrid zonal velocity. The default value is **' '**.
+
+* **vsub_name** [*character*]: variable name for secondary subgrid meridional velocity. The default value is **' '**.
+
+* **w_name** [*character*]: variable name for vertical velocity. The default value is **' '**.
+
 INIT_GRID_SIZE
 ^^^^^^^^^^^^^^
 

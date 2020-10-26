@@ -384,13 +384,14 @@ MODULE mod_pos
 
           IF (jperio /= 0) THEN
 
-            IF( y1 == DBLE(JMTdom-1) ) THEN
+            IF( y1 == DBLE(JMTdom-1) .AND. jperio == 1) THEN
                x1 = DBLE(IMT+2) - x1
-               ib = IDINT(x1) + 1
-               jb = JMTdom - 1
-               ia=ib ; ja=jb
-               x0 = x1; y0 = y1
             END IF
+
+            ib = IDINT(x1) + 1
+            jb = JMTdom
+            ia=ib ; ja=jb
+            x0 = x1; y0 = y1
 
           END IF
 

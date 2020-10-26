@@ -27,6 +27,9 @@ SETUP
   ! No stream functions
   l_psi     = .FALSE.
   l_offline = .TRUE.
+ 
+  ! jperio 
+  jperio = 0
 
 END SETUP
 

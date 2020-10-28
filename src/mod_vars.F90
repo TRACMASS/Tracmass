@@ -42,7 +42,9 @@ END MODULE
 MODULE mod_param
   USE mod_precdef
 
-  INTEGER                                   :: write_frec ! Writing frecuency
+  INTEGER                                   :: write_frec     ! Writing frecuency
+  INTEGER                                   :: write_form = 0 ! Writing format
+
   INTEGER                                   :: iter       ! Number of subcycles
   INTEGER                                   :: ngcm       ! Time step in hours
   INTEGER                                   :: ngcm_step  ! Size of the time step
@@ -230,6 +232,9 @@ ENDMODULE mod_grid
 MODULE mod_time
   USE mod_precdef
   ! Variables and routines for timekeeping
+
+  ! Days in month
+  INTEGER, DIMENSION(10000,12)       :: daysInMonth ! Number of days per month
 
   !Timesteps
   INTEGER                                   :: ints=0    ! Time iteration variables

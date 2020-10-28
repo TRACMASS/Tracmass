@@ -54,7 +54,7 @@ MODULE mod_init
                                            noleap
           namelist /INIT_RUN_TIME/         loopYears, loopStartYear, loopEndYear, &
                                            log_level, intrun
-          namelist /INIT_WRITE_TRAJ/       write_frec, outDataDir, outDataFile, timeformat
+          namelist /INIT_WRITE_TRAJ/       write_frec, write_form, outDataDir, outDataFile, timeformat
           namelist /INIT_SEEDING/          nff, isec, idir, nqua, partQuant,             &
                                            loneparticle, SeedType, ist1,  &
                                            ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
@@ -117,7 +117,7 @@ MODULE mod_init
           ALLOCATE( dxdy(imt,jmt))
 
           ALLOCATE( mask(imt,jmt))
-          mask(:,:) = 1.
+          mask(:,:) = 1
 
           ALLOCATE ( kmt(imt,jmt))
           kmt(:,:) = km

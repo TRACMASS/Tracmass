@@ -687,10 +687,12 @@ The module **mod_write** creates the outfiles where the information of the traje
 The initial and the final information of the trajectories are always stored. However, the frequency at which data is stored in the *_run.csv* is controlled by **write_frec**: (1) only at GCM time steps, (2) only at GCM and subcycle time steps, (3) only when a trajectory crosses a wall, (4) all time steps, and (5) no data stored.
 The time format of the output files can also be adjusted with **timeformat**: (0) **tt** is stored, (1) **ts** is stored, (2) the time is saved in YYYY-MM-DD HH format.
 
+.. note:: The format in which the output is written is controlled by **write_form**. The default value is **zero** which writes the output with two decimals. By setting **write_form** to **one** the output is written with five decimals.
+
 .. important::  If TRACMASS is run with the stream function flag this module also writes the resulting stream functions in the files: *_psixy.csv* for the barotropic case, *_psiyz.csv* for the meridional case, *_psiyr.csv* for the latitude-tracer case, and *_psirr.csv* for the tracer-tracer stream functions. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
 
 
-This module contains nine subroutines:
+This module contains ten subroutines:
 
 .. f:autosubroutine:: open_outfiles
 
@@ -709,3 +711,5 @@ This module contains nine subroutines:
 .. f:autosubroutine:: close_outstream
 
 .. f:autosubroutine:: write_stream
+
+.. f:autosubroutine:: writeformat

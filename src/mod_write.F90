@@ -53,7 +53,7 @@ MODULE mod_write
 
     LOGICAL               :: fileexists
 
-    PRIVATE               :: reverse
+    PRIVATE               :: reverse, writeformat
 
     CONTAINS
 
@@ -162,13 +162,10 @@ MODULE mod_write
                   CASE(0)
                   ! Include time - tt in seconds
                   IF (l_tracers) THEN
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
-                      WRITE(outformat(31:32),"(I2)") numtracers
-
+                      CALL writeformat(timeformat)
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt, trajectories(ntrac)%tracerval
                   ELSE
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5))"
-
+                      CALL writeformat(timeformat)
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt
                   END IF
 
@@ -177,13 +174,10 @@ MODULE mod_write
                   CASE(1)
                   ! Include time - Fraction ts
                   IF (l_tracers) THEN
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
-                      WRITE(outformat(31:32),"(I2)") numtracers+1
-
+                      CALL writeformat(timeformat)
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts, trajectories(ntrac)%tracerval
                   ELSE
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
-
+                      CALL writeformat(timeformat)
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts
                   END IF
 
@@ -193,14 +187,11 @@ MODULE mod_write
                   ! Include time - YYYY MM DD HH MM SS
                   CALL tt_calendar(nff*tt)
                   IF (l_tracers) THEN
-                      outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
-                      WRITE(outformat(50:51),"(I2)") numtracers
-
+                      CALL writeformat(timeformat)
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
                           subvol/trunit, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
                   ELSE
-                      outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
-
+                      CALL writeformat(timeformat)
                       WRITE(50,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
                           subvol/trunit, dateYear, dateMon, dateDay, dateHour
                   END IF
@@ -244,12 +235,10 @@ MODULE mod_write
                       IF (write_frec == 1) tout = nff*(tt-dt)
 
                       IF (l_tracers) THEN
-                          outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
-                          WRITE(outformat(31:32),"(I2)") numtracers
+                          CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout, trajectories(ntrac)%tracerval
                       ELSE
-                          outformat = "(I8,3(',',F13.5),2(',',F20.5))"
-
+                          CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout
                       END IF
 
@@ -261,13 +250,10 @@ MODULE mod_write
                       IF (write_frec == 1) tout = ts-dts
 
                       IF (l_tracers) THEN
-                          outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
-                          WRITE(outformat(31:32),"(I2)") numtracers+1
-
+                          CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout, trajectories(ntrac)%tracerval
                       ELSE
-                          outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
-
+                          CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout
                       END IF
 
@@ -282,14 +268,11 @@ MODULE mod_write
                       END IF
 
                       IF (l_tracers) THEN
-                          outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
-                          WRITE(outformat(50:51),"(I2)") numtracers
-
+                          CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
                               subvol/trunit, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
                       ELSE
-                          outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
-
+                          CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
                               subvol/trunit, dateYear, dateMon, dateDay, dateHour
                       END IF
@@ -324,13 +307,10 @@ MODULE mod_write
                   CASE(0)
                   ! Include time - tt in seconds
                   IF (l_tracers) THEN
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
-                      WRITE(outformat(31:32),"(I2)") numtracers
-
+                      CALL writeformat(timeformat)
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt, trajectories(ntrac)%tracerval
                   ELSE
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5))"
-
+                      CALL writeformat(timeformat)
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, nff*tt
                   END IF
 
@@ -339,13 +319,10 @@ MODULE mod_write
                   CASE(1)
                   ! Include time - Fraction ts
                   IF (l_tracers) THEN
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
-                      WRITE(outformat(31:32),"(I2)") numtracers+1
-
+                      CALL writeformat(timeformat)
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts, trajectories(ntrac)%tracerval
                   ELSE
-                      outformat = "(I8,3(',',F13.5),2(',',F20.5),1(',',F13.5))"
-
+                      CALL writeformat(timeformat)
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, ts
                   END IF
 
@@ -355,14 +332,11 @@ MODULE mod_write
                   ! Include time - YYYY MM DD HH MM SS
                   CALL tt_calendar(nff*tt)
                   IF (l_tracers) THEN
-                      outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
-                      WRITE(outformat(50:51),"(I2)") numtracers
-
+                      CALL writeformat(timeformat)
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
                           subvol/trunit, dateYear, dateMon, dateDay, dateHour, trajectories(ntrac)%tracerval
                   ELSE
-                      outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
-
+                      CALL writeformat(timeformat)
                       WRITE(52,FMT=TRIM(outformat))  ntrac, xw, yw, zw, &
                           subvol/trunit, dateYear, dateMon, dateDay, dateHour
                   END IF
@@ -561,5 +535,62 @@ MODULE mod_write
         END IF
 
       END SUBROUTINE reverse
+
+      SUBROUTINE writeformat(tform)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Updates the write/read format
+      !
+      ! --------------------------------------------------
+
+        INTEGER, INTENT(IN) :: tform
+
+        SELECT CASE(tform)
+          CASE(0)
+
+            IF (write_form == 0 .AND. l_tracers) THEN
+              outformat = "(I8,3(',',F8.2),2(',',F16.2),XX(',',F8.2))"
+              WRITE(outformat(30:31),"(I2)") numtracers
+            ELSE IF (write_form == 0 ) THEN
+              outformat = "(I8,3(',',F8.2),2(',',F16.2))"
+            ELSE IF (write_form == 1 .AND. l_tracers) THEN
+              outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+              WRITE(outformat(31:32),"(I2)") numtracers
+            ELSE IF (write_form == 1 ) THEN
+              outformat = "(I8,3(',',F13.5),2(',',F20.5))"
+            END IF
+
+          CASE(1)
+
+            IF (write_form == 0 .AND. l_tracers) THEN
+              outformat = "(I8,3(',',F8.2),2(',',F16.2),XX(',',F8.2))"
+              WRITE(outformat(30:31),"(I2)") numtracers
+            ELSE IF (write_form == 0 ) THEN
+              outformat = "(I8,3(',',F8.2),2(',',F16.2))"
+            ELSE IF (write_form == 1 .AND. l_tracers) THEN
+              outformat = "(I8,3(',',F13.5),2(',',F20.5),XX(',',F13.5))"
+              WRITE(outformat(31:32),"(I2)") numtracers
+            ELSE IF (write_form == 1 ) THEN
+              outformat = "(I8,3(',',F13.5),2(',',F20.5))"
+            END IF
+
+          CASE(2)
+
+            IF (write_form == 0 .AND. l_tracers) THEN
+              outformat = "(I8,3(',',F8.2),1(',',F16.2),(',',I5),3(',',I3),XX(',',F8.2))"
+              WRITE(outformat(49:50),"(I2)") numtracers
+            ELSE IF (write_form == 0 ) THEN
+              outformat = "(I8,3(',',F8.2),1(',',F16.2),(',',I5),3(',',I3))"
+            ELSE IF (write_form == 1 .AND. l_tracers) THEN
+              outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),XX(',',F13.5))"
+              WRITE(outformat(50:51),"(I2)") numtracers
+            ELSE IF (write_form == 1 ) THEN
+              outformat = "(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3))"
+            END IF
+
+        END SELECT
+
+      END SUBROUTINE writeformat
 
 END MODULE mod_write

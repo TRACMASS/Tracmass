@@ -21,8 +21,6 @@ MODULE mod_calendar
 
    IMPLICIT NONE
 
-   INTEGER, DIMENSION(10000,12)       :: daysInMonth ! Number of days per month
-
    CONTAINS
 
      SUBROUTINE init_calendar

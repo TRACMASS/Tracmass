@@ -251,6 +251,8 @@ INIT_WRITE_TRAJ
 
 * **write_frec** [*integer*]: output writing frequency: (1) write at time intervals of gcm datasets (each ints), (2) write at each time iteration, (3) write each spatial grid-crossing, (4) write at all time steps, and (5) write only start and end positions.
 
+* **write_form** [*integer*]: output writing format: (0) two decimals, (1) five decimals. Default values is zero.
+
 * **outDataDir** [*character*]:  path to the directory where the output files are stored.
 
 * **outDataFile** [*character*]: prefix of the output file.

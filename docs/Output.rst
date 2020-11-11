@@ -52,14 +52,18 @@ The rerun file contains information about the trajectories that exited through t
 
 *psixy*, *psiyz*, *psiyr*, and *psirr* files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If streamfunctions are computed, four files are created where the output is stored.
+If stream functions are computed, six files (three if **l_tracer** is deactivated) are created where the output is stored.
 
 +---------+-------------------+----------------------+
 | Case    | Number of columns |  Number of rows      |
 +---------+-------------------+----------------------+
 | *psixy* |        imt        | jmt x 21             |
 +---------+-------------------+----------------------+
+| *psixz* |        imt        | km x 21              |
++---------+-------------------+----------------------+
 | *psiyz* |        jmt        | km x 21              |
++---------+-------------------+----------------------+
+| *psixr* |        imt        | mr x 21 x numtracers |
 +---------+-------------------+----------------------+
 | *psiyr* |        jmt        | mr x 21 x numtracers |
 +---------+-------------------+----------------------+

@@ -20,6 +20,7 @@ MODULE mod_write
     !!               - write_stream
     !!
     !!               - reverse (P)
+    !!               - writeformat (P)
     !!
     !!------------------------------------------------------------------------------
 
@@ -455,9 +456,11 @@ MODULE mod_write
           fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
 
           IF (TRIM(ccase) == "xy") OPEN(UNIT=60, FILE = TRIM(fullWritePref)//'_psixy.csv', STATUS='replace')
-          IF (TRIM(ccase) == "yz") OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_psiyz.csv', STATUS='replace')
-          IF (TRIM(ccase) == "yr") OPEN(UNIT=62, FILE = TRIM(fullWritePref)//'_psiyr.csv', STATUS='replace')
-          IF (TRIM(ccase) == "rr") OPEN(UNIT=63, FILE = TRIM(fullWritePref)//'_psirr.csv', STATUS='replace')
+          IF (TRIM(ccase) == "xz") OPEN(UNIT=61, FILE = TRIM(fullWritePref)//'_psixz.csv', STATUS='replace')
+          IF (TRIM(ccase) == "yz") OPEN(UNIT=62, FILE = TRIM(fullWritePref)//'_psiyz.csv', STATUS='replace')
+          IF (TRIM(ccase) == "xr") OPEN(UNIT=63, FILE = TRIM(fullWritePref)//'_psixr.csv', STATUS='replace')
+          IF (TRIM(ccase) == "yr") OPEN(UNIT=64, FILE = TRIM(fullWritePref)//'_psiyr.csv', STATUS='replace')
+          IF (TRIM(ccase) == "rr") OPEN(UNIT=65, FILE = TRIM(fullWritePref)//'_psirr.csv', STATUS='replace')
 
 
       END SUBROUTINE open_outstream
@@ -472,9 +475,11 @@ MODULE mod_write
           CHARACTER(LEN=2), INTENT(IN) :: ccase
 
           IF (TRIM(ccase) == "xy") CLOSE(60)
-          IF (TRIM(ccase) == "yz") CLOSE(61)
-          IF (TRIM(ccase) == "yr") CLOSE(62)
-          IF (TRIM(ccase) == "rr") CLOSE(63)
+          IF (TRIM(ccase) == "xz") CLOSE(61)
+          IF (TRIM(ccase) == "yz") CLOSE(62)
+          IF (TRIM(ccase) == "xr") CLOSE(63)
+          IF (TRIM(ccase) == "yr") CLOSE(64)
+          IF (TRIM(ccase) == "rr") CLOSE(65)
 
       END SUBROUTINE close_outstream
 
@@ -487,27 +492,29 @@ MODULE mod_write
       ! --------------------------------------------------
 
 
-      INTEGER, INTENT(IN) :: ijk1, ijk2
+      INTEGER, INTENT(IN)          :: ijk1, ijk2
       CHARACTER(LEN=2), INTENT(IN) :: psicase
 
       psiformat = "(F22.5,XXXXXX(',',F22.5))"
 
       WRITE(psiformat(8:13),"(I6)") ijk1-1
 
-      IF (psicase =='yr') THEN
+      IF (psicase=='xr' .OR. psicase=='yr') THEN
           DO itrac = 1, numtracers
             DO ilvar = 1, ijk2
-              WRITE(62,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
+              IF (psicase=='xr') WRITE(63,TRIM(psiformat)) psi_xr(:,ilvar,itrac)
+              IF (psicase=='xr') WRITE(64,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
             END DO
           END DO
       ELSE IF (psicase == 'rr') THEN
           DO ilvar = 1, ijk2
-             WRITE(63,TRIM(psiformat)) psi_rr(:,ilvar)
+             WRITE(65,TRIM(psiformat)) psi_rr(:,ilvar)
           END DO
       ELSE
           DO ilvar = 1, ijk2
             IF (psicase=='xy') WRITE(60,TRIM(psiformat)) psi_xy(:,ilvar)
-            IF (psicase=='yz') WRITE(61,TRIM(psiformat)) psi_yz(:,ilvar)
+            IF (psicase=='xz') WRITE(61,TRIM(psiformat)) psi_xz(:,ilvar)
+            IF (psicase=='yz') WRITE(62,TRIM(psiformat)) psi_yz(:,ilvar)
           END DO
       END IF
 

@@ -224,7 +224,8 @@ MODULE mod_pos
              trajdir = 1
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(ia, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==1)) CALL update_fluxes(ia, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ia, ka, trajdir, 'xz')
 
           ! Westward grid-cell exit
           ELSE IF (ds==dsw) THEN
@@ -249,7 +250,8 @@ MODULE mod_pos
              trajdir = -1
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(iam, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==1)) CALL update_fluxes(iam, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(iam, ka, trajdir, 'xz')
 
           ! Northward grid-cell exit
           ELSE IF (ds==dsn) THEN
@@ -274,7 +276,8 @@ MODULE mod_pos
              trajdir = 1
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(ja, ka, trajdir, 'yz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==2)) CALL update_fluxes(ia, ja, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ja, ka, trajdir, 'yz')
 
           ! Southward grid-cell exit
           ELSE IF (ds==dss) THEN
@@ -299,7 +302,8 @@ MODULE mod_pos
              trajdir = -1
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.)) CALL update_fluxes(ja-1, ka, trajdir, 'yz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==2)) CALL update_fluxes(ia, ja-1, trajdir, 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ja-1, ka, trajdir, 'yz')
 
           ! Upward grid-cell exit
           ELSE IF (ds==dsu) THEN

@@ -120,11 +120,23 @@ If stream function calculation (**l_psi**) is activated, a stream function will 
 
 .. important:: The Lagrangian stream function may differ from the Eulerian stream function if the number of trajectories is not large enough.
 
+TRACMASS features: stream functions II (**psixy** - barotropic / **xyflux** / **dirpsi**)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The barotropic streamfunction can be computed using **uflux**-es (**xyflux** =1) where the integration is done along the **j** meridional indexes; or using **vflux**-es (**xyflux** =2) where the integration is done along **i** zonal indexes. The resulting stream function may differ depending on the choice of **xyflux** and **dirpsi**. The figure below represents four different barotropic stream fucntions computed from trajectories that started in the north boundary (black solid line) and end in the south boundary (black dashed line). The arrows represent the direction of integration (**dirpsi**).
+
+For this setup where there are land boundaries in the zonal direction is recommended to use **xyflux** = 2. The choice of **dirpsi** does not play a difference in this case as land points can be found in both sied. For **xyflux** = 1 however; the stream function calculation creates artificial cells as a result of the open boundary in the meridional direction.
+
+.. image:: figs/fig_orca1_5.png
+    :width: 100%
+    :align: center
+    :alt: An example of barotropic stream functions.
+
 TRACMASS features: use of subdomains (**l_subdom**)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Activating a subdomain (**l_subdom**) is useful especially for high resolution data and when there is no need to read the whole domain. The figure below shows an example of the use of a subdomain. The default case describes a group of trajectories that starts at the surface in the area near cape Aghulas. A geographical condition is imposed to terminate the trajectories (solid blue line). The dashed black line represents the limit the original domain (the setup includes zonal cyclic boundaries **iperio=1**). The centre panel represents a regular box (**imindom<imaxdom**) and the right one a split box (**imaxdom<imindom**). The subdomain is represented by the red solid line while the new killing zones are represented by the red dashed lines.
 
-.. image:: figs/fig_orca1_5.png
+.. image:: figs/fig_orca1_6.png
     :width: 100%
     :align: center
     :alt: An example of subdomains in TRACMASS.

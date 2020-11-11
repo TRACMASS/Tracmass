@@ -397,6 +397,10 @@ MODULE mod_psi
   LOGICAL    :: l_psi     = .FALSE.
   LOGICAL    :: l_offline = .TRUE.
 
+  ! Barotropic u(1)/v(2)
+  INTEGER    :: xyflux = 1
+
+  ! Direction integration
   INTEGER , DIMENSION(21)   :: dirpsi = 1
 
   ! Barotropic streamfunction
@@ -407,11 +411,19 @@ MODULE mod_psi
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_yz
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_yz
 
+  ! Zonal streamfunction
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xz
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_xz
+
   ! Meridional-tracer streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:) :: fluxes_yr
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_yr
 
-  ! Meridional-tracer streamfunction
+  ! Zonal-tracer streamfunction
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:,:) :: fluxes_xr
+  REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)   :: psi_xr
+
+  ! Tracer-tracer streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_rr
   REAL(DP), ALLOCATABLE, DIMENSION(:,:)   :: psi_rr
 

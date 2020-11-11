@@ -66,7 +66,7 @@ MODULE mod_init
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
           namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn, &
                                            tracerchoice, tracere, maxormin
-          namelist /INIT_STREAMFUNCTION/   l_psi, l_offline, dirpsi
+          namelist /INIT_STREAMFUNCTION/   l_psi, l_offline, dirpsi, xyflux
 
           ! Read namelist
           OPEN (8,file='namelist.in',    &

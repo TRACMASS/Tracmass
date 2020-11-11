@@ -43,15 +43,18 @@ MODULE mod_stream
 
         ! Compute and save streamfunction
         CALL open_outstream('xy')
+        CALL open_outstream('xz')
         CALL open_outstream('yz')
 
+        IF (l_tracers) CALL open_outstream('xr')
         IF (l_tracers) CALL open_outstream('yr')
         IF (l_tracers) CALL open_outstream('rr')
 
         DO ilvar1 = 1, 21
 
-            psi_xy(:,:) = 0.; psi_yz(:,:) = 0.
+            psi_xy(:,:) = 0.; psi_xz(:,:) = 0.; psi_yz(:,:) = 0.
             IF (l_tracers) THEN
+               psi_xr(:,:,:) = 0.
                psi_yr(:,:,:) = 0.
                psi_rr(:,:)   = 0.
             END IF
@@ -60,7 +63,9 @@ MODULE mod_stream
             IF (l_offline .EQV. .FALSE.) THEN
 
               ! Cleaning of fluxes
-              fluxes_xy(:,:,0) = 0.d0;   fluxes_yz(:,:,0) = 0.d0
+              fluxes_xy(:,:,0) = 0.d0;   fluxes_xz(:,:,0) = 0.d0;   fluxes_yz(:,:,0) = 0.d0
+
+              IF (l_tracers) fluxes_xr(:,:,0,:) = 0.d0;
               IF (l_tracers) fluxes_yr(:,:,0,:) = 0.d0;
               IF (l_tracers) fluxes_rr(:,:,0)   = 0.d0
 
@@ -70,12 +75,14 @@ MODULE mod_stream
 
                 ! Geographical fluxes
                 fluxes_xy(:,:,0) = fluxes_xy(:,:,0) + fluxes_xy(:,:,intraj)
+                fluxes_xz(:,:,0) = fluxes_xz(:,:,0) + fluxes_xz(:,:,intraj)
                 fluxes_yz(:,:,0) = fluxes_yz(:,:,0) + fluxes_yz(:,:,intraj)
 
                 IF (l_tracers)  THEN
 
                   ! Geographical+tracer fluxes
                   DO ilvar4 = 1, numtracers
+                    fluxes_xr(:,:,0,ilvar4) = fluxes_xr(:,:,0,ilvar4) + fluxes_xr(:,:,intraj,ilvar4)
                     fluxes_yr(:,:,0,ilvar4) = fluxes_yr(:,:,0,ilvar4) + fluxes_yr(:,:,intraj,ilvar4)
                   END DO
 
@@ -91,15 +98,18 @@ MODULE mod_stream
             IF (l_offline) ilvar3 = ilvar1
 
             IF (dirpsi(ilvar1) == 1) THEN
-                DO ilvar2 = 2, MAX(jmtdom,km,resolution)
+                DO ilvar2 = 2, MAX(imtdom,jmtdom,km,resolution)
 
                     ! Geographical streamfunctions
-                    IF (ilvar2<=jmtdom) psi_xy(:,ilvar2) = psi_xy(:,ilvar2-1) - fluxes_xy(:,ilvar2,ilvar3)
+                    IF (ilvar2<=jmtdom .AND. xyflux==1) psi_xy(:,ilvar2) = psi_xy(:,ilvar2-1) - fluxes_xy(:,ilvar2,ilvar3)
+                    IF (ilvar2<=imtdom .AND. xyflux==2) psi_xy(ilvar2,:) = psi_xy(ilvar2-1,:) - fluxes_xy(ilvar2,:,ilvar3)
+                    IF (ilvar2<=km)     psi_xz(:,ilvar2) = psi_xz(:,ilvar2-1) - fluxes_xz(:,ilvar2,ilvar3)
                     IF (ilvar2<=km)     psi_yz(:,ilvar2) = psi_yz(:,ilvar2-1) - fluxes_yz(:,ilvar2,ilvar3)
 
                     ! Geographical+tracer streamfunctions
                     DO ilvar4 = 1, numtracers
                         IF (ilvar2<=resolution .AND. l_tracers)  THEN
+                          psi_xr(:,ilvar2,ilvar4) = psi_xr(:,ilvar2-1,ilvar4) - fluxes_xr(:,ilvar2,ilvar3,ilvar4)
                           psi_yr(:,ilvar2,ilvar4) = psi_yr(:,ilvar2-1,ilvar4) - fluxes_yr(:,ilvar2,ilvar3,ilvar4)
                         END IF
                     END DO
@@ -109,15 +119,18 @@ MODULE mod_stream
 
                 END DO
             ELSE IF (dirpsi(ilvar1) == -1) THEN
-                DO ilvar2 = MAX(jmtdom-1,km-1,resolution-1), 1, -1
+                DO ilvar2 = MAX(imtdom-1,jmtdom-1,km-1,resolution-1), 1, -1
 
                     ! Geographical streamfunctions
-                    IF (ilvar2<=jmtdom-1) psi_xy(:,ilvar2) = psi_xy(:,ilvar2+1) + fluxes_xy(:,ilvar2,ilvar3)
+                    IF (ilvar2<=jmtdom-1 .AND. xyflux==1) psi_xy(:,ilvar2) = psi_xy(:,ilvar2+1) + fluxes_xy(:,ilvar2,ilvar3)
+                    IF (ilvar2<=imtdom-1 .AND. xyflux==2) psi_xy(ilvar2,:) = psi_xy(ilvar2+1,:) + fluxes_xy(ilvar2,:,ilvar3)
+                    IF (ilvar2<=km-1)     psi_xz(:,ilvar2) = psi_xz(:,ilvar2+1) + fluxes_xz(:,ilvar2,ilvar3)
                     IF (ilvar2<=km-1)     psi_yz(:,ilvar2) = psi_yz(:,ilvar2+1) + fluxes_yz(:,ilvar2,ilvar3)
 
                     ! Geographical+tracer streamfunctions
                     DO ilvar4 = 1, numtracers
                         IF (ilvar2<=resolution-1 .AND. l_tracers) THEN
+                          psi_xr(:,ilvar2, ilvar4) = psi_xr(:,ilvar2+1, ilvar4) + fluxes_xr(:,ilvar2,ilvar3,ilvar4)
                           psi_yr(:,ilvar2, ilvar4) = psi_yr(:,ilvar2+1, ilvar4) + fluxes_yr(:,ilvar2,ilvar3,ilvar4)
                         END IF
                     END DO
@@ -129,7 +142,9 @@ MODULE mod_stream
             END IF
 
             CALL write_stream(imtdom, jmtdom,'xy')
+            CALL write_stream(imtdom,  km,'xz')
             CALL write_stream(jmtdom,  km,'yz')
+            IF (l_tracers) CALL write_stream(imtdom,  resolution,'xr')
             IF (l_tracers) CALL write_stream(jmtdom,  resolution,'yr')
             IF (l_tracers) CALL write_stream(resolution,  resolution,'rr')
 
@@ -137,7 +152,9 @@ MODULE mod_stream
 
         PRINT*, '- Saving  streamfunctions'
         CALL close_outstream('xy')
+        CALL close_outstream('xz')
         CALL close_outstream('yz')
+        IF (l_tracers) CALL close_outstream('xr')
         IF (l_tracers) CALL close_outstream('yr')
         IF (l_tracers) CALL close_outstream('rr')
 
@@ -160,16 +177,20 @@ MODULE mod_stream
 
           ! Allocate flux arrays
           ALLOCATE( fluxes_xy(imtdom, jmtdom, 0:index), psi_xy(imtdom, jmtdom))
+          ALLOCATE( fluxes_xz(imtdom, km, 0:index), psi_xz(imtdom, km))
           ALLOCATE( fluxes_yz(jmtdom, km, 0:index), psi_yz(jmtdom, km))
           IF (l_tracers) THEN
+              ALLOCATE( fluxes_xr(imtdom, resolution, 0:index, numtracers), psi_xr(imtdom, resolution, numtracers))
               ALLOCATE( fluxes_yr(jmtdom, resolution, 0:index, numtracers), psi_yr(jmtdom, resolution, numtracers))
               ALLOCATE( fluxes_rr(resolution, resolution, 0:index), psi_rr(resolution, resolution))
           END IF
 
           fluxes_xy(:,:,:) = 0.;  psi_xy(:,:) = 0.
+          fluxes_xz(:,:,:) = 0.;  psi_xz(:,:) = 0.
           fluxes_yz(:,:,:) = 0.;  psi_yz(:,:) = 0.
 
           IF (l_tracers) THEN
+            fluxes_xr(:,:,:,:) = 0.; psi_xr(:,:,:) = 0.
             fluxes_yr(:,:,:,:) = 0.; psi_yr(:,:,:) = 0.
             fluxes_rr(:,:,:) = 0.  ; psi_rr(:,:)   = 0.
           END IF
@@ -192,10 +213,13 @@ MODULE mod_stream
 
         ! Geographical streamfunctions
         IF (psicase=='xy') fluxes_xy(index1,index2,ntrac) = fluxes_xy(index1,index2,ntrac) + dir*subvol
+        IF (psicase=='xz') fluxes_xz(index1,index2,ntrac) = fluxes_xz(index1,index2,ntrac) + dir*subvol
         IF (psicase=='yz') fluxes_yz(index1,index2,ntrac) = fluxes_yz(index1,index2,ntrac) + dir*subvol
 
         ! Geographical + tracer
-        IF (psicase=='yr' .AND. PRESENT(indt1)) THEN
+        IF (psicase=='xr' .AND. PRESENT(indt1)) THEN
+           fluxes_xr(index1,index2,ntrac,indt1) = fluxes_xr(index1,index2,ntrac,indt1) + dir*subvol
+        ELSE IF (psicase=='yr' .AND. PRESENT(indt1)) THEN
            fluxes_yr(index1,index2,ntrac,indt1) = fluxes_yr(index1,index2,ntrac,indt1) + dir*subvol
         END IF
 
@@ -263,7 +287,29 @@ MODULE mod_stream
                       index1 =  INT(traj_x(ilooptraj,iloopsave)) + 1
                       index2 =  INT(traj_y(ilooptraj,iloopsave)) + 1
 
-                      fluxes_xy(index1, index2, index3) = fluxes_xy(index1, index2, index3) + idir*traj_subvol(ilooptraj)
+                      IF (xyflux == 1) fluxes_xy(index1, index2, index3) = fluxes_xy(index1, index2, index3) &
+                                        + idir*traj_subvol(ilooptraj)
+
+                      ! Zonal indexes
+                      index1 =  INT(traj_x(ilooptraj,iloopsave)) + 1
+
+                      ! Zonal streamfunction (x-z)
+                      index2 = INT(traj_z(ilooptraj,iloopsave)) + 1
+
+                      fluxes_xz(index1, index2, index3) = fluxes_xz(index1, index2, index3) + idir*traj_subvol(ilooptraj)
+
+                      ! Zonal-tracer streamfunction (x-r)
+                      IF (l_tracers) THEN
+
+                          DO index4 = 1, numtracers
+
+                            index2 = tracerbin(traj_t(ilooptraj,iloopsave,index4),index4)
+
+                            fluxes_xr(index1, index2, index3, index4) = fluxes_xr(index1, index2, index3, index4) &
+                                    + idir*traj_subvol(ilooptraj)
+
+                          END DO
+                      END IF
 
                   END IF
 
@@ -276,14 +322,22 @@ MODULE mod_stream
                       IF ( traj_y(ilooptraj,iloopsave) <  traj_y(ilooptraj,iloopsave-1) ) idir = -1
                       IF ( traj_y(ilooptraj,iloopsave) == traj_y(ilooptraj,iloopsave-1) ) idir = 0
 
+                      ! Barotropic streamfunction (x-y)
+                      index1 =  INT(traj_x(ilooptraj,iloopsave)) + 1
+                      index2 =  INT(traj_y(ilooptraj,iloopsave)) + 1
+
+                      IF (xyflux == 2) fluxes_xy(index1, index2, index3) = fluxes_xy(index1, index2, index3) &
+                                        + idir*traj_subvol(ilooptraj)
+
+                      ! Meridional indexes
+                      index1 =  INT(traj_y(ilooptraj,iloopsave)) + 1
 
                       ! Meridional streamfunction (y-z)
-                      index1 = INT(traj_y(ilooptraj,iloopsave)) + 1
                       index2 = INT(traj_z(ilooptraj,iloopsave)) + 1
 
                       fluxes_yz(index1, index2, index3) = fluxes_yz(index1, index2, index3) + idir*traj_subvol(ilooptraj)
 
-                      ! Latitude-tracer streamfunction (y-z)
+                      ! Latitude-tracer streamfunction (y-r)
                       IF (l_tracers) THEN
 
                           DO index4 = 1, numtracers
@@ -301,8 +355,60 @@ MODULE mod_stream
               ! If trajectories are not stored when crossing the wall (less accurate)
               ELSE
 
-                 ! Barotropic streamfunction (x-y)
+                 ! Through x walls
+                 IF (traj_x(ilooptraj, iloopsave)/=-999.) THEN
+
+                   ! Zonal streamfunction (x-z)
+                   m1a = INT(traj_x(ilooptraj,iloopsave)) + 1;  m1b = INT(traj_x(ilooptraj,iloopsave-1)) + 1
+                   m2a = INT(traj_z(ilooptraj,iloopsave)) + 1;  m2b = INT(traj_z(ilooptraj,iloopsave-1)) + 1
+
+                   DO index1 = m1b, m1a-1
+                     slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
+                     index2 = NINT( slope + m2b)
+
+                     fluxes_xz(index1, index2, index3) =  fluxes_xz(index1, index2, index3) + traj_subvol(ilooptraj)
+                   END DO
+
+                   DO index1 = m1a, m1b-1
+                     slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
+                     index2 = NINT( slope + m2b)
+
+                     fluxes_xz(index1, index2, index3) =  fluxes_xz(index1, index2, index3) - traj_subvol(ilooptraj)
+                   END DO
+
+                   ! Zonal-tracer streamfunction (x-r)
+                   IF (l_tracers) THEN
+
+                       DO index4 = 1, numtracers
+
+                         m2a = tracerbin(traj_t(ilooptraj,iloopsave,index4),index4)
+                         m2b = tracerbin(traj_t(ilooptraj,iloopsave-1,index4),index4)
+
+                         DO index1 = m1b, m1a-1
+                           slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
+                           index2 = NINT( slope + m2b)
+
+                           fluxes_xr(index1, index2, index3, index4) =  fluxes_xr(index1, index2, index3, index4) &
+                                  + traj_subvol(ilooptraj)
+                         END DO
+
+                         DO index1 = m1a, m1b-1
+                           slope  = (FLOAT(index1)-FLOAT(m1b))*(FLOAT(m2a)-FLOAT(m2b))/(FLOAT(m1a)-FLOAT(m1b))
+                           index2 = NINT( slope + m2b)
+
+                           fluxes_xr(index1, index2, index3, index4) =  fluxes_xr(index1, index2, index3, index4) &
+                                  - traj_subvol(ilooptraj)
+                         END DO
+
+                       END DO
+                   END IF
+                 END IF
+
+
+                 ! Through y walls
                  IF (traj_y(ilooptraj, iloopsave)/=-999.) THEN
+
+                   ! Barotropic streamfunction (x-y)
                    m1a = INT(traj_x(ilooptraj,iloopsave)) + 1;  m1b = INT(traj_x(ilooptraj,iloopsave-1)) + 1
                    m2a = INT(traj_y(ilooptraj,iloopsave)) + 1;  m2b = INT(traj_y(ilooptraj,iloopsave-1)) + 1
 
@@ -338,7 +444,7 @@ MODULE mod_stream
                      fluxes_yz(index1, index2, index3) =  fluxes_yz(index1, index2, index3) - traj_subvol(ilooptraj)
                    END DO
 
-                   ! Latitude-tracer streamfunction (y-z)
+                   ! Latitude-tracer streamfunction (y-r)
                    IF (l_tracers) THEN
 
                        DO index4 = 1, numtracers

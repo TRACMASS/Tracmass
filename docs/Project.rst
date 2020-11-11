@@ -349,3 +349,5 @@ INIT_STREAMFUNCTION
 * **l_offline** [*logical*]: compute the stream functions offline. Default value is **True**.
 
 * **dirpsi** [*integer, array*]: direction of integration of streamfunctions.
+
+* **xyflux** [*integer*]: compute barotropic fluxes using **uflux** (1) or **vflux** (2). Default value is **1**.

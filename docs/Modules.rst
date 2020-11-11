@@ -420,22 +420,26 @@ The module **mod_stream.F90** is responsible for computing volume/mass fluxes an
 .. table::
   :align: center
 
-  +----------------------+---------------------------+----------------------------------+
-  | *Flux type*          |   **l_offline** = TRUE    |      **l_offline** = FALSE       |
-  +----------------------+---------------------------+----------------------------------+
-  | Barotropic (x-y)     |    (imt, jmt, 21)         |    (imt, jmt, ntractot)          |
-  +----------------------+---------------------------+----------------------------------+
-  | Meridional (y-z)     |    (jmt,  km, 21)         |    (jmt,  km, ntractot)          |
-  +----------------------+---------------------------+----------------------------------+
-  | Latitude-tracer (y-r)| (jmt, mr, 21, numtracers) | (jmt, mr, ntractot, numtracers)  |
-  +----------------------+---------------------------+----------------------------------+
-  | Tracer-tracer (r-r)  | ( mr, mr, 21, numtracers) | ( mr, mr, ntractot, numtracers)  |
-  +----------------------+---------------------------+----------------------------------+
+  +-----------------------+---------------------------+----------------------------------+
+  | *Flux type*           |   **l_offline** = TRUE    |      **l_offline** = FALSE       |
+  +-----------------------+---------------------------+----------------------------------+
+  | Barotropic (x-y)      |    (imt, jmt, 21)         |    (imt, jmt, ntractot)          |
+  +-----------------------+---------------------------+----------------------------------+
+  | Zonal (x-z)           |    (imt,  km, 21)         |    (imt,  km, ntractot)          |
+  +-----------------------+---------------------------+----------------------------------+
+  | Meridional (y-z)      |    (jmt,  km, 21)         |    (jmt,  km, ntractot)          |
+  +-----------------------+---------------------------+----------------------------------+
+  | Longitude-tracer (x-r)| (imt, mr, 21, numtracers) | (imt, mr, ntractot, numtracers)  |
+  +-----------------------+---------------------------+----------------------------------+
+  | Latitude-tracer (y-r) | (jmt, mr, 21, numtracers) | (jmt, mr, ntractot, numtracers)  |
+  +-----------------------+---------------------------+----------------------------------+
+  | Tracer-tracer (r-r)   | ( mr, mr, 21, numtracers) | ( mr, mr, ntractot, numtracers)  |
+  +-----------------------+---------------------------+----------------------------------+
 
 .. note::
-  *mr* is the tracer space resolution (501 by default) and *numtracers* is the number of tracers.
+  The last three cases are only computed if *l_tracer* is TRUE, where *mr* is the tracer space resolution (501 by default) and *numtracers* is the number of tracers.
 
-* If streamfunctions are computed online (*l_offline* is false), the subrotuine **update_fluxes** is responsible to update the fluxes and filter them according to the trajectory number. This subroutine has six arguments: *index1, index2* represent the indexes of the two coordinates of the streamfunction, *dir* is the direction of the trajectory (in the streamfunction coordinate reference system), *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'yz'*: meridional streamfunction, *'yr'*: latitude-tracer streamfunction, and *'rr'*: tracer-tracer streamfunction). The fifth argument is optional (*indt1*) and it is used whenever a *'yr'* streamfunction is used to represent the different tracer choice.
+* If streamfunctions are computed online (*l_offline* is false), the subrotuine **update_fluxes** is responsible to update the fluxes and filter them according to the trajectory number. This subroutine has six arguments: *index1, index2* represent the indexes of the two coordinates of the streamfunction, *dir* is the direction of the trajectory (in the stream function coordinate reference system), *psicase* indicates the type of streamfunction that is computed (*'xy'*: barotropic, *'xz'*: zonal stream function, *'yz'*: meridional stream function, *'xr'*: longitude-tracer stream function, *'yr'*: latitude-tracer stream function, and *'rr'*: tracer-tracer stream function). The fifth argument is optional (*indt1*) and it is used whenever a *'yr'* streamfunction is used to represent the different tracer choice.
 
 .. math::
 

@@ -80,7 +80,10 @@ MODULE mod_error
            ! Trajectory leaving a model area
            IF (ia<1 .OR. ia>imtdom .OR. ib<1 .OR. ib>imtdom .OR.    &
                ja<1 .OR. ja>jmtdom .OR. jb<1 .OR. jb>jmtdom .OR.    &
-               y0<0 .OR. y0>jmtdom .OR. y1<0 .OR. y1>jmtdom) THEN
+               y0<0 .OR. y0>jmtdom .OR. y1<0 .OR. y1>jmtdom .OR.    &
+               x0<0 .OR. x0>imtdom .OR. x1<0 .OR. x1>imtdom .OR.    &
+               ka<1 .OR. ka>km     .OR. kb<1 .OR. kb>km     .OR.    &
+               z0<0 .OR. z0>km     .OR. z1<0 .OR. z1>km     ) THEN
 
             nerror = nerror + 1
             errCode = 3
@@ -221,21 +224,23 @@ MODULE mod_error
 
       SELECT CASE(errCode)
       CASE(1)
-          errorType = 'Trapped in an infinite loop'
+          errorType = '[ERROR]: Trapped in an infinite loop'
       CASE(2)
-          errorType = 'Volume error - negative or zero'
+          errorType = '[ERROR]: Volume negative or zero'
       CASE(3)
-          errorType = 'Trajectory leaving domain'
+          errorType = '[ERROR]: Trajectory leaving domain'
       CASE(4)
-          errorType = 'Trajectory hits land'
+          errorType = '[ERROR]: Trajectory hits land'
       CASE(5)
-          errorType = 'Wrong box horizontal (i - index)'
+          errorType = '[ERROR]: Wrong box horizontal (i - index)'
       CASE(6)
-          errorType = 'Wrong box horizontal (j - index)'
+          errorType = '[ERROR]: Wrong box horizontal (j - index)'
       CASE(7)
-          errorType = 'Wrong box vertical (k - index)'
+          errorType = '[ERROR]: Wrong box vertical (k - index)'
       CASE(8)
-          errorType = 'ds error - unknown path'
+          errorType = '[ERROR]: Unknown path (ds)'
+      CASE(9)
+          errorType = '[WARNING]: Particle stuck in infinite diffusion loop. No diffusion added.'
       END SELECT
 
     END FUNCTION errorType

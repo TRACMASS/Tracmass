@@ -141,6 +141,16 @@ Activating a subdomain (**l_subdom**) is useful especially for high resolution d
     :align: center
     :alt: An example of subdomains in TRACMASS.
 
+
+TRACMASS features: diffusion (**l_diffusion**)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Random displacement can be introduced in TRACMASS by activating diffusion (**l_diffusion**). This can be helpful if the input data is too coarse to include some subgrid processes. The example below shows the evolution of hundred trajectories initialised in the same grid point in the North Atlantic. The red line represents the mean path of all trajectories. For simplicity this example only includes horizontal diffusion. For the default case the trajectories are quite coherent and little dispersion is observed, as the value of **Ah** increments the dispersion is more notorious.
+
+.. image:: figs/fig_orca1_7.png
+    :width: 90%
+    :align: center
+    :alt: An example of horizontal diffusion in TRACMASS.
+
 IFS (3D dataset)
 ----------------
 

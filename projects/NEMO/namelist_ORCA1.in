@@ -214,3 +214,7 @@
       l_psi      = .TRUE.          ! Compute stream Functions
       dirpsi     = -1,-1,-1,-1,-1  ! Direction of integration
 /
+
+&INIT_ACTIVE
+
+/

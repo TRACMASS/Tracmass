@@ -93,7 +93,7 @@ OBJDIR := _build
 
 objects := $(addprefix $(OBJDIR)/,mod_vars.o mod_subdomain.o mod_getfile.o mod_calendar.o \
 	mod_tracerf.o mod_tracers.o setup_grid.o kill_zones.o mod_vertvel.o mod_swap.o read_field.o mod_clock.o  \
-	mod_write.o mod_error.o mod_seed.o  mod_stream.o \
+	mod_write.o mod_error.o mod_seed.o mod_diffusion.o mod_stream.o \
 	mod_pos.o mod_init.o mod_print.o mod_loop.o mod_postprocess.o TRACMASS.o)
 
 $(OBJDIR)/%.o : %.F90

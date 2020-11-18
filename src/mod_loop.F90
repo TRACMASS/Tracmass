@@ -28,6 +28,7 @@ MODULE mod_loop
   USE mod_clock
   USE mod_error
   USE mod_tracers
+  USE mod_diffusion
 
   USE mod_loopvars, only: niter, iloop, scrivi
 
@@ -205,8 +206,7 @@ MODULE mod_loop
             CALL errorCheck('landError', errCode)
             IF (errCode.ne.0) CYCLE ntracLoop
 
-            ! Update time tt and ts
-            CALL update_time
+            IF (l_diffusion) CALL diffuse(x1,y1,z1,ib,jb,kb,dt)
 
             IF (l_tracers) THEN
 
@@ -216,12 +216,12 @@ MODULE mod_loop
               ! If streamfunctions are computed
               IF ((l_psi) .AND. (scrivi .EQV. .FALSE.) .AND. (l_offline .EQV. .FALSE.)) THEN
 
-                IF (x1==DBLE(iam) .OR. x1==DBLE(ia)) THEN
-                  DO iloop = 1, numtracers
-                      IF (trajdir ==  1)  CALL update_fluxes( ia, tracerbinvalue(iloop,2),  1, 'xr', iloop)
-                      IF (trajdir == -1)  CALL update_fluxes(iam, tracerbinvalue(iloop,2), -1, 'xr', iloop)
-                  END DO
-                END IF
+                  IF (x1==DBLE(iam) .OR. x1==DBLE(ia)) THEN
+                    DO iloop = 1, numtracers
+                        IF (trajdir ==  1)  CALL update_fluxes( ia, tracerbinvalue(iloop,2),  1, 'xr', iloop)
+                        IF (trajdir == -1)  CALL update_fluxes(iam, tracerbinvalue(iloop,2), -1, 'xr', iloop)
+                    END DO
+                  END IF
 
                   IF (y1==DBLE(ja-1) .OR. y1==DBLE(ja)) THEN
                     DO iloop = 1, numtracers
@@ -237,6 +237,9 @@ MODULE mod_loop
               END IF
 
             END IF
+
+            ! Update time tt and ts
+            CALL update_time
 
             ! End trajectory if outside chosen domain
             CALL kill_zones(nend)

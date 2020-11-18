@@ -59,6 +59,37 @@ After updating the values of **tt** and **ts**, the new values of **intrpb** and
 
 .. f:autosubroutine:: update_time
 
+mod_diffusion.F90
+-----------------
+
+The module **mod_diffusion** adds a random displacement to a trajectory. Diffusion is activated by setting **l_diffusion** to TRUE. This module contains two subroutines: **diffuse** and **displacement**.
+
+.. warning:: By activating diffusion the calculation of stream functions is deactivated unless they are computed offline and **write_frec** is set to one or two.
+
+- The subroutine **diffuse** works as follows: the new position of the trajectory calculated by **update_traj** is stored in a temporary position value **tmpX, tmpY, tmpZ**. The subroutine calls **displacement** to compute a random displacement. This displacement is add to **tmpX, tmpY, tmpZ**. The subroutine corrects the position if **jperio** or **iperio** are different from zero. The subroutine tries to find a suitable new position. If the new position is outside the domain, a new random displacement is calculated. The subroutine computes a maximum of 100k iterations, if no suitable positions are found by then, no displacement is added.
+
+- The subroutine **displacement** computes a random displacement coordinates **xd, yd, zd** from the time step **dt**, and the values of the horizontal **Ah** and vertical **Av** diffusivity. The displacement are computed as follows:
+
+.. image:: figs/fig_diffusion.png
+    :width: 45%
+    :align: center
+    :alt: Description of mod_diffusion
+
+.. math::
+   x_d = \sqrt{-4 A_h dt \log(1-q_1)} \cos(2\pi q_2) \\
+   y_d = \sqrt{-4 A_h dt \log(1-q_1)} \sin(2\pi q_2) \\
+   z_d = \sqrt{-4 A_v dt \log(1-q_3)} \cos(2\pi q_4) \\
+\
+
+   where qn represent random numbers defined between zero and one.
+
+This module contains two subroutines:
+
+.. f:autosubroutine:: diffuse
+
+.. f:autosubroutine:: displacement
+
+
 mod_error.F90
 -------------
 

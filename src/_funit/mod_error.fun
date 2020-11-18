@@ -17,9 +17,11 @@ SETUP
   ! Size of grid
   imt = 10; jmt = 10
   imtdom = 10; jmtdom = 10
+  km = 10
 
   ! Original position
   ib = 1; ja =1; jb =1; y0 =1; y1 = 1
+  ka = 1; kb =1; z0 =1; z1 =1 
 
 END SETUP
 

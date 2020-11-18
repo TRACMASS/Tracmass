@@ -24,6 +24,7 @@ MODULE mod_print
   USE mod_seed
   USE mod_write
   USE mod_tracervars
+  USE mod_activevars
 
   IMPLICIT NONE
 
@@ -163,8 +164,14 @@ MODULE mod_print
          END IF
 
          ! Streamfunctions
-         IF (l_psi) PRINT *,' - Computing streamfunctions.'
+         IF (l_psi .AND. l_offline)                    PRINT *,' - Computing off-line streamfunctions.'
+         IF (l_psi .AND. (l_offline .EQV. .FALSE.))    PRINT *,' - Computing on-line streamfunctions.'
 
+         ! Diffusion
+         IF (l_diffusion) THEN
+              PRINT *,' - Introduce lagrangian diffusion:'
+              PRINT '(A18,F6.4,A13,F6.4)','      Ah (m2/s) = ',Ah,' Av (m2/s) = ',Av   
+         END IF
 
          PRINT *, thinline
          PRINT *,''

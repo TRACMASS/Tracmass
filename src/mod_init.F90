@@ -22,6 +22,7 @@ MODULE mod_init
     USE mod_domain
     USE mod_tracervars
     USE mod_psi
+    USE mod_activevars
 
     IMPLICIT NONE
 
@@ -67,6 +68,7 @@ MODULE mod_init
           namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn, &
                                            tracerchoice, tracere, maxormin
           namelist /INIT_STREAMFUNCTION/   l_psi, l_offline, dirpsi, xyflux
+          namelist /INIT_ACTIVE/           l_diffusion, ah, av
 
           ! Read namelist
           OPEN (8,file='namelist.in',    &
@@ -83,6 +85,7 @@ MODULE mod_init
           READ (8,nml=INIT_TRACERS_SEEDING)
           READ (8,nml=INIT_KILLZONES)
           READ (8,nml=INIT_STREAMFUNCTION)
+          READ (8,nml=INIT_ACTIVE)
           CLOSE(8)
 
           ! If input data is on a A grid

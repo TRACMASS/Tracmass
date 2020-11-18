@@ -18,6 +18,7 @@ PROGRAM TRACMASS
   USE mod_tracervars
   USE mod_postprocess
   USE mod_postprocessvars
+  USE mod_activevars
 
   IMPLICIT NONE
 
@@ -38,7 +39,21 @@ PROGRAM TRACMASS
 
   ! Read namelist
   CALL init_namelist
+
+  ! Initialise tracers
   IF ( l_tracers ) CALL init_tracer
+
+  ! If diffusion is on, deactivate streamfunctions per case
+  IF ( l_diffusion) THEN
+      ! 1 - no run TRACMASS, and writing frequencies include storing in walls
+      IF (l_norun .AND. (write_frec==3 .OR. write_frec==4)) l_psi = .FALSE.
+
+      ! 2 - Run TRACMASS, off line calculation of trajectories, and writing frequencies include storing in walls
+      IF ((l_norun .EQV. .FALSE.) .AND. l_offline .AND. (write_frec==3 .OR. write_frec==4)) l_psi = .FALSE.
+
+      ! 3 - Run TRACMASS, online calculation of stream functions
+      IF ((l_norun .EQV. .FALSE.) .AND. (l_offline .EQV. .FALSE.)) l_psi = .FALSE.
+  END IF
 
   ! Define the domain and allocate the arrays
   CALL init_subdomain

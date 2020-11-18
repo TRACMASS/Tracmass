@@ -20,6 +20,7 @@
 !!              - mod_tracervars
 !!              - mod_psi
 !!              - mod_postprocessvars
+!!              - mod_active
 !!
 !!---------------------------------------------------------------------------
 
@@ -429,6 +430,7 @@ MODULE mod_psi
 
 END MODULE mod_psi
 
+! Postprocessing variables
 MODULE mod_postprocessvars
 
   USE mod_precdef
@@ -454,3 +456,16 @@ MODULE mod_postprocessvars
   INTEGER, DIMENSION(:), ALLOCATABLE        :: counter
 
 END MODULE mod_postprocessvars
+
+
+! Active variables
+MODULE mod_activevars
+
+  USE mod_precdef
+
+  ! Diffussion
+  LOGICAL    ::  l_diffusion = .FALSE.
+  REAL(DP)   ::  Ah = 0.d0  ! Diffusion param (horizontal)
+  REAL(DP)   ::  Av = 0.d0  ! -----//-------- (vertical)
+
+END MODULE mod_activevars

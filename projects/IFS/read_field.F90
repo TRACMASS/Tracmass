@@ -278,8 +278,101 @@ SUBROUTINE read_field
    vflux(:,0  ,:,:) = 0.d0
    vflux(:,jmt,:,:) = 0.d0
 
+   ! Correction of fluxes at the pole
+   CALL pole_correction()
+
    ! Reverse the sign of fluxes if trajectories are run backward in time.
    CALL swap_sign()
 
-
 END SUBROUTINE read_field
+
+
+SUBROUTINE pole_correction()
+
+    !==========================================================================
+    !
+    ! Purpose
+    ! -------
+    !
+    ! Corrects the local abnormalous values in the poles
+    !
+    ! Method
+    ! ------
+    !
+    ! Treat all the grids in the poles as a single one, compute the mean vertical
+    ! flux and assume that all grids in the poles have that value. Ussing the continuity
+    ! equation readjust the values of zonal fluxes.
+    !
+    ! Updates the variables:
+    !   uflux
+    ! ==========================================================================
+
+    USE mod_precdef
+    USE mod_param
+    USE mod_vel
+    USE mod_grid
+    USE mod_vertvel
+
+    IMPLICIT NONE
+
+
+    INTEGER :: ii, kk
+
+    REAL(DP), DIMENSION(:,:,:), ALLOCATABLE :: tmpwf, tmpuf
+
+
+    !! Allocate fluxes
+    ALLOCATE(tmpwf(imt,4,0:km))  ! 2dim : 1/2 - South Pole  3/4 - North Pole
+    ALLOCATE(tmpuf(imt,2,km))    ! 2dim : 1   - South Pole    2 - North Pole
+
+    tmpwf(:,:,:) = 0.d0; tmpuf(:,:,:) = 0.d0;
+
+    !! 1 - Compute mean Wflux
+    DO ii = 1, imt
+
+        ! South pole
+        IF (ii==1)  CALL vertvel(1,imt,1,km)
+        IF (ii/=1)  CALL vertvel(ii,ii-1,1,km)
+
+        tmpwf(ii,2,:) = wflux(:,2)
+
+        ! North pole
+        IF (ii==1)  CALL vertvel(1,imt,jmt,km)
+        IF (ii/=1)  CALL vertvel(ii,ii-1,jmt,km)
+
+        tmpwf(ii,4,:) = wflux(:,2)
+
+    END DO
+
+    FORALL (ii=1:imt) tmpwf(ii,1,:) = SUM(tmpwf(:,2,:),1)/imt
+    FORALL (ii=1:imt) tmpwf(ii,3,:) = SUM(tmpwf(:,4,:),1)/imt
+
+    !! 2 - Recalculate ufluxes from continuity
+    DO ii = 1, imt
+        DO kk = 1, km
+
+            ! South pole
+            tmpuf(ii,1,kk) = tmpwf(ii,1,kk-1)-tmpwf(ii,1,kk) - &
+          ( + vflux(ii,1,kk,2) - vflux(ii,0,kk,2) ) &
+            - dzdt(ii,1,kk,2)*dxdy(ii,1)
+
+            ! North pole
+            tmpuf(ii,2,kk) = tmpwf(ii,3,kk-1)-tmpwf(ii,3,kk) - &
+          ( + vflux(ii,jmt,kk,2) - vflux(ii,jmt-1,kk,2) ) &
+            - dzdt(ii,jmt,kk,2)*dxdy(ii,jmt)
+
+           IF (ii == 1) THEN
+             tmpuf(ii,1,kk) = tmpuf(ii,1,kk) + uflux(imt,1,kk,2)
+             tmpuf(ii,2,kk) = tmpuf(ii,2,kk) + uflux(imt,jmt,kk,2)
+           ELSE
+             tmpuf(ii,1,kk) = tmpuf(ii,1,kk) + tmpuf(ii-1,1,kk)
+             tmpuf(ii,2,kk) = tmpuf(ii,2,kk) + tmpuf(ii-1,2,kk)
+           END IF
+
+        END DO
+    END DO
+
+    ! Reassign the values of uflux
+    uflux(:,1,:,2) = tmpuf(:,1,:); uflux(:,jmt,:,2) = tmpuf(:,2,:);
+
+END SUBROUTINE

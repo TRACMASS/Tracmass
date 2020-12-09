@@ -143,7 +143,7 @@ MODULE mod_getfile
 
       END FUNCTION get1DfieldNC
 
-      FUNCTION get2DfieldNC(fieldFile ,varName, start2D, count2D)
+      FUNCTION get2DfieldNC(fieldFile ,varName, start2D, count2D, stcase)
       ! --------------------------------------------------
       !
       ! Purpose:
@@ -155,12 +155,26 @@ MODULE mod_getfile
           REAL, ALLOCATABLE,   DIMENSION(:,:)     :: field
           REAL                                    :: scale_factor, add_offset
 
-          INTEGER, DIMENSION(4)                   :: start2D  ,count2D
+          INTEGER, DIMENSION(4)                   :: start2D  ,count2D, ss, cc
+          INTEGER                                 :: ii
 
-          CHARACTER (len=*)                       :: fieldFile ,varName
+          CHARACTER (len=*)                       :: fieldFile ,varName, stcase
 
-          ALLOCATE(field(count2D(1), count2D(2)))
+          IF (stcase == 'st')  THEN
+               ALLOCATE(field(count2D(1), count2D(2)))
+          ELSE IF (stcase == 'st_r') THEN
+               ALLOCATE(field(count2D(2), count2D(1)))
+          END IF
+
           ALLOCATE(get2DfieldNC(count2D(1),count2D(2)))
+
+          IF (stcase == 'st') THEN
+             ss = start2D
+             cc = count2D
+          ELSE IF (stcase == 'st_r') THEN
+             ss(1) = start2D(2); ss(2) = start2D(1); ss(3) = start2D(3); ss(4) = start2D(4)
+             cc(1) = count2D(2); cc(2) = count2D(1); cc(3) = count2D(3); cc(4) = count2D(4)
+          END IF
 
           ierr=NF90_OPEN(TRIM(fieldFile) ,NF90_NOWRITE ,ncid)
           IF(ierr .NE. 0) CALL error_getfieldNC(1,fieldFile,varName)
@@ -168,13 +182,23 @@ MODULE mod_getfile
           IF(ierr .NE. 0) CALL error_getfieldNC(2,fieldFile,varName)
 
           IF ( (l_subdom) .AND. (imindom > imaxdom) ) THEN
-              start2D(1) = imindom; count2D(1) = imthalf1
-              ierr=NF90_GET_VAR(ncid ,varid ,field(1:imthalf1,:), start2D, count2D )
-              start2D(1) = 1; count2D(1) = imthalf2
-              ierr=NF90_GET_VAR(ncid ,varid ,field(imthalf1+1:imt,:), start2D, count2D )
+
+              IF (stcase == 'st') THEN
+                 ss(1) = imindom; cc(1) = imthalf1
+                 ierr=NF90_GET_VAR(ncid, varid, field(1:imthalf1,:), ss, cc)
+                 ss(1) = 1; cc(1) = imthalf2
+                 ierr=NF90_GET_VAR(ncid ,varid ,field(imthalf1+1:imt,:), ss, cc )
+              ELSE IF (stcase == 'st_r') THEN
+                 ss(2) = imindom; cc(2) = imthalf1
+                 ierr=NF90_GET_VAR(ncid, varid, field(:,1:imthalf1), ss, cc)
+                 ss(2) = 1; cc(2) = imthalf2
+                 ierr=NF90_GET_VAR(ncid ,varid ,field(:,imthalf1+1:imt), ss, cc )
+              END IF
+
           ELSE
-              ierr=NF90_GET_VAR(ncid ,varid ,field, start2D, count2D )
+              ierr=NF90_GET_VAR(ncid ,varid ,field, ss, cc )
           END IF
+
           IF(ierr .NE. 0) CALL error_getfieldNC(3,fieldFile,varName)
 
           ierr = NF90_GET_ATT(ncid, varid,"scale_factor", scale_factor)
@@ -185,8 +209,13 @@ MODULE mod_getfile
           ierr=NF90_CLOSE(ncid)
           IF(ierr .NE. 0) CALL error_getfieldNC(4,fieldFile,varName)
 
-          get2DfieldNC(:,:) = field(:,:)*scale_factor + add_offset
-
+          IF (stcase == 'st') THEN
+             get2DfieldNC(:,:) = field(:,:)*scale_factor + add_offset
+          ELSE IF (stcase == 'st_r') THEN
+             DO ii = 1, count2D(1)
+                get2DfieldNC(ii,:) = field(:,ii)*scale_factor + add_offset
+             END DO
+          END IF
        END FUNCTION get2DfieldNC
 
        FUNCTION get3DfieldNC(fieldFile ,varName, start3D, count3D, stcase)

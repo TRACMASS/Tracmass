@@ -218,15 +218,15 @@ MODULE mod_loop
 
                   IF (x1==DBLE(iam) .OR. x1==DBLE(ia)) THEN
                     DO iloop = 1, numtracers
-                        IF (trajdir ==  1)  CALL update_fluxes( ia, tracerbinvalue(iloop,2),  1, 'xr', iloop)
-                        IF (trajdir == -1)  CALL update_fluxes(iam, tracerbinvalue(iloop,2), -1, 'xr', iloop)
+                        IF (trajdir(1) ==  1)  CALL update_fluxes( ia, tracerbinvalue(iloop,2),  1, 'xr', iloop)
+                        IF (trajdir(1) == -1)  CALL update_fluxes(iam, tracerbinvalue(iloop,2), -1, 'xr', iloop)
                     END DO
                   END IF
 
                   IF (y1==DBLE(ja-1) .OR. y1==DBLE(ja)) THEN
                     DO iloop = 1, numtracers
-                        IF (trajdir ==  1)  CALL update_fluxes(  ja, tracerbinvalue(iloop,2),  1, 'yr', iloop)
-                        IF (trajdir == -1)  CALL update_fluxes(ja-1, tracerbinvalue(iloop,2), -1, 'yr', iloop)
+                        IF (trajdir(2) ==  1)  CALL update_fluxes(  ja, tracerbinvalue(iloop,2),  1, 'yr', iloop)
+                        IF (trajdir(2) == -1)  CALL update_fluxes(ja-1, tracerbinvalue(iloop,2), -1, 'yr', iloop)
                     END DO
                   END IF
 

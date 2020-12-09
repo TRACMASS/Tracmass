@@ -564,6 +564,17 @@ MODULE mod_seed
                             trajectories(ntrac)%tracerval(:) = tracervalue
                         END IF
 
+                        ! Define the direction of the trajectory
+                        trajdir(:) = 0; trajdir(isec) = nff*idir
+
+                        ! Boxface
+                        IF (isec ==1 .AND. nff*idir>0) boxface = 1
+                        IF (isec ==1 .AND. nff*idir<0) boxface = 2
+                        IF (isec ==2 .AND. nff*idir>0) boxface = 3
+                        IF (isec ==2 .AND. nff*idir<0) boxface = 4
+                        IF (isec ==3 .AND. nff*idir>0) boxface = 5
+                        IF (isec ==3 .AND. nff*idir<0) boxface = 6
+
                         !Save initial particle position
                         IF(log_level >= 3) THEN
                            PRINT*,' write initial trajectory position '

@@ -76,19 +76,19 @@ SUBROUTINE read_field
        dateprefix = filledFileName(dateFormat, prevYear, prevMon, prevDay)
 
        fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-       hs(1:imt,1:jmt,-1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1,1])
+       hs(1:imt,1:jmt,-1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1,1],'st')
        hs(imt+1,:,-1)     = hs(1,:,-1)
 
      END IF
 
      ! 2 - Present
-     nctstep = currMon
-     IF (l_onestep) nctstep = 1
-
+     !nctstep = currMon
+     !IF (l_onestep) nctstep = 1
+     nctstep = 1 + currHour/3
      dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,1:jmt,0) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1])
+     hs(1:imt,1:jmt,0) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1],'st')
      hs(imt+1,:,0)     = hs(1,:,0)
 
      DO kk = 1, km
@@ -123,6 +123,7 @@ SUBROUTINE read_field
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
      hs(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1])
+     hs(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1],'st')
      hs(imt+1,:,1)     = hs(1,:,1)
 
      DO kk = 1, km
@@ -176,7 +177,7 @@ SUBROUTINE read_field
                           ,[imt,jmt,km,1],'st')
             ELSE IF (tracers(itrac)%dimension == '2D') THEN
                 tmp3d(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, tracers(itrac)%varname,[imindom,jmindom,nctstep,1] &
-                                        ,[imt,jmt,1,1])
+                                        ,[imt,jmt,1,1],'st')
             END IF
 
         ELSE IF (tracers(itrac)%action == 'compute') THEN

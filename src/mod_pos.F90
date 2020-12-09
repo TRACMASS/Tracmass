@@ -11,6 +11,8 @@ MODULE mod_pos
     !!               - calc_pos
     !!               - update_traj
     !!
+    !!               - update_trajdir (P)
+    !!
     !!------------------------------------------------------------------------------
 
     USE mod_precdef
@@ -198,7 +200,12 @@ MODULE mod_pos
 
           ! New position
           scrivi  = .FALSE.
-          trajdir = 0
+
+          ! Direction array
+          trajdir(:) = 0
+
+          ! Boxface
+          boxface = 0
 
           ! Eastward grid-cell exit
           IF (ds==dse) THEN
@@ -221,11 +228,14 @@ MODULE mod_pos
              IF (ds == dsd) kb = ka - 1
 
              ! Trajectory direction
-             trajdir = 1
+             trajdir(1) = 1
+
+             ! Boxface
+             boxface = 1
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==1)) CALL update_fluxes(ia, ja, trajdir, 'xy')
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ia, ka, trajdir, 'xz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==1)) CALL update_fluxes(ia, ja, trajdir(1), 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ia, ka, trajdir(1), 'xz')
 
           ! Westward grid-cell exit
           ELSE IF (ds==dsw) THEN
@@ -247,11 +257,14 @@ MODULE mod_pos
              IF (ds == dsd) kb = ka - 1
 
              ! Trajectory direction
-             trajdir = -1
+             trajdir(1) = -1
+
+             ! Boxface
+             boxface = 2
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==1)) CALL update_fluxes(iam, ja, trajdir, 'xy')
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(iam, ka, trajdir, 'xz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==1)) CALL update_fluxes(iam, ja, trajdir(1), 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(iam, ka, trajdir(1), 'xz')
 
           ! Northward grid-cell exit
           ELSE IF (ds==dsn) THEN
@@ -273,11 +286,14 @@ MODULE mod_pos
              IF (ds == dsd) kb = ka - 1
 
              ! Trajectory direction
-             trajdir = 1
+             trajdir(2) = 1
+
+             ! Boxface
+             boxface = 3
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==2)) CALL update_fluxes(ia, ja, trajdir, 'xy')
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ja, ka, trajdir, 'yz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==2)) CALL update_fluxes(ia, ja, trajdir(2), 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ja, ka, trajdir(2), 'yz')
 
           ! Southward grid-cell exit
           ELSE IF (ds==dss) THEN
@@ -299,11 +315,14 @@ MODULE mod_pos
              IF (ds == dsd) kb = ka - 1
 
              ! Trajectory direction
-             trajdir = -1
+             trajdir(2) = -1
+
+             ! Boxface
+             boxface = 4
 
              ! Streamfunction
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==2)) CALL update_fluxes(ia, ja-1, trajdir, 'xy')
-             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ja-1, ka, trajdir, 'yz')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.) .AND. (xyflux==2)) CALL update_fluxes(ia, ja-1, trajdir(2), 'xy')
+             IF (l_psi .AND. (l_offline .EQV. .FALSE.))                   CALL update_fluxes(ja-1, ka, trajdir(2), 'yz')
 
           ! Upward grid-cell exit
           ELSE IF (ds==dsu) THEN
@@ -333,6 +352,12 @@ MODULE mod_pos
              IF (ds == dsn) jb = ja + 1
              IF (ds == dss) jb = ja - 1
 
+             ! Trajectory direction
+             trajdir(3) = 1
+
+             ! Boxface
+             boxface = 5
+
           ! Downward grid-cell exit
           ELSE IF (ds==dsd) THEN
              scrivi=.FALSE.
@@ -355,6 +380,12 @@ MODULE mod_pos
              IF (ds == dsw) ib = iam
              IF (ds == dsn) jb = ja + 1
              IF (ds == dss) jb = ja - 1
+
+             ! Trajectory direction
+             trajdir(3) = -1
+
+             ! Boxface
+             boxface = 6
 
           ! Shortest time is the time-steping
           ELSE IF (ds==dsc .OR. ds==dsmin) THEN
@@ -386,6 +417,7 @@ MODULE mod_pos
               END IF
           END IF
 
+          ! North fold
           IF (jperio /= 0) THEN
 
             IF( y1 == DBLE(JMTdom-1) .AND. jperio == 1) THEN
@@ -398,6 +430,38 @@ MODULE mod_pos
 
           END IF
 
+          ! Update direction array
+          CALL update_trajdir()
+
       END SUBROUTINE update_traj
+
+      SUBROUTINE update_trajdir()
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Update of the direction array
+      !
+      ! --------------------------------------------------
+
+          ! Zonal direction
+          IF (x0 < x1 .AND. x0<=1. .AND. x1>=DBLE(imt-1)) THEN
+              trajdir(1) =  -1
+          ELSEIF (x0 < x1 ) THEN
+              trajdir(1) = 1
+          ELSEIF (x0 > x1 .AND. x0>=DBLE(imt-1) .AND. x1<=1)  THEN
+              trajdir(1) = 1
+          ELSEIF (x0 > x1) THEN
+              trajdir(1) = -1
+          END IF
+
+          ! Meridional direction
+          IF (y0 < y1) trajdir(2) =  1
+          IF (y0 > y1) trajdir(2) = -1
+
+          ! Vertical direction
+          IF (z0 < z1) trajdir(3) =  1
+          IF (z0 > z1) trajdir(3) = -1
+
+      END SUBROUTINE update_trajdir
 
 END MODULE mod_pos

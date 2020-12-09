@@ -144,7 +144,11 @@ The module **mod_getfile** consists on five functions: **filledFileName** which 
 
 * The function **get1DfieldNC** has four arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start1D* a 4D array that describes the starting indexes, and *count1D* a 4D array that describes how many indexes are read.
 
-* The function **get2DfieldNC** has four arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start2D* a 4D array that describes the starting indexes, and *count2D* a 4D array that describes how many indexes are read.
+* The function **get2DfieldNC** has five arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start2D* a 4D array that describes the starting indexes, and *count2D* a 4D array that describes how many indexes are read. The last index *stcase* describes the order in which the data is stored in the netCDF file:
+
+    - *'st'*:  [x, y, time]
+    - *'st_r'*: [y, x, time]
+
 
 * The function **get3DfieldNC** has five arguments: *fieldFile* the path to the netCDF file, *varName* name of the variable to be extracted, *start3D* a 4D array that describes the starting indexes, *count3D* a 4D array that describes how many indexes are read, and *stcase* describes the order data is stored in the netCDF file:
 

@@ -1,10 +1,10 @@
 test_suite mod_getfile
 
 ! test_suite for mod_getfile
-! Contains 25 tests
+! Contains 28 tests
 ! 9  -> filledFileName
 ! 1  -> get1DfieldNC
-! 3  -> get2DfieldNC
+! 6  -> get2DfieldNC
 ! 12 -> get3DfieldNC
 
 SETUP
@@ -201,9 +201,9 @@ TEST test_get2DfieldNC_1
    ! get2DfieldNC --> 2D
    REAL, DIMENSION(12,6):: field2D
 
-   PRINT *, ' * Test get2DfieldNC    : no subdomain'
+   PRINT *, ' * Test get2DfieldNC    : no subdomain (st)'
 
-   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[1,1,1,1],[12,6,1,1])
+   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[1,1,1,1],[12,6,1,1],'st')
 
    ASSERT_EQUAL(SIZE(field2D,1), 12)
    ASSERT_EQUAL(SIZE(field2D,2),  6)
@@ -220,9 +220,30 @@ TEST test_get2DfieldNC_2
 
    ! Test for get2DfieldNC
    ! get2DfieldNC --> 2D
+   REAL, DIMENSION(6,12):: field2D
+
+   PRINT *, ' * Test get2DfieldNC    : no subdomain (st_r)'
+
+   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[1,1,1,1],[6,12,1,1],'st_r')
+
+   ASSERT_EQUAL(SIZE(field2D,1), 6)
+   ASSERT_EQUAL(SIZE(field2D,2), 12)
+   ASSERT_EQUAL(field2D(1,1),9)
+   ASSERT_EQUAL(field2D(1,2),10)
+   ASSERT_EQUAL(field2D(2,1),21)
+   ASSERT_EQUAL(field2D(2,2),22)
+   ASSERT_EQUAL(field2D(6,11),79)
+   ASSERT_EQUAL(field2D(6,12),80)
+
+END TEST
+
+TEST test_get2DfieldNC_3
+
+   ! Test for get2DfieldNC
+   ! get2DfieldNC --> 2D
    REAL, ALLOCATABLE, DIMENSION(:,:) :: field2D
 
-   PRINT *, ' * Test get2DfieldNC    : subdomain (regular box)'
+   PRINT *, ' * Test get2DfieldNC    : subdomain RB (st)'
 
    ! Define subdomain
    l_subdom = .TRUE.
@@ -236,7 +257,7 @@ TEST test_get2DfieldNC_2
    ! Allocate field2D
    ALLOCATE(field2D(imt,jmt))
 
-   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[imindom,jmindom,1,1],[imt,jmt,1,1])
+   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
 
    ASSERT_EQUAL(SIZE(field2D,1), 6)
    ASSERT_EQUAL(SIZE(field2D,2), 4)
@@ -247,13 +268,44 @@ TEST test_get2DfieldNC_2
 
 END TEST
 
-TEST test_get2DfieldNC_3
+TEST test_get2DfieldNC_4
 
    ! Test for get2DfieldNC
    ! get2DfieldNC --> 2D
    REAL, ALLOCATABLE, DIMENSION(:,:) :: field2D
 
-   PRINT *, ' * Test get2DfieldNC    : subdomain (split box)'
+   PRINT *, ' * Test get2DfieldNC    : subdomain RB (st_r)'
+
+   ! Define subdomain
+   l_subdom = .TRUE.
+
+   imaxdom = 10; imindom = 5
+   jmaxdom =  5; jmindom = 2
+
+   imt = imaxdom - imindom + 1
+   jmt = jmaxdom - jmindom + 1
+
+   ! Allocate field2D
+   ALLOCATE(field2D(jmt,imt))
+
+   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[jmindom,imindom,1,1],[jmt,imt,1,1],'st_r')
+
+   ASSERT_EQUAL(SIZE(field2D,1), 4)
+   ASSERT_EQUAL(SIZE(field2D,2), 6)
+   ASSERT_EQUAL(field2D(1,1),25)
+   ASSERT_EQUAL(field2D(4,1),61)
+   ASSERT_EQUAL(field2D(1,6),30)
+   ASSERT_EQUAL(field2D(4,6),66)
+
+END TEST
+
+TEST test_get2DfieldNC_5
+
+   ! Test for get2DfieldNC
+   ! get2DfieldNC --> 2D
+   REAL, ALLOCATABLE, DIMENSION(:,:) :: field2D
+
+   PRINT *, ' * Test get2DfieldNC    : subdomain SB (st)'
 
    ! Grid size
    imt = 12; jmt = 6
@@ -275,7 +327,7 @@ TEST test_get2DfieldNC_3
    ! Allocate field2D
    ALLOCATE(field2D(imt,jmt))
 
-   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[imindom,jmindom,1,1],[imt,jmt,1,1])
+   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
 
    ASSERT_EQUAL(SIZE(field2D,1), 8)
    ASSERT_EQUAL(SIZE(field2D,2), 4)
@@ -283,6 +335,45 @@ TEST test_get2DfieldNC_3
    ASSERT_EQUAL(field2D(1,4),66)
    ASSERT_EQUAL(field2D(8,1),25)
    ASSERT_EQUAL(field2D(8,4),61)
+
+END TEST
+
+TEST test_get2DfieldNC_6
+
+   ! Test for get2DfieldNC
+   ! get2DfieldNC --> 2D
+   REAL, ALLOCATABLE, DIMENSION(:,:) :: field2D
+
+   PRINT *, ' * Test get2DfieldNC    : subdomain SB (st_r)'
+
+   ! Grid size
+   imt = 6; jmt = 12
+
+   ! Define subdomain
+   l_subdom = .TRUE.
+
+   imaxdom =  2; imindom = 5
+   jmaxdom =  5; jmindom = 2
+
+   ! Define the two sub-subdomain
+   imthalf1 = imt - imindom + 1
+   imthalf2 = imaxdom
+
+   ! Recalculate the values of imt and jmt
+   imt = imthalf1 + imthalf2
+   jmt = jmaxdom - jmindom + 1
+
+   ! Allocate field2D
+   ALLOCATE(field2D(jmt,imt))
+
+   field2D = get2DfieldNC('pres_temp_4D.nc','temperature',[jmindom,imindom,1,1],[jmt,imt,1,1],'st_r')
+
+   ASSERT_EQUAL(SIZE(field2D,1), 4)
+   ASSERT_EQUAL(SIZE(field2D,2), 4)
+   ASSERT_EQUAL(field2D(1,1),61)
+   ASSERT_EQUAL(field2D(4,1),25)
+   ASSERT_EQUAL(field2D(4,4),28)
+   ASSERT_EQUAL(field2D(1,4),64)
 
 END TEST
 
@@ -548,7 +639,7 @@ TEST test_get3DfieldNC_10
    ! get3DfieldNC --> 3D
    REAL, ALLOCATABLE, DIMENSION(:,:,:):: field3D
 
-   PRINT *, ' * Test get3DfieldNC    : subdomain HB (ts)'
+   PRINT *, ' * Test get3DfieldNC    : subdomain SB (ts)'
 
    ! Grid size
    imt = 6; jmt = 2
@@ -622,7 +713,7 @@ TEST test_get3DfieldNC_12
    ! get3DfieldNC --> 3D
    REAL, ALLOCATABLE, DIMENSION(:,:,:):: field3D
 
-   PRINT *, ' * Test get3DfieldNC    : subdomain HB (ts_r)'
+   PRINT *, ' * Test get3DfieldNC    : subdomain SB (ts_r)'
 
    ! Grid size
    imt = 2; jmt = 2

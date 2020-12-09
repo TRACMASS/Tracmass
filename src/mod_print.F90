@@ -69,22 +69,17 @@ MODULE mod_print
           END IF
        END IF
 
-
        PRINT *,''
        PRINT *,'Start date  : '//currDate(1:4)//'-'//currDate(5:6)//'-'//currDate(7:8)
        PRINT *,'Start time  : '//currTime(1:2)// ':'//currTime(3:4)// ':'//currTime(5:6)
+       PRINT *,''
        PRINT *, thinline !---------------------------------------------------
        PRINT *,''
        PRINT *,'Model information:'
        PRINT *,'Project code  : '//TRIM(Project)
        PRINT *,'Case name     : '//TRIM(Case)
        PRINT *,'Namelist file : '//TRIM(projdir)//'/namelist_'//TRIM(Case)//'.in'
-
-       PRINT *, thinline !---------------------------------------------------
        PRINT *,''
-       PRINT *,'Output information:'
-       PRINT *,'Directory for output files : ' ,TRIM(outDataDir)
-       PRINT *,'Prefix for output files    : ' ,TRIM(outDataFile)
        PRINT *, thinline !---------------------------------------------------
        PRINT *,''
 
@@ -119,8 +114,14 @@ MODULE mod_print
          CHARACTER (len=15)                           :: cloneparticle
          CHARACTER (len=5), DIMENSION(4)              :: csubdomain
 
-
          PRINT *,"Configuration options:"
+
+         ! Time direction
+         IF (nff == 1) THEN
+            PRINT *,' - Forward in time (nff = 1)'
+         ELSE IF (nff == 1) THEN
+            PRINT *,' - Backward in time (nff = -1)'
+         END IF
 
          ! Subdomain
          IF (l_subdom) THEN
@@ -170,9 +171,10 @@ MODULE mod_print
          ! Diffusion
          IF (l_diffusion) THEN
               PRINT *,' - Introduce lagrangian diffusion:'
-              PRINT '(A18,F6.4,A13,F6.4)','      Ah (m2/s) = ',Ah,' Av (m2/s) = ',Av   
+              PRINT '(A18,F6.4,A13,F6.4)','      Ah (m2/s) = ',Ah,' Av (m2/s) = ',Av
          END IF
 
+         PRINT *,''
          PRINT *, thinline
          PRINT *,''
 
@@ -185,6 +187,14 @@ MODULE mod_print
      ! Prints the header of the main loop
      !
      ! --------------------------------------------------
+
+
+          PRINT *,'Output information:'
+          PRINT *,'Directory for output files : ' ,TRIM(outDataDir)
+          PRINT *,'Prefix for output files    : ' ,TRIM(outDataFile)
+          PRINT *,''
+          PRINT *, thinline !---------------------------------------------------
+          PRINT *,''
 
           CALL write_lines
           WRITE(6,FMT='(A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2)')          &

@@ -148,8 +148,13 @@ MODULE mod_traj
   INTEGER                                   :: errCode
 
   ! Trajectory direction
-  INTEGER                                   :: trajdir = 1
+  INTEGER, DIMENSION(3)                     :: trajdir = 0
 
+  ! Boxface
+  INTEGER                                   :: boxface = 0    ! 0   - inside the box
+                                                              ! 1/2 - east/west wall
+                                                              ! 3/4 - north/south wall
+                                                              ! 5/6 - upper/lower wall
   ! Particle positions
   INTEGER                                   :: ia, ja, ka, iam
   INTEGER                                   :: ib, jb, kb, ibm

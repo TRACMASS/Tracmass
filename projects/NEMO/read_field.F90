@@ -59,7 +59,7 @@ SUBROUTINE read_field
        dateprefix = filledFileName(dateFormat, prevYear, prevMon, prevDay)
 
        fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-       hs(1:imt,1:jmt,-1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1,1])
+       hs(1:imt,1:jmt,-1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1,1],'st')
        hs(imt+1,:,-1)     = hs(1,:,-1)
 
      END IF
@@ -71,7 +71,7 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,1:jmt,0) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1])
+     hs(1:imt,1:jmt,0) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1],'st')
      hs(imt+1,:,0)     = hs(1,:,0)
 
      WHERE (SUM(dzt(:,:,:,2),3) /= 0)
@@ -80,7 +80,7 @@ SUBROUTINE read_field
      ELSEWHERE
           zstot(:,:,-1) = 0.d0
           zstot(:,:, 0) = 0.d0
-     END WHERE     
+     END WHERE
 
    END IF
 
@@ -93,7 +93,7 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, nextYear, nextMon, nextDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1])
+     hs(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1],'st')
      hs(imt+1,:,1)     = hs(1,:,1)
 
    END IF
@@ -161,7 +161,7 @@ SUBROUTINE read_field
                           ,[imt,jmt,km,1],'st')
             ELSE IF (tracers(itrac)%dimension == '2D') THEN
                 tmp3d(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, tracers(itrac)%varname,[imindom,jmindom,nctstep,1] &
-                                        ,[imt,jmt,1,1])
+                                        ,[imt,jmt,1,1],'st')
             END IF
 
         ELSE IF (tracers(itrac)%action == 'compute') THEN

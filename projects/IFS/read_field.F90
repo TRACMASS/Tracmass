@@ -62,7 +62,7 @@ SUBROUTINE read_field
        dateprefix = filledFileName(dateFormat, prevYear, prevMon, prevDay)
 
        fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-       hs(1:imt,jmt:0:-1,-1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1]))
+       hs(1:imt,jmt:0:-1,-1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1],'st'))
 
        IF (l_tracers .AND. l_swtraj) THEN
 
@@ -86,7 +86,7 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,jmt:0:-1,0) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1]))
+     hs(1:imt,jmt:0:-1,0) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1],'st'))
 
      IF (l_tracers .AND. l_swtraj) THEN
 
@@ -112,7 +112,7 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, nextYear, nextMon, nextDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,jmt:0:-1,1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1]))
+     hs(1:imt,jmt:0:-1,1) = EXP(get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,1,nctstep],[imt,jmt+1,1,1],'st'))
 
      IF (l_tracers .AND. l_swtraj) THEN
 
@@ -161,7 +161,7 @@ SUBROUTINE read_field
                           ,[imt,jmt,km,1],'st')
             ELSE IF (tracers(itrac)%dimension == '2D') THEN
                 tmp3d(1:imt,jmt:0:-1,1) = get2DfieldNC(fieldFile, tracers(itrac)%varname,[imindom,jmindom,nctstep,1] &
-                                        ,[imt,jmt,1,1])
+                                        ,[imt,jmt,1,1],'st')
             END IF
 
             ! Place tracer value from A to C grid

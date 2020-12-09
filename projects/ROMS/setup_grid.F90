@@ -31,11 +31,11 @@ SUBROUTINE setup_grid
     REAL(DP), ALLOCATABLE, DIMENSION(:,:)      :: dx_t, dy_t
 
     ! Allocate and define mask
-    mask(:,:) = INT(get2DfieldNC(TRIM(topoDataDir)//TRIM(bathyFile), kmt_name,[imindom,jmindom,1,1],[imt,jmt,1,1]))
+    mask(:,:) = INT(get2DfieldNC(TRIM(topoDataDir)//TRIM(bathyFile), kmt_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st'))
 
     ! dx and dy in T points
-    dy_t = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dy_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
-    dx_t = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dx_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
+    dy_t = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dy_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
+    dx_t = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dx_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
 
     WHERE(dx_t/=0.) dx_t = 1./dx_t
     WHERE(dy_t/=0.) dy_t = 1./dy_t
@@ -51,7 +51,7 @@ SUBROUTINE setup_grid
 
     ! Total depth
     ALLOCATE(depth(imt,jmt))
-    depth(:,:) = INT(get2DfieldNC(TRIM(topoDataDir)//TRIM(zgridFile), dep_name,[imindom,jmindom,1,1],[imt,jmt,1,1]))
+    depth(:,:) = INT(get2DfieldNC(TRIM(topoDataDir)//TRIM(zgridFile), dep_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st'))
 
 
 END SUBROUTINE setup_grid

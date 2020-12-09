@@ -37,7 +37,7 @@ SUBROUTINE setup_grid
     ! Allocate and define kmu and kmv, and kmt
     ALLOCATE ( kmu(imt,jmt), kmv(imt,jmt), tmp2d(imt,jmt) )
 
-    kmt(:,:) = INT(get2DfieldNC(TRIM(topoDataDir)//TRIM(bathyFile), kmt_name,[imindom,jmindom,1,1],[imt,jmt,1,1]))
+    kmt(:,:) = INT(get2DfieldNC(TRIM(topoDataDir)//TRIM(bathyFile), kmt_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st'))
 
     WHERE (kmt>0)
       tmp2d(:,:) = 1
@@ -65,12 +65,12 @@ SUBROUTINE setup_grid
     END DO
 
     ! dx and dy in T points
-    dy_t  = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dy_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
-    dx_t  = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dx_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
+    dy_t  = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dy_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
+    dx_t  = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dx_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
 
     ! dx and dy in u and v points
-    dyu = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dyu_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
-    dxv = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dxv_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
+    dyu = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dyu_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
+    dxv = get2DfieldNC(TRIM(topoDataDir)//TRIM(hgridFile), dxv_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
 
     ! Grid area
     dxdy(1:imt,1:jmt) = dx_t(1:imt,1:jmt) * dy_t(1:imt,1:jmt)

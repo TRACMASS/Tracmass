@@ -44,8 +44,8 @@ SUBROUTINE read_field
    dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
    fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(fileSuffix)
 
-   uvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, ueul_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
-   vvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, veul_name,[imindom,jmindom,1,1],[imt,jmt,1,1])
+   uvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, ueul_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
+   vvel(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, veul_name,[imindom,jmindom,1,1],[imt,jmt,1,1],'st')
 
    ! uvel, vvel come on an A grid, so we need to interpolate to
    !! staggered C grid

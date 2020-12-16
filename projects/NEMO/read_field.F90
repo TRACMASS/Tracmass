@@ -176,9 +176,9 @@ SUBROUTINE read_field
 
         ! Store the information
         IF (tracers(itrac)%dimension == '3D') THEN
-          tracers(itrac)%data(:,1:jmt,:,2) = tmp3d(:,:,:)
+          tracers(itrac)%data(:,1:jmt,:,2) = tracers(itrac)%scale*tmp3d(:,:,:) + tracers(itrac)%shift
         ELSE IF (tracers(itrac)%dimension == '2D') THEN
-          tracers(itrac)%data(:,1:jmt,1,2) = tmp3d(:,:,1)
+          tracers(itrac)%data(:,1:jmt,1,2) = tracers(itrac)%scale*tmp3d(:,:,1) + tracers(itrac)%shift
         END IF
 
      END DO

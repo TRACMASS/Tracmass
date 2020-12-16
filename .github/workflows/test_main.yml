@@ -32,7 +32,9 @@ jobs:
 
       # Netcdf library
       - name: Install netcdf
-        run : sudo apt-get install libnetcdf-dev libnetcdff-dev
+        run : |
+          sudo apt-get update
+          sudo apt-get install libnetcdf-dev libnetcdff-dev
 
       # Compilation of other projects
       - name: Compile 2D dataset - AVISO

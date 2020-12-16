@@ -22,7 +22,7 @@ author = 'Aitor Aldama Campino'
 version = '7.0.1'
 
 # The full version, including alpha/beta/rc tags
-release = '7.0.1'
+release = '7.0.1-rc'
 
 
 # -- General configuration ---------------------------------------------------

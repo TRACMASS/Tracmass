@@ -47,6 +47,9 @@ SUBROUTINE read_field
    ALLOCATE ( sc_w(km), Cs_w(km) )
    ALLOCATE ( dzt00(imt,jmt))
 
+   ! Data files
+   dateprefix = ' '
+
    ! Reading variables to transform variables
    Cs_w = 0; sc_w = 0;
 
@@ -58,9 +61,6 @@ SUBROUTINE read_field
 
    ! Reassign the time index of uflux and vflux, dzt, dzdt, hs, ...
    CALL swap_time()
-
-   ! Data files
-   dateprefix = ' '
 
    ! Reading 3-time step variables
    ! In this case: hs and zstot
@@ -82,9 +82,9 @@ SUBROUTINE read_field
      END IF
 
      ! 2 - Present
-     !nctstep = currMon
-     !IF (l_onestep) nctstep = 1
-     nctstep = 1 + currHour/3
+     nctstep = currMon
+     IF (l_onestep) nctstep = 1
+
      dateprefix = filledFileName(dateFormat, currYear, currMon, currDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
@@ -122,7 +122,6 @@ SUBROUTINE read_field
      dateprefix = filledFileName(dateFormat, nextYear, nextMon, nextDay)
 
      fieldFile = TRIM(physDataDir)//TRIM(physPrefixForm)//TRIM(dateprefix)//TRIM(tGridName)//TRIM(fileSuffix)
-     hs(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1])
      hs(1:imt,1:jmt,1) = get2DfieldNC(fieldFile, hs_name,[imindom,jmindom,nctstep,1],[imt,jmt,1,1],'st')
      hs(imt+1,:,1)     = hs(1,:,1)
 
@@ -192,9 +191,9 @@ SUBROUTINE read_field
 
         ! Store the information
         IF (tracers(itrac)%dimension == '3D') THEN
-          tracers(itrac)%data(:,1:jmt,:,2) = tmp3d(:,:,:)
+          tracers(itrac)%data(:,1:jmt,:,2) = tracers(itrac)%scale*tmp3d(:,:,:) + tracers(itrac)%shift
         ELSE IF (tracers(itrac)%dimension == '2D') THEN
-          tracers(itrac)%data(:,1:jmt,1,2) = tmp3d(:,:,1)
+          tracers(itrac)%data(:,1:jmt,1,2) = tracers(itrac)%scale*tmp3d(:,:,1) + tracers(itrac)%shift
         END IF
 
      END DO

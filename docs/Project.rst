@@ -305,6 +305,10 @@ INIT_TRACERS
 
 * **tracername** [*character, array*]: name of the tracers.
 
+* **tracershift** [*real, array*]: add a shift value to the tracer array. Default values is **zero**.
+
+* **tracerscale** [*real, array*]: multiple the tracer value by a scale factor. Default values is **one**.
+
 * **tracerunit** [*character, array*]: tracer units.
 
 * **tracervarname** [*character, array*]: variable name of the tracer.
@@ -341,8 +345,8 @@ INIT_KILLZONES
 
 *  **maxormin** [*integer, array*]: sets the value of **tracere** to a (1) maximum or (-1) minimum value.
 
-INIT_STREAMFUNCTION
-^^^^^^^^^^^^^^^^^^^
+INIT_POSTPROCESS
+^^^^^^^^^^^^^^^^
 
 * **l_psi** [*logical*]: activate stream function calculation.
 
@@ -351,3 +355,16 @@ INIT_STREAMFUNCTION
 * **dirpsi** [*integer, array*]: direction of integration of streamfunctions.
 
 * **xyflux** [*integer*]: compute barotropic fluxes using **uflux** (1) or **vflux** (2). Default value is **1**.
+
+* **l_divergence** [*logical*]: activate the calculation tracer divergence.
+
+* **divcons** [*real, array*]: constants applied to the tracer divergence.
+
+INIT_ACTIVE
+^^^^^^^^^^^
+
+* **l_diffusion** [*logical*]: activates the addition of a random displacement to trajectories. Default values is **False**.
+
+* **ah** [*real*]: horizontal diffusion constant.
+
+* **av** [*real*]: vertical diffusion constant.

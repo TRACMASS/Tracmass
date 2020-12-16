@@ -275,6 +275,7 @@ MODULE mod_stream
 
                   ! Fluxes through x-wall
                   IF ( traj_x(ilooptraj,iloopsave) == FLOAT(INT(traj_x(ilooptraj,iloopsave)))  &
+                      .AND. (traj_boxf(ilooptraj,iloopsave) == 1 .OR. traj_boxf(ilooptraj,iloopsave) == 2) &
                       .AND. traj_x(ilooptraj, iloopsave)/=-999. ) THEN
 
                       ! Direction of trajectory
@@ -315,6 +316,7 @@ MODULE mod_stream
 
                   ! Fluxes through y-wall
                   IF ( traj_y(ilooptraj,iloopsave) == FLOAT(INT(traj_y(ilooptraj,iloopsave)))  &
+                      .AND. (traj_boxf(ilooptraj,iloopsave) == 3 .OR. traj_boxf(ilooptraj,iloopsave) == 4) &
                       .AND. traj_y(ilooptraj, iloopsave)/=-999. ) THEN
 
                       ! Direction of trajectory

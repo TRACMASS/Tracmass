@@ -210,8 +210,8 @@
 
 /
 
-&INIT_STREAMFUNCTION
-      l_psi      = .TRUE.          ! Compute stream Functions
+&INIT_POSTPROCESS
+      l_psi      = .FALSE.          ! Compute stream Functions
       dirpsi     = -1,-1,-1,-1,-1  ! Direction of integration
 /
 

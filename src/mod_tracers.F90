@@ -61,6 +61,10 @@ MODULE mod_tracers
 
           tracers(itrac)%varname = tracervarname(itrac)  ! if the file is read, this is the name of the variable
 
+          ! Shift/scale tracer values
+          tracers(itrac)%shift = tracershift(itrac)      ! Tracer shift
+          tracers(itrac)%scale = tracerscale(itrac)      ! Tracer scale
+
           ! Allocate and define the data array
           IF (tracerdimension(itrac) == '3D' .OR. tracerdimension(itrac) == '3d' .OR. tracerdimension(itrac) == '3') THEN
               tracers(itrac)%dimension = '3D' ! Dimension of the tracer
@@ -95,9 +99,14 @@ MODULE mod_tracers
        CHARACTER(len=100)          :: tracname
        REAL(DP), DIMENSION(:,:,:)  :: var3d
 
+       ! Sigma 0 calculation (using T (degC) and S(PSU))
        IF (TRIM(tracname) == 'sigma0') THEN
-              var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4), REAL(tracers(2)%data(:,:,:,2),4)),8)
-              var3d = var3d - 1000.d0
+             var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4), REAL(tracers(2)%data(:,:,:,2),4)),8)
+             var3d = var3d - 1000.d0
+       ! Sigma 0 calculation (using T (K) and S(PSU))
+       ELSE IF (TRIM(tracname) == 'sigma0_K') THEN
+             var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4)-273.15, REAL(tracers(2)%data(:,:,:,2),4)),8)
+             var3d = var3d - 1000.d0
        END IF
 
     END SUBROUTINE compute_tracer

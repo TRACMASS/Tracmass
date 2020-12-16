@@ -157,7 +157,7 @@
 
 /
 
-&INIT_STREAMFUNCTION
+&INIT_POSTPROCESS
       l_psi = .FALSE.
       dirpsi = 1,1,1,1
 /

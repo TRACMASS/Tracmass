@@ -23,6 +23,7 @@ MODULE mod_init
     USE mod_tracervars
     USE mod_psi
     USE mod_activevars
+    USE mod_divvars
 
     IMPLICIT NONE
 
@@ -61,13 +62,15 @@ MODULE mod_init
                                            ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
                                            seedDir, seedFile, maskFile, seedTime, timeFile
           namelist /INIT_TRACERS/          l_tracers, l_swtraj, tracertrajscale, &
-                                           tracername, tracerunit, tracervarname,&
+                                           tracername, tracershift, tracerscale, &
+                                           tracerunit, tracervarname,&
                                            traceraction,tracermin, tracermax, &
                                            tracerdimension
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
           namelist /INIT_KILLZONES/        timax, exitType, ienw, iene, jens, jenn, &
                                            tracerchoice, tracere, maxormin
-          namelist /INIT_STREAMFUNCTION/   l_psi, l_offline, dirpsi, xyflux
+          namelist /INIT_POSTPROCESS/      l_psi, l_offline, dirpsi, xyflux, &
+                                           l_divergence, divconst
           namelist /INIT_ACTIVE/           l_diffusion, ah, av
 
           ! Read namelist
@@ -84,7 +87,7 @@ MODULE mod_init
           READ (8,nml=INIT_TRACERS)
           READ (8,nml=INIT_TRACERS_SEEDING)
           READ (8,nml=INIT_KILLZONES)
-          READ (8,nml=INIT_STREAMFUNCTION)
+          READ (8,nml=INIT_POSTPROCESS)
           READ (8,nml=INIT_ACTIVE)
           CLOSE(8)
 

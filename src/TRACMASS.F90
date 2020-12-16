@@ -19,6 +19,8 @@ PROGRAM TRACMASS
   USE mod_postprocess
   USE mod_postprocessvars
   USE mod_activevars
+  USE mod_divvars
+  USE mod_divergence
 
   IMPLICIT NONE
 
@@ -54,6 +56,9 @@ PROGRAM TRACMASS
       ! 3 - Run TRACMASS, online calculation of stream functions
       IF ((l_norun .EQV. .FALSE.) .AND. (l_offline .EQV. .FALSE.)) l_psi = .FALSE.
   END IF
+
+  ! If tracers are deactivated deactivate divergence calculation
+  IF ( (l_tracers .EQV. .FALSE.) .AND. (l_divergence .EQV. .TRUE.)) l_divergence = .FALSE.
 
   ! Define the domain and allocate the arrays
   CALL init_subdomain
@@ -96,7 +101,7 @@ PROGRAM TRACMASS
   ! TRACMASS (POSTPROCESSING)
   ! ============================================================================
 
-  IF ((l_psi .AND. l_offline) .OR. l_summary) THEN
+  IF ((l_psi .AND. l_offline) .OR. l_summary .OR. l_divergence) THEN
 
       ! Print header
       IF (l_norun .EQV. .FALSE.) CALL print_header_postprocess()
@@ -106,6 +111,9 @@ PROGRAM TRACMASS
 
       ! Offline computation of streamfunction
       IF (l_psi .AND. l_offline) CALL init_stream()
+
+      ! Computation of tracer divergence
+      IF (l_divergence) CALL init_divergence()
 
       ! Main postprocess module
       ! - Reads the units

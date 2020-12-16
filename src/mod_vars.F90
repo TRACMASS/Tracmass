@@ -342,6 +342,7 @@ MODULE mod_tracerdef
 
    TYPE tracer
       REAL(DP)                              :: minimum, maximum   !! minimum and maximum value of tracer
+      REAL(DP)                              :: shift, scale       !! shift/scale for tracers
 
       CHARACTER(len=100)                    :: name               !! Description of the tracer
       CHARACTER(len=100)                    :: unit               !! Unit of the tracer
@@ -374,6 +375,7 @@ MODULE mod_tracervars
 
   REAL(DP), DIMENSION(10)             :: tracermin, tracermax, &
                                          tracer0min=-9999.d0, tracer0max=9999.d0, &
+                                         tracershift=0.d0, tracerscale=1.d0, &
                                          tracere
   REAL(DP), DIMENSION(:), ALLOCATABLE :: tracervalue
 
@@ -458,10 +460,10 @@ MODULE mod_postprocessvars
   REAL(DP), DIMENSION(:,:), ALLOCATABLE     :: traj_x, traj_y, traj_z
   REAL(DP), DIMENSION(:), ALLOCATABLE       :: traj_subvol
   INTEGER, DIMENSION(:), ALLOCATABLE        :: traj_out
+  INTEGER, DIMENSION(:,:), ALLOCATABLE      :: traj_boxf
   INTEGER, DIMENSION(:), ALLOCATABLE        :: counter
 
 END MODULE mod_postprocessvars
-
 
 ! Active variables
 MODULE mod_activevars
@@ -474,3 +476,16 @@ MODULE mod_activevars
   REAL(DP)   ::  Av = 0.d0  ! -----//-------- (vertical)
 
 END MODULE mod_activevars
+
+! Thermodynamic divergence
+MODULE mod_divvars
+
+  USE mod_precdef
+
+  ! Include thermodynamic divergence
+  LOGICAL   :: l_divergence = .FALSE.
+
+  REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE :: tracerdiv
+  REAL(DP), DIMENSION(10)                   :: divconst = 1.d0
+
+END MODULE mod_divvars

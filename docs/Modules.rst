@@ -89,6 +89,31 @@ This module contains two subroutines:
 
 .. f:autosubroutine:: displacement
 
+mod_divergence.F90
+------------------
+
+The module **mod_divergence** computes divergence/convergence of all the tracers defined in the namelist. This module will be activated if both **l_tracer** and **l_divergence** are **TRUE**.
+
+- The subroutine **init_divergence** initialises and allocates the variable **tracerdiv**. This variable is a two dimensional variable in space (x-y coordinates), and is computed for all the tracers (**numtracers**) and number of killing zones.
+
+  +------------+-----------------------------+
+  | tracerdiv  | imt x jmt x 20 x numtracers |
+  +------------+-----------------------------+
+
+- The tracer divergence is computed in the subroutine **compute_divergence**. Only trajectories that have reached a killing zone are considered to compute the divergences. The divergence field is updated when a trajectory crosses a gridwall. The value of the tracer at the wall times the mass/volum flux of the trajectory is added to the gridbox where the trajectory is entering. The same value is substracted to the gridbox that the trajectory exited.
+
+.. image:: figs/fig_divergence.png
+    :width: 50%
+    :align: center
+    :alt: Description of mod_diffusion
+
+.. note:: The **tracerdiv** is divided by the area of the gridbox and multiple the constant described by **divconst**. A different constant value can be assigned per tracer.
+
+This module contains two subroutines:
+
+.. f:autosubroutine:: init_divergence
+
+.. f:autosubroutine:: compute_divergence
 
 mod_error.F90
 -------------
@@ -289,23 +314,29 @@ The module **mod_pos** calculates the new position of a trajectory and the time 
 
 .. warning:: If the trajectory is placed at :math:`U(x)=0` in a divergent field, **calc_pos** is not able to determine the new position (unstable equilibrium).
 
-* The subroutine **update_traj** updates the position of the trajectory after a time step given by **ds** and computes the new values for **x1**, **y1**, and **z1**. The subroutines check if any of the crossing values given by **cross_time** corresponds to the value of **ds** to determine the new position.
+* The subroutine **update_traj** updates the position of the trajectory after a time step given by **ds** and computes the new values for **x1**, **y1**, and **z1**. It also updates the value of **boxface** which is zero if the trajectory remains inside the box or is assigned with a value between **1-6** if it crosses one of the walls. The subroutines check if any of the crossing values given by **cross_time** corresponds to the value of **ds** to determine the new position.
 
-                        +---------+----------+---------+--------+----------------+
-                        | **ds**  |  **ib**  | **jb**  | **kb** | Crossing wall  |
-                        +=========+==========+=========+========+================+
-                        |   dse   |  ia + 1  |         |        | Eastern wall   |
-                        +---------+----------+---------+--------+----------------+
-                        |   dsw   |  ia - 1  |         |        | Western wall   |
-                        +---------+----------+---------+--------+----------------+
-                        |   dsn   |          |  ja + 1 |        | Northern wall  |
-                        +---------+----------+---------+--------+----------------+
-                        |   dss   |          |  ja - 1 |        | Northern wall  |
-                        +---------+----------+---------+--------+----------------+
-                        |   dsu   |          |         | ka + 1 | Upper wall     |
-                        +---------+----------+---------+--------+----------------+
-                        |   dsd   |          |         | ka - 1 | Lower wall     |
-                        +---------+----------+---------+--------+----------------+
+                        +---------+----------+---------+--------+----------------+-------------+
+                        | **ds**  |  **ib**  | **jb**  | **kb** | Crossing wall  | **boxface** |
+                        +=========+==========+=========+========+================+=============+
+                        |   dse   |  ia + 1  |         |        | Eastern wall   |      1      |
+                        +---------+----------+---------+--------+----------------+-------------+
+                        |   dsw   |  ia - 1  |         |        | Western wall   |      2      |
+                        +---------+----------+---------+--------+----------------+-------------+
+                        |   dsn   |          |  ja + 1 |        | Northern wall  |      3      |
+                        +---------+----------+---------+--------+----------------+-------------+
+                        |   dss   |          |  ja - 1 |        | Southern wall  |      4      |
+                        +---------+----------+---------+--------+----------------+-------------+
+                        |   dsu   |          |         | ka + 1 | Upper wall     |      5      |
+                        +---------+----------+---------+--------+----------------+-------------+
+                        |   dsd   |          |         | ka - 1 | Lower wall     |      6      |
+                        +---------+----------+---------+--------+----------------+-------------+
+
+
+.. image:: figs/fig_boxface.png
+    :width: 80%
+    :align: center
+    :alt: Description of boxface
 
 If **ds** is smaller than any of the crossing times and equal to the time stepping, or if the trajectory is inside a convergence zone where all the crossing times are **UNDEF**. The trajectory remains inside the box.
 
@@ -325,11 +356,11 @@ This module contains three subroutines:
 mod_postprocess.F90
 -------------------
 
-The module **mod_postprocess** reads the output files, computes offline streamfunctions and a more detailed summary of the TRACMASS run.
+The module **mod_postprocess** reads the output files, computes offline streamfunctions, tracer divergence map, and a more detailed summary of the TRACMASS run.
 
 * The subroutine **postprocessing** reads the output files and stores the require information to compute a summary or offline streamfunctions. The following information is read: the initial number of trajectories and total transport (from *_ini.csv*), the number of trajectories that left the domain or exceeded the time limit and the total tranport (from *_out.csv*), and the position indexes and the tracer values (from *_run.csv* if offline streamfunctions are computed).
 
-* **init_alloc_stream** allocates and initialises the required arrays to compute offline streamfunctions.
+* **init_alloc_postprocessing** allocates and initialises the required arrays to compute offline streamfunctions and/or to compute tracer divergence.
 
 * **print_summary** prints a short summary of the total number of trajectories that are initialised and the ones that left the domain (organised by the different killing zones). It also prints a summary of the transports. This subroutine is only called if the main program is run with the *summary* argument on (see chapters *Configuration* and *Main program*).
 
@@ -337,7 +368,7 @@ This module contains three subroutines:
 
 .. f:autosubroutine:: postprocessing
 
-.. f:autosubroutine:: init_alloc_stream
+.. f:autosubroutine:: init_alloc_postprocessing
 
 .. f:autosubroutine:: print_summary
 
@@ -730,8 +761,10 @@ The time format of the output files can also be adjusted with **timeformat**: (0
 
 .. important::  If TRACMASS is run with the stream function flag this module also writes the resulting stream functions in the files: *_psixy.csv* for the barotropic case, *_psiyz.csv* for the meridional case, *_psiyr.csv* for the latitude-tracer case, and *_psirr.csv* for the tracer-tracer stream functions. Besides, the subroutine **read_rerun** will be used to read the trajectories that will be run and the flag corresponding to the kill zones.
 
+.. important:: If TRACMASS is run with tracer divergence computation, this module also writes the results in the file: *_div.csv*.
 
-This module contains ten subroutines:
+
+This module contains fifteen subroutines (three of which are private subroutines):
 
 .. f:autosubroutine:: open_outfiles
 
@@ -751,4 +784,12 @@ This module contains ten subroutines:
 
 .. f:autosubroutine:: write_stream
 
+.. f:autosubroutine:: open_outdiv
+
+.. f:autosubroutine:: close_outdiv
+
+.. f:autosubroutine:: write_div
+
 .. f:autosubroutine:: writeformat
+
+.. f:autosubroutine:: trimreal

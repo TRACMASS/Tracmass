@@ -18,9 +18,13 @@ MODULE mod_write
     !!               - open_outstream
     !!               - close_outstream
     !!               - write_stream
+    !!               - open_outdiv
+    !!               - close_outdiv
+    !!               - write_outdiv
     !!
     !!               - reverse (P)
     !!               - writeformat (P)
+    !!               - trimreal (P)
     !!
     !!------------------------------------------------------------------------------
 
@@ -34,12 +38,13 @@ MODULE mod_write
     USE mod_grid
     USE mod_tracervars
     USE mod_postprocessvars
+    USE mod_divvars
 
     IMPLICIT NONE
 
     CHARACTER(LEN=200)    :: fullWritePref
     CHARACTER(LEN=200)    :: outDataDir, outDataFile
-    CHARACTER(LEN=50)     :: psiformat
+    CHARACTER(LEN=50)     :: psiformat, divformat
     CHARACTER(LEN=100)    :: outformat
     CHARACTER(LEN=*), PARAMETER                :: reform = "(I8,I3)"
 
@@ -50,7 +55,7 @@ MODULE mod_write
     INTEGER               :: numline
     INTEGER               :: ll
     INTEGER               :: lbas
-    INTEGER               :: ilvar, itrac
+    INTEGER               :: ilvar, itrac, izone
 
     LOGICAL               :: fileexists
 
@@ -159,6 +164,9 @@ MODULE mod_write
               ! Adjust indexes to the original framework
               CALL reverse()
 
+              ! Trim position
+              CALL trimreal(xw); CALL trimreal(yw); CALL trimreal(zw)
+
               SELECT CASE(timeformat)
 
                   CASE(0)
@@ -209,7 +217,7 @@ MODULE mod_write
 
               IF(  ( write_frec == 1 .AND. trajectories(ntrac)%niter == niter-1) .OR. &
                    ( write_frec == 2 .AND. ABS(tss-DBLE(INT(tss)))<1e-11 .AND. ints == NINT(ts)) .OR. &
-                   ( write_frec == 3 .AND. .not.scrivi) .OR. &
+                   ( write_frec == 3 .AND. (.not.scrivi .OR. boxface>0) ) .OR. &
                    ( write_frec == 4 ) .OR. &
                    ( write_frec == 2 .AND. tt == 0.d0)) THEN
 
@@ -231,6 +239,9 @@ MODULE mod_write
 
                   ! Adjust indexes to the original framework
                   CALL reverse()
+
+                  ! Trim position
+                  CALL trimreal(xw); CALL trimreal(yw); CALL trimreal(zw)
 
                   SELECT CASE(timeformat)
 
@@ -310,6 +321,9 @@ MODULE mod_write
 
               ! Adjust indexes to the original framework
               CALL reverse()
+
+              ! Trim position
+              CALL trimreal(xw); CALL trimreal(yw); CALL trimreal(zw)
 
               SELECT CASE(timeformat)
 
@@ -531,6 +545,59 @@ MODULE mod_write
 
       END SUBROUTINE write_stream
 
+      SUBROUTINE open_outdiv()
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Open divergence files
+      !
+      ! --------------------------------------------------
+
+          fullWritePref =  TRIM(outDataDir)//TRIM(outDataFile)
+
+          OPEN(UNIT=70, FILE = TRIM(fullWritePref)//'_div.csv', STATUS='replace')
+
+      END SUBROUTINE open_outdiv
+
+      SUBROUTINE close_outdiv()
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Close divergence files
+      !
+      ! --------------------------------------------------
+
+          CLOSE(70)
+
+      END SUBROUTINE close_outdiv
+
+      SUBROUTINE write_div(ijk1, ijk2, kllz)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Write stream functions
+      !
+      ! --------------------------------------------------
+
+
+      INTEGER, INTENT(IN)          :: ijk1, ijk2, kllz
+
+      divformat = "(F22.5,XXXXXX(',',F22.5))"
+
+      WRITE(divformat(8:13),"(I6)") ijk1-1
+
+      DO itrac = 1, numtracers
+        DO izone = 1, kllz
+          DO ilvar = 1, ijk2
+            WRITE(70,TRIM(divformat)) divconst(itrac)*tracerdiv(:,ilvar,izone,itrac)/dxdy(:,ilvar)
+          END DO
+        END DO
+      END DO
+
+
+      END SUBROUTINE write_div
+
+
       SUBROUTINE reverse()
       ! --------------------------------------------------
       !
@@ -620,5 +687,20 @@ MODULE mod_write
         END SELECT
 
       END SUBROUTINE writeformat
+
+      SUBROUTINE trimreal(rr)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Trim real number to a number of decimals
+      ! 15.99788273  -->  15.99 (rounding the number 16.00)
+      !
+      ! --------------------------------------------------
+
+        REAL(DP), INTENT(INOUT)  :: rr
+
+        IF (write_form == 0) rr = DBLE(INT(100.d0*rr))/100.d0
+
+      END SUBROUTINE trimreal
 
 END MODULE mod_write

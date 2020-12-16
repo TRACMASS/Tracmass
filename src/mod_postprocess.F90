@@ -8,7 +8,7 @@ MODULE mod_postprocess
     !!
     !!          Subroutines included:
     !!               - postprocessing
-    !!               - init_alloc_stream
+    !!               - init_alloc_postprocessing
     !!               - print_summary
     !!
     !!------------------------------------------------------------------------------
@@ -26,6 +26,7 @@ MODULE mod_postprocess
     USE mod_postprocessvars
     USE mod_stream
     USE mod_write
+    USE mod_divergence
 
     IMPLICIT NONE
 
@@ -51,7 +52,7 @@ MODULE mod_postprocess
         PRINT*, '- Reading output data'
 
         ! Compute total number of trajectories and allocate arrays
-        CALL init_alloc_stream()
+        CALL init_alloc_postprocessing()
 
         DO WHILE (filestat2 ==0)
 
@@ -76,7 +77,7 @@ MODULE mod_postprocess
             IF (filestat1==0 .AND. l_summary)  voltot   = voltot + subvol
 
             ! Volume transported by the trajectories
-            IF (filestat1==0 .AND. l_psi)  traj_subvol(ntrac) = subvol
+            IF (filestat1==0 .AND. (l_psi .OR. l_divergence))  traj_subvol(ntrac) = subvol
 
 
             ! Read out file
@@ -92,29 +93,32 @@ MODULE mod_postprocess
             CALL read_data(51, filestat2)
 
             ! If stream fuctions are computed
-            IF (l_psi .AND. traj_out(ntrac)>0 .AND. l_offline .AND. filestat2 == 0) THEN
+            IF (((l_psi .AND. l_offline) .OR. l_divergence) .AND. traj_out(ntrac)>0  .AND. filestat2 == 0) THEN
                   counter(ntrac) = counter(ntrac) + 1
 
                   traj_x(ntrac, counter(ntrac)) = x1
                   traj_y(ntrac, counter(ntrac)) = y1
                   traj_z(ntrac, counter(ntrac)) = z1
 
-                  IF (l_tracers) traj_t(ntrac, counter(ntrac), :) = tracervalue
+                  traj_boxf(ntrac, counter(ntrac)) = boxface
+                  
+                  IF (l_tracers)    traj_t(ntrac, counter(ntrac), :) = tracervalue
             END IF
 
         END DO
 
-        IF (l_summary)  CALL print_summary
-        IF (l_psi)      CALL compute_stream
+        IF (l_summary)    CALL print_summary
+        IF (l_psi)        CALL compute_stream
+        IF (l_divergence) CALL compute_divergence
 
       END SUBROUTINE postprocessing
 
 
-      SUBROUTINE init_alloc_stream()
+      SUBROUTINE init_alloc_postprocessing()
       ! ------------------------------------------------------------
       !
       ! Purpose:
-      ! Allocate arrays to compute streamfunctions
+      ! Allocate arrays to compute streamfunctions/divergence
       !
       ! ------------------------------------------------------------
 
@@ -152,6 +156,8 @@ MODULE mod_postprocess
         ALLOCATE(traj_z(ntractot,nsave)); traj_z = -999.
         ! Subvol
         ALLOCATE(traj_subvol(ntractot));  traj_subvol = 0.
+        ! Boxface
+        ALLOCATE(traj_boxf(ntractot, nsave));    traj_boxf = 0
 
         ! Tracer array
         IF (l_tracers) THEN

@@ -340,6 +340,8 @@ The module **mod_pos** calculates the new position of a trajectory and the time 
 
 If **ds** is smaller than any of the crossing times and equal to the time stepping, or if the trajectory is inside a convergence zone where all the crossing times are **UNDEF**. The trajectory remains inside the box.
 
+.. note :: By default trajectories can reach the last vertical level **km** and will be flagged with the exit flag **one**. However, by activating **l_nosurface** trajectories are prevented from reaching the surface. Instead, they are placed back in the middle of the last grid box (**ka = km**).
+
 .. note :: If stream functions are computed online (*l_offline* is false), this subroutine will transfer the required information to compute geographical streamfunctions.
 
 .. important :: The north fold (**jperio**) is an important feature for original grids that are not based on latitude longitude such as the ORCA grids. The current version includes two possible corrections to the north fold: no correction (0), and  correction for ORCA grids (1).
@@ -670,6 +672,8 @@ If TRACMASS is run with tracers (**l_tracers** is true), the module **mod_tracer
   | q        | g kg-1 |  0        | 25        | read     | q         | Specific humidity         |
   +----------+--------+-----------+-----------+----------+-----------+---------------------------+
   | sigma0   | kg m-3 |  19       | 29        | compute  |           | Sea water density (sigma0)|
+  +----------+--------+-----------+-----------+----------+-----------+---------------------------+
+  | sigma0_K | kg m-3 |  19       | 29        | compute  |           | --------//------ (T in K) |
   +----------+--------+-----------+-----------+----------+-----------+---------------------------+
   | p        | hPa    |  0        | 1100      | compute  |           | Atmospheric pressure      |
   +----------+--------+-----------+-----------+----------+-----------+---------------------------+

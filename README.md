@@ -13,7 +13,9 @@ https://github.com/TRACMASS/Tracmass_previous.git
 
 TRACMASS v7
 ===========
-[![GitHubAction](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg) [![Documentation Status](https://readthedocs.org/projects/tracmass/badge/?version=latest)](https://tracmass.readthedocs.io/en/latest/?badge=latest)
+[![GitHubAction](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg) [![Documentation Status](https://readthedocs.org/projects/tracmass/badge/?version=latest)](https://tracmass.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4337926.svg)](https://doi.org/10.5281/zenodo.4337926)
+
+
 
 TRACMASS is a Lagrangian trajectory code for ocean and atmospheric general circulation models. The code makes it possible to estimate water paths, Lagrangian stream functions (barotropic, overturning, etc.), exchange times, etc. TRACMASS has been used in studies of the global ocean circulation, of sea circulation in the Baltic Sea, the Mediterranean Sea and in coastal regions.
 

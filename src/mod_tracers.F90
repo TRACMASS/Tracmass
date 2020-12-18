@@ -259,7 +259,7 @@ MODULE mod_tracers
                   tracers(itrac)%varname = 'q'      ! if the file is read, this is the name of the variable
 
         ! Density (sigma0)
-        ELSE IF (TRIM(tracername(itrac)) == 'sigma0') THEN
+        ELSE IF (TRIM(tracername(itrac)) == 'sigma0' .OR. TRIM(tracername(itrac)) == 'sigma0_K') THEN
 
                   tracers(itrac)%unit = 'kg m-3'     ! Unit of the tracer
 

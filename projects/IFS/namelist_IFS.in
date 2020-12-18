@@ -161,6 +161,8 @@
 
 &INIT_KILLZONES
       timax = 7500 ! time limit for traj [days]
+      
+      l_nosurface = .TRUE.
 
       exitType = 1
       ! If exitType = 1: killing zone defined by a box

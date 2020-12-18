@@ -310,6 +310,7 @@ MODULE mod_domain
   USE mod_precdef
 
   LOGICAL                                 :: l_rerun = .FALSE.      ! Rerun logics
+  LOGICAL                                 :: l_nosurface = .FALSE.  ! Can trajectories reach the surface?
 
   INTEGER                                 :: exitType
   INTEGER, DIMENSION(10)                  :: ienw ,iene, jens ,jenn ! Horizontal killing zones

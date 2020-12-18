@@ -333,6 +333,8 @@ INIT_KILLZONES
 
 * **timax** [*real*]: time limit before trajectories are terminated, calculated in days.
 
+* **l_nosurface** [*logical*]: prevent trajectories from reaching the last vertical level (sea surface/ land surface). Default value is **.FALSE.**.
+
 * **exitype** [*integer*]: selects the type of killing zones (1) defined by a regular box, (2) defined by a tracer value, (3) a combined tracer-geographical zone, and (4) hard coded killing zone.
 
 * **ienw** and **iene** [*integer, array*]: define the western and eastern index of the killing zone (exitType=1).

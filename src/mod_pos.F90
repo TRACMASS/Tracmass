@@ -340,7 +340,11 @@ MODULE mod_pos
 
              IF (kb==KM+1) THEN   ! prevent particles to cross the boundaries
                 kb=KM
-                z1=DBLE(KM)       ! put them exactly at the surface for hydro
+                IF (l_nosurface) THEN
+                  z1 = DBLE(KM) - 0.5d0 ! place them back in the middle of the gridbox
+                ELSE
+                  z1 = DBLE(KM)         ! put them exactly at the surface
+                END IF
              END IF
 
              CALL calc_pos(1,ia,ja,ka,x0,x1,ds) ! zonal position
@@ -357,6 +361,11 @@ MODULE mod_pos
 
              ! Boxface
              boxface = 5
+
+             IF (l_nosurface) THEN
+               IF(z1<z0)trajdir(3) = -1
+               boxface    = 0
+             END IF
 
           ! Downward grid-cell exit
           ELSE IF (ds==dsd) THEN

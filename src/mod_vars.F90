@@ -53,6 +53,7 @@ MODULE mod_param
 
   REAL(DP), PARAMETER                       :: UNDEF=1.d20
   REAL(DP), PARAMETER                       :: EPS=1.d-10
+  REAL(DP), PARAMETER                       :: errlim = 1.d-9
 
   REAL(DP)                                  :: trunit = 1.d0
 
@@ -116,6 +117,7 @@ MODULE mod_loopvars
 
   REAL(DP)                                  :: ds         ! Volume normalised time (VNT)
   REAL(DP)                                  :: dsmin      ! VNT subcycles
+  REAL(DP)                                  :: dstep      ! VNT step of gcm
   REAL(DP)                                  :: dse, dsw   ! VNT to east/west crossing
   REAL(DP)                                  :: dsn, dss   ! VNT to north/south crossing
   REAL(DP)                                  :: dsu, dsd   ! VNT to up/dow crossing
@@ -299,7 +301,7 @@ MODULE mod_time
   REAL(DP)                                  :: dt        ! Time step in second
   REAL(DP)                                  :: dtreg     ! Time step to the next time subcycle
   REAL(DP)                                  :: dtmin     ! Time step between time subcycles
-  REAL(DP)                                  :: dstep     ! Normalised time step
+  REAL(DP)                                  :: dsubstep  ! Normalised time step
 
   ! Time interpolation
   REAL(DP)                                  :: intrpr, intrpg

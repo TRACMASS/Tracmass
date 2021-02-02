@@ -57,10 +57,10 @@ MODULE mod_clock
 
           ! If the time step is equal to the minimum time step
           IF (dt == dtmin) THEN
-              ts  = ts  + dstep
+              ts  = ts  + dsubstep
               tss = tss + 1.d0
 
-              dts = dstep
+              dts = dsubstep
 
           ! If the time step is equal to the time step to the next subcycle
           ELSE IF (dt == dtreg) THEN

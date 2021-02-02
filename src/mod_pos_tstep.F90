@@ -1,10 +1,14 @@
+#ifndef time_analytical
+
 MODULE mod_pos
     !!------------------------------------------------------------------------------
     !!
-    !!       MODULE: mod_pos
+    !!       MODULE: mod_pos (tstep)
     !!
     !!          Calculate the new positions of the trajectory
     !!          and the time it will take to cross a wall
+    !!
+    !!          Time configuration : time step
     !!
     !!          Subroutines included:
     !!               - cross_time
@@ -474,3 +478,5 @@ MODULE mod_pos
       END SUBROUTINE update_trajdir
 
 END MODULE mod_pos
+
+#endif

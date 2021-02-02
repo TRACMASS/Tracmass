@@ -53,8 +53,14 @@ MODULE mod_loop
     CALL previous_calendar
 
     ! Time sub steps
-    dstep = 1.d0 / DBLE(iter)
-    dtmin = dstep * tseas
+
+    ! If the time analytical scheme is chosen iter is set to one
+#ifdef time_analytical
+    iter  = 1
+#endif
+
+    dsubstep = 1.d0 / DBLE(iter)
+    dtmin = dsubstep * tseas
 
     CALL update_calendar()
 
@@ -187,6 +193,9 @@ MODULE mod_loop
                     1.d0 - DBLE(iter)*tt/tseas)
             dt    = dtreg
             dsmin = dtreg/dxyz
+#ifdef time_analytical
+            dstep = tseas/dxyz
+#endif
 
             CALL vertvel(ia, iam, ja, ka)
 

@@ -88,8 +88,14 @@ MODULE mod_seed
 
             IF (maskFile .NE. '')  CALL read_mask()
 
-            DO ji=ist1,ist2
-               DO jj=jst1,jst2
+            jiloop: DO ji=ist1,ist2
+               jjloop: DO jj=jst1,jst2
+
+
+                  ! If seeding region is outside the subdomain
+                  IF (l_subdom .AND. (imindom>imaxdom) .AND. (ji>imaxdom .AND. ji<imindom)) CYCLE jiloop
+                  IF (l_subdom .AND. (ji>imaxdom .OR. ji<imindom)) CYCLE jiloop
+                  IF (l_subdom .AND. (jj>jmaxdom .OR. jj<jmindom)) CYCLE jjloop
 
                   ! Update the indexes
                   jii = ji; jjj = jj
@@ -106,8 +112,8 @@ MODULE mod_seed
                      landsd = landsd+1
                   END IF
 
-               END DO
-            END DO
+               END DO jjloop
+            END DO jiloop
 
             nsdMax = numsd
 

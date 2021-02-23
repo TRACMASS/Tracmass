@@ -55,7 +55,7 @@ MODULE mod_write
     INTEGER               :: numline
     INTEGER               :: ll
     INTEGER               :: lbas
-    INTEGER               :: ilvar, itrac, izone
+    INTEGER               :: ilvar, itrac, izone, imeri, ivert
 
     LOGICAL               :: fileexists
 
@@ -579,20 +579,33 @@ MODULE mod_write
       !
       ! --------------------------------------------------
 
+        INTEGER, INTENT(IN)                   :: ijk1, ijk2, kllz
+        REAL(DP), DIMENSION(imtdom, jmtdom)   :: area
 
-      INTEGER, INTENT(IN)          :: ijk1, ijk2, kllz
+        divformat = "(F22.5,XXXXXX(',',F22.5))"
 
-      divformat = "(F22.5,XXXXXX(',',F22.5))"
+        WRITE(divformat(8:13),"(I6)") ijk1-1
 
-      WRITE(divformat(8:13),"(I6)") ijk1-1
+        ! Defining area for subdomain cases
+        IF (l_subdom) THEN
+              area(:,:) = 1.d0
+              IF (imindom>imaxdom) THEN
+                 area(imindom:imtdom,jmindom:jmaxdom)  = dxdy(1:imthalf1,:)
+                 area(1:imaxdom,jmindom:jmaxdom)       = dxdy(imthalf1+1:imt,:)
+              ELSE
+                 area(imindom:imaxdom,jmindom:jmaxdom) = dxdy(:,:)
+              END IF
+        ELSE
+              area(:,:) = dxdy
+        END IF
 
-      DO itrac = 1, numtracers
-        DO izone = 1, kllz
-          DO ilvar = 1, ijk2
-            WRITE(70,TRIM(divformat)) divconst(itrac)*tracerdiv(:,ilvar,izone,itrac)/dxdy(:,ilvar)
+        DO itrac = 1, numtracers
+          DO ivert = 1, kllz
+            DO imeri = 1, ijk2
+                WRITE(70,TRIM(divformat)) divconst(itrac)*tracerdiv(:,imeri,ivert,itrac)/area(:,imeri)
+            END DO
           END DO
         END DO
-      END DO
 
 
       END SUBROUTINE write_div

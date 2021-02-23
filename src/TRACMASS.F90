@@ -42,9 +42,6 @@ PROGRAM TRACMASS
   ! Read namelist
   CALL init_namelist
 
-  ! Initialise tracers
-  IF ( l_tracers ) CALL init_tracer
-
   ! If diffusion is on, deactivate streamfunctions per case
   IF ( l_diffusion) THEN
       ! 1 - no run TRACMASS, and writing frequencies include storing in walls
@@ -63,6 +60,9 @@ PROGRAM TRACMASS
   ! Define the domain and allocate the arrays
   CALL init_subdomain
   CALL init_alloc
+
+  ! Initialise tracers
+  IF ( l_tracers ) CALL init_tracer
 
   ! Print general info
   CALL print_header_main
@@ -113,7 +113,10 @@ PROGRAM TRACMASS
       IF (l_psi .AND. l_offline) CALL init_stream()
 
       ! Computation of tracer divergence
-      IF (l_divergence) CALL init_divergence()
+      IF (l_divergence) THEN
+          IF (l_norun) CALL setup_grid
+          CALL init_divergence()
+      END IF
 
       ! Main postprocess module
       ! - Reads the units

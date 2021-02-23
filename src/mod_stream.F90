@@ -197,7 +197,7 @@ MODULE mod_stream
 
       END SUBROUTINE init_stream
 
-      SUBROUTINE update_fluxes(index1, index2, dir, psicase, indt1, indt2)
+      SUBROUTINE update_fluxes(indx1, indx2, dir, psicase, indt1, indt2)
       ! --------------------------------------------------
       !
       ! Purpose:
@@ -205,11 +205,29 @@ MODULE mod_stream
       !
       ! --------------------------------------------------
 
-        INTEGER, INTENT(IN)           :: index1, index2, dir
+        INTEGER, INTENT(IN)           :: indx1, indx2, dir
         INTEGER, INTENT(IN), OPTIONAL :: indt1, indt2
         CHARACTER(LEN=2), INTENT(IN)  :: psicase
-        INTEGER                       :: indm1, indm2
+        INTEGER                       :: index1, index2, indm1, indm2
         REAL(DP)                      :: slope
+
+        !
+        index1 = indx1
+        index2 = indx2
+
+        ! Adjust stream functions to subdomains
+        IF (l_subdom .AND. psicase(1:1)=='x') THEN
+
+            index1 = index1 + imindom - 1;
+            IF ( (imindom > imaxdom) .AND. index1 >imtdom )  index1 = index1 - imtdom
+
+            IF (psicase(2:2)=='y') index2 = index2 + jmindom - 1;
+
+        ELSE IF (l_subdom .AND. psicase(1:1)=='y') THEN
+
+           IF ( (imindom > imaxdom) .AND. index1 >imtdom )  index1 = index1 - imtdom
+
+        END IF
 
         ! Geographical streamfunctions
         IF (psicase=='xy') fluxes_xy(index1,index2,ntrac) = fluxes_xy(index1,index2,ntrac) + dir*subvol

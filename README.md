@@ -3,7 +3,6 @@
 This TRACMASS version is a **beta** version.
 It is currently under development. The following features from older versions are not available yet in this version:
 
-* Time analytical scheme
 * Subgrid turbulence parameterisations
 
 Previous versions of TRACMASS are stored in the following repository:

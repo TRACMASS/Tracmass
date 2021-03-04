@@ -1,6 +1,6 @@
 test_suite mod_pos
 
-! test_suite for mod_pos
+! test_suite for mod_pos_tstep
 ! Contains 16 tests
 ! 6 --> cross_time
 ! 3 --> calc_pos
@@ -27,8 +27,8 @@ SETUP
   ! No stream functions
   l_psi     = .FALSE.
   l_offline = .TRUE.
- 
-  ! jperio 
+
+  ! jperio
   jperio = 0
 
 END SETUP

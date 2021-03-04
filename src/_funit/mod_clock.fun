@@ -14,7 +14,7 @@ SETUP
   ! Number of subcycles
   iter = 4
   dtmin = REAL(tseas,8)/iter
-  dstep = 1/REAL(iter,8)
+  dsubstep = 1/REAL(iter,8)
 
   ! Current time step
   ts  = 1.6d0

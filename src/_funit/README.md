@@ -26,7 +26,7 @@ The test_suites have been applied to the following modules in TRACMASS:
 | mod_clock.F90                               | mod_divergence.F90              |
 | mod_error.F90                               | mod_init.F90                    |
 | mod_getfile.F90                             | mod_loop.F90                    |
-| mod_pos.F90                                 | mod_postprocess.F90             |
+| mod_pos_tstep.F90 / mod_pos_tanalytical.F90 | mod_postprocess.F90             |
 | mod_seed.F90                                | mod_print.F90                   |
 | mod_subdomain.F90                           | mod_stream.F90                  |
 | mod_swap.F90                                | mod_vars.F90                    |

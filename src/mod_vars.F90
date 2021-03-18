@@ -20,7 +20,8 @@
 !!              - mod_tracervars
 !!              - mod_psi
 !!              - mod_postprocessvars
-!!              - mod_active
+!!              - mod_activevars
+!!              - mod_divvars
 !!
 !!---------------------------------------------------------------------------
 

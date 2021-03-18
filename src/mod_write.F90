@@ -55,7 +55,7 @@ MODULE mod_write
     INTEGER               :: numline
     INTEGER               :: ll
     INTEGER               :: lbas
-    INTEGER               :: ilvar, itrac, izone, imeri, ivert
+    INTEGER               :: ilvar, itrac, izone, imeri, iklzone
 
     LOGICAL               :: fileexists
 
@@ -600,9 +600,9 @@ MODULE mod_write
         END IF
 
         DO itrac = 1, numtracers
-          DO ivert = 1, kllz
+          DO iklzone = 1, kllz
             DO imeri = 1, ijk2
-                WRITE(70,TRIM(divformat)) divconst(itrac)*tracerdiv(:,imeri,ivert,itrac)/area(:,imeri)
+                WRITE(70,TRIM(divformat)) divconst(itrac)*tracerdiv(:,imeri,iklzone,itrac)/area(:,imeri)
             END DO
           END DO
         END DO

@@ -46,6 +46,8 @@ MODULE mod_pos
 
     REAL(DP)                                   :: r0, r1
     REAL(DP)                                   :: ba, sp, sn
+    REAL(DP)                                   :: dzt1, dzt2, dzs
+    REAL(DP)                                   :: f0, f1
     INTEGER                                    :: ijk, ii, im, jm, il
 
     CONTAINS
@@ -100,6 +102,9 @@ MODULE mod_pos
               vv = uflux(ia,ja,ka,nsp)
               vm = uflux(il,ja,ka,nsp)
 
+              ! No vertical thickness correction
+              f0 = 1.d0; f1 = 1.d0
+
           ELSEIF (ijk .EQ. 2) THEN
               ii=ja
               im=ja-1
@@ -107,6 +112,9 @@ MODULE mod_pos
               um = vflux(ia,ja-1,ka,nsm)
               vv = vflux(ia,ja,ka,nsp)
               vm = vflux(ia,ja-1,ka,nsp)
+
+              ! No vertical thickness correction
+              f0 = 1.d0; f1 = 1.d0
 
           ELSEIF (ijk .EQ. 3) THEN
               ii=ka
@@ -123,6 +131,26 @@ MODULE mod_pos
               vm = wflux(ka-1,nsp)
 #endif
 
+              ! Layer thickness at time step n-1
+              dzt1 = dzt(ia,ja,ka,nsm)
+              IF (dzt1 == 0.d0) STOP 'Layer thickness at time step n-1 is zero'
+
+              ! Layer thickness at time step n
+              dzt2 = dzt(ia,ja,ka,nsp)
+              IF (dzt2 == 0.d0) STOP 'Layer thickness at time step n is zero'
+
+              ! Layer thickness at time interpolated for "present"
+              dzs= intrpr*dzt1 + intrpg*dzt2
+
+              ! F0(dzt1/dzs) and F1(dzt2/dzs) definition
+              f0 = dzt1/dzs;  f1 = dzt2/dzs
+              IF (ABS(1/f0)<=EPS) STOP 'F0 too large dzt1 >>> dzs'
+              IF (ABS(1/f1)<=EPS) STOP 'F1 too large dzt2 >>> dzs'
+
+              ! Readjust the fluxes to the 'present' thickness
+              uu = uu/f0; um = um/f0
+              vv = vv/f1; vm = vm/f1
+
           END IF
 
           !Define alpha constant
@@ -130,11 +158,11 @@ MODULE mod_pos
 
           ! Solutions depending on the value of alpha
           IF (alfa>0.0d0) THEN
-            CALL apos(ii,im,uu,um,vv,vm,r0,rw,sm,s0,sw)
+            CALL apos(ii,im,uu,um,vv,vm,r0,rw,sm,s0,sw,f0,f1)
           ELSE IF (alfa<0.0d0) THEN
-            CALL aneg(ii,im,uu,um,vv,vm,r0,rw,sm,s0,sw)
+            CALL aneg(ii,im,uu,um,vv,vm,r0,rw,sm,s0,sw,f0,f1)
           ELSE
-            CALL azer(ii,im,uu,um,vv,vm,r0,rw,sm,s0,sw)
+            CALL azer(ii,im,uu,um,vv,vm,r0,rw,sm,s0,sw,f0,f1)
           END IF
 
           ! Eastern/northern/upper wall
@@ -157,7 +185,7 @@ MODULE mod_pos
 
       END SUBROUTINE cross_time
 
-      SUBROUTINE apos(ii,iim,uu,um,vv,vm,r0,rw,sm,s0,sw)
+      SUBROUTINE apos(ii,iim,uu,um,vv,vm,r0,rw,sm,s0,sw,f0,f1)
       ! ------------------------------------------------------------------
       !
       ! Purpose:
@@ -184,6 +212,9 @@ MODULE mod_pos
           REAL(DP) :: s0              ! current time
           REAL(DP) :: ssii, ssiim
           REAL(DP),INTENT(OUT) :: sw  ! crossing wall time
+
+          ! Thickness correction
+          REAL(DP) :: f0, f1
 
           ! Parameters from the paper
           REAL(DP) :: alfa
@@ -219,9 +250,9 @@ MODULE mod_pos
           ! Beta parameter
           beta = um - uu - alfa*sm
           ! Gamma parameter
-          gamma = (um-vm)/dstep - alfa*DBLE(iim)
+          gamma = (f0*um-f1*vm)/dstep - alfa*DBLE(iim)
           ! Delta parameter
-          delta = -um - DBLE(iim)*(um-uu) - gamma*sm
+          delta = -f0*um - DBLE(iim)*(um-uu) - gamma*sm
 
           ! beta*gamma - alpha*delta
           bega_aldel = vv*um - uu*vm
@@ -269,25 +300,46 @@ MODULE mod_pos
               ! 1 - Initial configuration
 
               ! Define boundary times
-              IF (uu==vv) THEN
-                !ssii  = SIGN(2.d0,uu)
-                ssii = uu/EPS
-              ELSE
-                ssii  =  uu/(uu-vv)         ! Fi^(n-1) / (alfa*ri+gamma)    [time unit]
-              END IF
+              IF ( f0==1.d0 .AND. f1 == 1.d0) THEN
 
-              IF (um==vm) THEN
-                !ssiim  = SIGN(2.d0,um)
-                ssiim = um/EPS
+                  IF (uu==vv) THEN
+                    !ssii  = SIGN(2.d0,uu)
+                    ssii = uu/EPS
+                  ELSE
+                    ssii  =  uu/(uu-vv)         ! Fi^(n-1) / (alfa*ri+gamma)    [time unit]
+                  END IF
+
+                  IF (um==vm) THEN
+                    !ssiim  = SIGN(2.d0,um)
+                    ssiim = um/EPS
+                  ELSE
+                    ssiim =  um/(um-vm)         ! Fi-1^(n-1) / (alfa*r_i-1+gamma)  [time unit]
+                  END IF
+
               ELSE
-                ssiim =  um/(um-vm)         ! Fi-1^(n-1) / (alfa*r_i-1+gamma)  [time unit]
+
+                  IF (uu+um*(f0-1.d0)+vm*(1.d0-f1)==vv) THEN
+                      ssii = uu/EPS
+                  ELSE
+                      ssii = (uu+um*(f0-1.d0))/(uu-vv+um*(f0-1.d0)+vm*(1.d0-f1))  ! Fi^(n-1) / (alfa*ri+gamma)    [time unit]
+                  END IF
+
+                  IF (f0*um==f1*vm) THEN
+                      ssiim = f0*um/EPS
+                  ELSE
+                      ssiim = f0*um/(f0*um-f1*vm)   ! Fi-1^(n-1) / (alfa*r_i-1+gamma)  [time unit]
+                  END IF
               END IF
 
               ! gamma/alpha parameters
-              gamma_alfa = - DBLE(iim) + ((vm-um)/(vv-vm-uu+um))
+              gamma_alfa = - DBLE(iim) + ((f1*vm-f0*um)/(vv-vm-uu+um))
 
               ! Constant in front of the Dawson function according to the paper
-              const = SQRT(2.d0/alfa)*(vv*um - uu*vm)/(vv-vm-uu+um)
+              IF ( f0==1.d0 .AND. f1 == 1.d0) THEN
+                  const = SQRT(2.d0/alfa)*(vv*um - uu*vm)/(vv-vm-uu+um)
+              ELSE
+                  const = SQRT(2.d0/alfa)*(f0*um*(vv-vm)+f1*vm*(um-uu))/(vv-vm-uu+um)
+              END IF
 
               ! 2.1 - ii direction (four velocity configurations at edge)
               iiselect: DO
@@ -463,7 +515,7 @@ MODULE mod_pos
 
       END SUBROUTINE apos
 
-      SUBROUTINE aneg(ii,iim,uu,um,vv,vm,r0,rw,sm,s0,sw)
+      SUBROUTINE aneg(ii,iim,uu,um,vv,vm,r0,rw,sm,s0,sw,f0,f1)
       ! ------------------------------------------------------------------
       !
       ! Purpose:
@@ -490,6 +542,9 @@ MODULE mod_pos
           REAL(DP) :: s0              ! current time
           REAL(DP) :: ssii, ssiim
           REAL(DP),INTENT(OUT) :: sw  ! crossing wall time
+
+          ! Thickness correction
+          REAL(DP) :: f0, f1
 
           ! Parameters from the paper
           REAL(DP) :: alfa
@@ -526,9 +581,9 @@ MODULE mod_pos
           ! Beta parameter
           beta = um - uu - alfa*sm
           ! Gamma parameter
-          gamma = (um-vm)/dstep - alfa*DBLE(iim)
+          gamma = (f0*um-f1*vm)/dstep - alfa*DBLE(iim)
           ! Delta parameter
-          delta = -um - DBLE(iim)*(um-uu) - gamma*sm
+          delta = -f0*um - DBLE(iim)*(um-uu) - gamma*sm
 
           ! beta*gamma - alpha*delta
           bega_aldel = vv*um - uu*vm
@@ -566,25 +621,46 @@ MODULE mod_pos
             ! 1 - Initial configuration
 
             ! Define boundary times
-            IF (uu==vv) THEN
-              !ssii  = SIGN(2.d0,uu)
-              ssii = uu/EPS
-            ELSE
-              ssii  =  uu/(uu-vv)         ! Fi^(n-1) / (alfa*ri+gamma)    [time unit]
-            END IF
+            IF ( f0==1.d0 .AND. f1 == 1.d0) THEN
 
-            IF (um==vm) THEN
-              !ssiim  = SIGN(2.d0,um)
-              ssiim = um/EPS
+                IF (uu==vv) THEN
+                  !ssii  = SIGN(2.d0,uu)
+                  ssii = uu/EPS
+                ELSE
+                  ssii  =  uu/(uu-vv)         ! Fi^(n-1) / (alfa*ri+gamma)    [time unit]
+                END IF
+
+                IF (um==vm) THEN
+                  !ssiim  = SIGN(2.d0,um)
+                  ssiim = um/EPS
+                ELSE
+                  ssiim =  um/(um-vm)         ! Fi-1^(n-1) / (alfa*r_i-1+gamma)  [time unit]
+                END IF
+
             ELSE
-              ssiim =  um/(um-vm)         ! Fi-1^(n-1) / (alfa*r_i-1+gamma)  [time unit]
+
+                IF (uu+um*(f0-1.d0)+vm*(1.d0-f1)==vv) THEN
+                    ssii = uu/EPS
+                ELSE
+                    ssii = (uu+um*(f0-1.d0))/(uu-vv+um*(f0-1.d0)+vm*(1.d0-f1))  ! Fi^(n-1) / (alfa*ri+gamma)    [time unit]
+                END IF
+
+                IF (f0*um==f1*vm) THEN
+                    ssiim = f0*um/EPS
+                ELSE
+                    ssiim = f0*um/(f0*um-f1*vm)   ! Fi-1^(n-1) / (alfa*r_i-1+gamma)  [time unit]
+                END IF
             END IF
 
             ! gamma/alpha parameters
-            gamma_alfa = - DBLE(iim) + ((vm-um)/(vv-vm-uu+um))
+            gamma_alfa = - DBLE(iim) + ((f1*vm-f0*um)/(vv-vm-uu+um))
 
-            ! Constant in front of the Dawson function according to the paper
-            const = SQRT(PI/(-2.d0*alfa))*(vv*um - uu*vm)/(vv-vm-uu+um)
+            ! Constant in front of the Error function according to the paper
+            IF ( f0==1.d0 .AND. f1 == 1.d0) THEN
+                const = SQRT(PI/(-2.d0*alfa))*(vv*um - uu*vm)/(vv-vm-uu+um)
+            ELSE
+                const = SQRT(PI/(-2.d0*alfa))*(f0*um*(vv-vm)+f1*vm*(um-uu))/(vv-vm-uu+um)
+            END IF
 
             ! Erf at xi0
             IF (xi0.GT.xilim) THEN
@@ -770,7 +846,7 @@ MODULE mod_pos
 
       END SUBROUTINE aneg
 
-      SUBROUTINE azer(ii,iim,uu,um,vv,vm,r0,rw,sm,s0,sw)
+      SUBROUTINE azer(ii,iim,uu,um,vv,vm,r0,rw,sm,s0,sw,f0,f1)
       ! ------------------------------------------------------------------
       !
       ! Purpose:
@@ -791,6 +867,9 @@ MODULE mod_pos
           ! Position variables
           REAL(DP)             :: r0   ! current position
           REAL(DP),INTENT(OUT) :: rw   ! crossing wall position
+
+          ! Thickness correction
+          REAL(DP) :: f0, f1
 
           ! Time Variables
           REAL(DP) :: sm              ! s^n-1
@@ -826,7 +905,7 @@ MODULE mod_pos
           ! Beta parameter
           beta = um - uu
           ! Gamma parameter
-          gamma = (um - vm)/dstep
+          gamma = (f0*um - f1*vm)/dstep
 
           ! Transport across the grid constant
           IF (beta == 0.0d0) THEN
@@ -835,7 +914,7 @@ MODULE mod_pos
             IF (gamma == 0.0d0) THEN
 
                 ! Delta parameter
-                delta = -um
+                delta = -f0*um
 
                 ! Eastward/northward/upper flow
                 IF (delta<0.d0) THEN
@@ -853,7 +932,7 @@ MODULE mod_pos
 
                 IF (ABS(gamma)<EPS) STOP 'Gamma to small'
 
-                del_ga = -(um + beta*DBLE(iim))/gamma - sm
+                del_ga = -(f0*um)/gamma - sm
 
                 IF (s0 + del_ga >= 0.d0) THEN
 
@@ -889,11 +968,11 @@ MODULE mod_pos
 
               ! Positive u_i flux
               IF (uu > 0.d0) THEN
-                xi = 1.0d0+(DBLE(ii)-r0)*beta/(beta*(r0-DBLE(iim))-um)
+                xi = 1.0d0+(DBLE(ii)-r0)*beta/(uu - (1-f0)*um)
                 IF (xi>0.0d0) THEN
                     IF ((xi < EPS) .OR. (ABS(beta) < EPS)) STOP 'Unable to find a solution'
                     rw = DBLE(ii)
-                    sw = s0 - 1.0d0*LOG(xi)/beta
+                    sw = s0 + 1.0d0*LOG(xi)/beta
 
                     IF (sw < EPS) STOP
                     IF (sw <= 0.d0) sw = UNDEF
@@ -902,11 +981,11 @@ MODULE mod_pos
 
               ! Negative u_i-1 flux
               IF (um < 0.d0) THEN
-                xi = 1.0d0-(r0-DBLE(iim))*beta/(beta*(r0-DBLE(iim))-um)
+                xi = 1.0d0-(r0-DBLE(iim))*beta/(f0*um)
                 IF (xi>0.0d0) THEN
                     IF ((xi < EPS) .OR. (ABS(beta) < EPS)) STOP 'Unable to find a solution'
                     rw = DBLE(iim)
-                    sw = s0 - 1.0d0*LOG(xi)/beta
+                    sw = s0 + 1.0d0*LOG(xi)/beta
 
                     IF (sw < EPS) STOP 'Very small time step'
                     IF (sw <= 0.d0) sw = UNDEF
@@ -921,14 +1000,14 @@ MODULE mod_pos
               ! 1 - Initial configuration
 
               ! Define boundary times
-              ssii  =  uu/gamma         ! Fi^(n-1) / gamma    [time unit]
-              ssiim =  um/gamma         ! Fi-1^(n-1) / gamma  [time unit]
+              ssii  =  (f0*uu-beta)/gamma      ! Fi^(n-1) / gamma    [time unit]
+              ssiim =  (f0*um)/gamma           ! Fi-1^(n-1) / gamma  [time unit]
 
               ! Terms with exp(-beta(s-s0))
-              exp_term = (r0-DBLE(iim)) + (gamma*(s0-sm-1.d0/beta)-um)/beta
+              exp_term = (r0-DBLE(iim)) + (gamma*(s0-sm-1.d0/beta)-f0*um)/beta
 
               ! drds at r0, s0
-              drds = um - gamma*(s0-sm) - beta*(r0-DBLE(iim))
+              drds = f0*um - gamma*(s0-sm) - beta*(r0-DBLE(iim))
 
               ! 2.1 - ii direction (four velocity configurations at edge)
               iiselect: DO
@@ -1118,6 +1197,9 @@ MODULE mod_pos
           REAL(DP) :: ss          ! update time
           REAL(DP) :: xi0, xis     ! xi values
 
+          ! Thickness correction
+          REAL(DP) :: f0, f1
+
           ! Parameters from the paper
           REAL(DP) :: alfa
           REAL(DP) :: beta
@@ -1158,6 +1240,9 @@ MODULE mod_pos
               vv = uflux(ia,ja,ka,nsp)
               vm = uflux(il,ja,ka,nsp)
 
+              ! No vertical thickness correction
+              f0 = 1.d0; f1 = 1.d0;
+
           ELSEIF (ijk .EQ. 2) THEN
               ii=ja
               im=ja-1
@@ -1165,6 +1250,9 @@ MODULE mod_pos
               um = vflux(ia,ja-1,ka,nsm)
               vv = vflux(ia,ja,ka,nsp)
               vm = vflux(ia,ja-1,ka,nsp)
+
+              ! No vertical thickness correction
+              f0 = 1.d0; f1 = 1.d0;
 
           ELSEIF (ijk .EQ. 3) THEN
               ii=ka
@@ -1181,6 +1269,26 @@ MODULE mod_pos
               vm = wflux(ka-1,nsp)
 #endif
 
+              ! Layer thickness at time step n-1
+              dzt1 = dzt(ia,ja,ka,nsm)
+              IF (dzt1 == 0.d0) STOP 'Layer thickness at time step n-1 is zero'
+
+              ! Layer thickness at time step n
+              dzt2 = dzt(ia,ja,ka,nsp)
+              IF (dzt2 == 0.d0) STOP 'Layer thickness at time step n is zero'
+
+              ! Layer thickness at time interpolated for "present"
+              dzs= intrpr*dzt1 + intrpg*dzt2
+
+              ! F0(dzt1/dzs) and F1(dzt2/dzs) definition
+              f0 = dzt1/dzs;  f1 = dzt2/dzs
+              IF (ABS(1/f0)<=EPS) STOP 'F0 too large dzt1 >>> dzs'
+              IF (ABS(1/f1)<=EPS) STOP 'F1 too large dzt2 >>> dzs'
+
+              ! Readjust the fluxes to the 'present' thickness
+              uu = uu/f0; um = um/f0
+              vv = vv/f1; vm = vm/f1
+
           END IF
 
           !Define alpha constant
@@ -1190,7 +1298,7 @@ MODULE mod_pos
           beta = um - uu - alfa*sm
 
           ! Gamma parameter
-          gamma = (um - vm)/dstep - alfa*im
+          gamma = (f0*um - f1*vm)/dstep - alfa*im
 
           ! New position
           IF (alfa > 0.d0) THEN
@@ -1199,11 +1307,19 @@ MODULE mod_pos
              xi0 = (beta + alfa*s0)/SQRT(2.d0*alfa)
              xis = (beta + alfa*ss)/SQRT(2.d0*alfa)
 
-             ! gamma/alpha parameters
-             gamma_alfa = - DBLE(im) + ((vm-um)/(vv-vm-uu+um))
+             IF (f0 == 1.d0 .AND. f1 == 1.d0) THEN
+                  ! gamma/alpha parameters
+                  gamma_alfa = - DBLE(im) + ((vm-um)/(vv-vm-uu+um))
 
-             ! Constant in front of the Dawson function according to the paper
-             daw_term = SQRT(2.d0/alfa)*(vv*um - uu*vm)/(vv-vm-uu+um)
+                  ! Constant in front of the Dawson function according to the paper
+                  daw_term = SQRT(2.d0/alfa)*(vv*um - uu*vm)/(vv-vm-uu+um)
+             ELSE
+                  ! gamma/alpha parameters
+                  gamma_alfa = - DBLE(im) + ((f1*vm-f0*um)/(vv-vm-uu+um))
+
+                  ! Constant in front of the Dawson function according to the paper
+                  daw_term = SQRT(2.d0/alfa)*(f0*um*(vv-vm)+f1*vm*(um-uu))/(vv-vm-uu+um)
+             END IF
 
              r1 = (r0+gamma_alfa)*EXP(xi0**2 - xis**2) - gamma_alfa + &
                  daw_term*(daw(xis) - EXP(xi0**2 - xis**2)*daw(xi0))
@@ -1217,6 +1333,20 @@ MODULE mod_pos
              ! gamma/alpha parameters
              gamma_alfa = - DBLE(im) + ((vm-um)/(vv-vm-uu+um))
 
+             IF (f0 == 1.d0 .AND. f1 == 1.d0) THEN
+                  ! gamma/alpha parameters
+                  gamma_alfa = - DBLE(im) + ((vm-um)/(vv-vm-uu+um))
+
+                  ! Constant in front of the Error function according to the paper
+                  erf_term = SQRT(PI/(-2.d0*alfa))*(vv*um - uu*vm)/(vv-vm-uu+um)
+             ELSE
+                  ! gamma/alpha parameters
+                  gamma_alfa = - DBLE(im) + ((f1*vm-f0*um)/(vv-vm-uu+um))
+
+                  ! Constant in front of the Error function according to the paper
+                  erf_term = SQRT(PI/(-2.d0*alfa))*(f0*um*(vv-vm)+f1*vm*(um-uu))/(vv-vm-uu+um)
+             END IF
+
              ! Erf at xi0
              IF (xi0.GT.xilim) THEN
                  erf0 = fun_erfc(xi0)   ! complementary error function
@@ -1226,17 +1356,14 @@ MODULE mod_pos
                  erf0 = -fun_erf(xi0)   ! error function
              END IF
 
-             ! Constant in front of the Dawson function according to the paper
-             erf_term = SQRT(PI/(-2.d0*alfa))*(vv*um - uu*vm)/(vv-vm-uu+um)
-
              r1 = (r0+gamma_alfa)*EXP(xis**2 - xi0**2) + erfexp(erf_term,erf0,xi0,xis) - gamma_alfa
 
           ELSE IF (alfa == 0.d0) THEN
 
              IF (beta == 0.d0) THEN
-                r1 = r0 - (ss-s0)*(0.5*gamma*(ss+s0-2.*sm) - um)
+                r1 = r0 - (ss-s0)*(0.5*gamma*(ss+s0-2.*sm) - f0*um)
              ELSE
-                exp_term = (r0-DBLE(im)) + (gamma*(s0-sm-1.d0/beta)-um)/beta
+                exp_term = (r0-DBLE(im)) + (gamma*(s0-sm-1.d0/beta)-f0*um)/beta
                 r1 = r0 + exp_term*(EXP(-beta*(ds))-1.d0) - gamma*ds/beta
              END IF
 

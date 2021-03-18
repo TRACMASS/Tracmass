@@ -51,13 +51,15 @@ funit mod_pos
 
 rm mod_pos.F90 mod_pos.fun
 rm mod_pos_tstep.F90 mod_pos.o mod_pos.mod
+rm temp1.F90 temp2.F90
+funit --clean
 
 # 2 - Time analytical scheme
 cp mod_pos_tanalytical.fun mod_pos.fun
 
 # Remove the ifndef and endif
 sed '1 s/#ifdef time_analytical/ /' mod_pos_tanalytical.F90 > temp1.F90
-sed '1909 s/#endif/ /' temp1.F90 > temp2.F90
+sed '2036 s/#endif/ /' temp1.F90 > temp2.F90
 mv temp2.F90 mod_pos.F90
 funit mod_pos
 

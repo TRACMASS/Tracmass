@@ -205,6 +205,11 @@ MODULE mod_print
                endMon, '-', endDay,' ' ,endHour, ':', endMin
           WRITE(6,FMT='(A,I6)') ' Length of run in timesteps   : ' ,intrun
           WRITE(6,FMT='(A,I6)') ' Number of seeding timesteps  : ' ,nsdTim
+#if defined time_analytical
+          PRINT *,'Time integration scheme      : time analytical scheme'
+#else
+          PRINT *,'Time integration scheme      : regular time step scheme'
+#endif
           WRITE(6,FMT='(A,I6)') ' Steps between two GCM fields : ' ,iter
 
           PRINT *,''

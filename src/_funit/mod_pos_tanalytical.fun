@@ -49,7 +49,7 @@ TEST test_azer_1
 
    PRINT *, ' * Test azer    :  alfa = 0, beta = 0, gamma = 0'
 
-   CALL azer(2,1,1.d0,1.d0,1.d0,1.d0,1.5d0,rw,0.d0,0.d0,sw)
+   CALL azer(2,1,1.d0,1.d0,1.d0,1.d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
    ASSERT_EQUAL(rw, 2)
    ASSERT_EQUAL(sw, 0.5)
@@ -65,7 +65,7 @@ TEST test_azer_2
 
    PRINT *, ' * Test azer    :  alfa = 0, beta = 0, gamma /= 0'
 
-   CALL azer(2,1,1.d0,1.d0,0.25d0,0.25d0,1.5d0,rw,0.d0,0.d0,sw)
+   CALL azer(2,1,1.d0,1.d0,0.25d0,0.25d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
    ASSERT_EQUAL(rw, 2)
    ASSERT_REAL_EQUAL(sw, 2./3.)
@@ -81,7 +81,7 @@ TEST test_azer_3
 
     PRINT *, ' * Test azer    :  alfa = 0, beta /= 0, gamma = 0'
 
-    CALL azer(2,1,0.25d0,1.d0,0.25d0,1.d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL azer(2,1,0.25d0,1.d0,0.25d0,1.d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 2)
     ASSERT_REAL_EQUAL(sw,-LOG(0.4)/0.75)
@@ -97,7 +97,7 @@ TEST test_azer_4
 
     PRINT *, ' * Test azer    :  alfa = 0, beta /= 0, gamma /= 0'
 
-    CALL azer(2,1,0.6d0,0.8d0,0.4d0,0.6d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL azer(2,1,0.6d0,0.8d0,0.4d0,0.6d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 2)
     ASSERT_EQUAL_WITHIN(sw,0.899,1e-2)
@@ -113,7 +113,7 @@ TEST test_azer_5
 
     PRINT *, ' * Test azer    :  alfa = 0, beta /= 0, gamma /= 0 (no solution)'
 
-    CALL azer(2,1,0.5d0,0.75d0,0.25d0,0.5d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL azer(2,1,0.5d0,0.75d0,0.25d0,0.5d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, -99)
     ASSERT_EQUAL(sw,UNDEF)
@@ -129,7 +129,7 @@ TEST test_aneg_1
 
     PRINT *, ' * Test aneg    :  alfa < 0 (land point at ii)'
 
-    CALL aneg(2,1,0.d0,0.1d0,0.d0,-1.5d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL aneg(2,1,0.d0,0.1d0,0.d0,-1.5d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 1)
     ASSERT_EQUAL_WITHIN(sw,0.99,1e-2)
@@ -145,7 +145,7 @@ TEST test_aneg_2
 
     PRINT *, ' * Test aneg    :  alfa < 0 (land point at iim)'
 
-    CALL aneg(2,1,-0.5d0,0.0d0,2.d0,0.d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL aneg(2,1,-0.5d0,0.0d0,2.d0,0.d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 2)
     ASSERT_EQUAL_WITHIN(sw,0.97,1e-2)
@@ -161,14 +161,14 @@ TEST test_aneg_3
 
     PRINT *, ' * Test aneg    :  alfa < 0'
 
-    CALL aneg(2,1,-0.1d0,0.1d0,2.d0,1.d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL aneg(2,1,-0.1d0,0.1d0,2.d0,1.d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 2)
     ASSERT_EQUAL_WITHIN(sw,0.76,1e-2)
 
     PRINT *, ' * Test aneg    :  alfa < 0 (no solution)'
 
-    CALL aneg(2,1,-0.1d0,0.1d0,0.5d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL aneg(2,1,-0.1d0,0.1d0,0.5d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, -99)
     ASSERT_EQUAL(sw,UNDEF)
@@ -184,7 +184,7 @@ TEST test_apos_1
 
     PRINT *, ' * Test apos    :  alfa > 0 (land point at ii)'
 
-    CALL apos(2,1,0.d0,-1.5d0,0.d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL apos(2,1,0.d0,-1.5d0,0.d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 1)
     ASSERT_EQUAL_WITHIN(sw,0.82,1e-2)
@@ -200,7 +200,7 @@ TEST test_apos_2
 
     PRINT *, ' * Test apos    :  alfa > 0 (land point at iim)'
 
-    CALL apos(2,1,2.d0,0.0d0,-.5d0,0.d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL apos(2,1,2.d0,0.0d0,-.5d0,0.d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 2)
     ASSERT_EQUAL_WITHIN(sw,0.50,1e-2)
@@ -216,14 +216,14 @@ TEST test_apos_3
 
     PRINT *, ' * Test apos    :  alfa > 0'
 
-    CALL apos(2,1,2.d0,1.0d0,-0.1d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL apos(2,1,2.d0,1.0d0,-0.1d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, 2)
     ASSERT_EQUAL_WITHIN(sw,0.35,1e-2)
 
     PRINT *, ' * Test apos    :  alfa > 0 (no solution)'
 
-    CALL apos(2,1,0.5d0,0.1d0,-0.1d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw)
+    CALL apos(2,1,0.5d0,0.1d0,-0.1d0,0.1d0,1.5d0,rw,0.d0,0.d0,sw,1.d0,1.d0)
 
     ASSERT_EQUAL(rw, -99)
     ASSERT_EQUAL(sw,UNDEF)

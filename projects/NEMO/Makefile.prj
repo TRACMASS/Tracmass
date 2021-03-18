@@ -6,7 +6,12 @@
 #fl01  = -Dw_2dim       # Turn off vertical velocities.
 fl01  = -Dw_3dim       # Compute 3D vertical velocities.
 
+
+# Time integration scheme
+#------------------------------------------------------------------------
+#fl02 = -Dtime_analytical
+
 #========================================================================
 
 ORM_FLAGS= -D$(PROJECT) \
-$(fl01)
+$(fl01)$(fl02)

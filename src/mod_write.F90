@@ -528,7 +528,7 @@ MODULE mod_write
           DO itrac = 1, numtracers
             DO ilvar = 1, ijk2
               IF (psicase=='xr') WRITE(63,TRIM(psiformat)) psi_xr(:,ilvar,itrac)
-              IF (psicase=='xr') WRITE(64,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
+              IF (psicase=='yr') WRITE(64,TRIM(psiformat)) psi_yr(:,ilvar,itrac)
             END DO
           END DO
       ELSE IF (psicase == 'rr') THEN

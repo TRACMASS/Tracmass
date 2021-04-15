@@ -123,3 +123,12 @@ clean:
 	-rm runtest.sh
 	-rm -rf _build
 	-rm $(RUNFILE)
+
+.PHONY : help
+
+help :
+	@echo
+	@echo "make       : Generate TRACMASS runfile '$(RUNFILE).x'."
+	@echo "make test  : Generate test-suite runscripts 'runtest.sh'."
+	@echo "make clean : Remove auto-generated files."
+	@echo

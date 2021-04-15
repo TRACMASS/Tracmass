@@ -12,7 +12,7 @@ fl02  = -DA_grid        # Input data on a A grid
 
 # Time integration scheme
 #------------------------------------------------------------------------
-fl03 = -Dtime_analytical
+#fl03 = -Dtime_analytical
 
 #========================================================================
 ORM_FLAGS= -D$(PROJECT) \

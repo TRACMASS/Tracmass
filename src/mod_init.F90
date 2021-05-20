@@ -44,7 +44,7 @@ MODULE mod_init
                                            dateFormat, tGridName, uGridName, vGridName, &
                                            fileSuffix, hs_name, ueul_name, veul_name, &
                                            usgs_name, vsgs_name, usub_name, vsub_name, w_name
-          namelist /INIT_GRID_SIZE/        imt, jmt, km, nst, iperio, jperio, &
+          namelist /INIT_GRID_SIZE/        imt, jmt, km, iperio, jperio, &
                                            topoDataDir, &
                                            hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
                                            zgridFile, dzt_name, dzu_name, dzv_name, dep_name,&
@@ -179,7 +179,7 @@ MODULE mod_init
                   jenn(ii) = jmt - jenn(ii)    ! Meridional reverse
                   jens(ii) = jmt - jens(ii)    ! Meridional reverse
                 ELSE
-                  jenn(ii) = jmt - jenn(ii) + 1    ! Meridional reverse
+                  jenn(ii) = jmt - jenn(ii) + 1   ! Meridional reverse
                   jens(ii) = jmt - jens(ii) + 1   ! Meridional reverse
                 END IF
               END DO

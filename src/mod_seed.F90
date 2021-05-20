@@ -641,7 +641,10 @@ MODULE mod_seed
                                     & 37,41,43,47,53,59,61,67,71, 73, 79, 83, 89, 97/)
             INTEGER    :: nsg, isg, jsg
 
-            LOGICAL :: l_square = .FALSE.
+            LOGICAL :: l_square
+
+            ! Initialise l_square
+            l_square = .FALSE.
 
             DO nsg = 1, num
 

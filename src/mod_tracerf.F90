@@ -10,20 +10,28 @@ MODULE mod_tracerf
   !!------------------------------------------------------------------------------
 
   IMPLICIT NONE
-  
+
   CONTAINS
 
-  FUNCTION thermo_dens0(t,s)
+  FUNCTION thermo_dens0(T,S)
   ! --------------------------------------------------
   !
   ! Purpose:
   ! Compute sigma 0 density
   !
+  ! Method:
+  ! Compute the sigma 0 densitybased on the 1980
+  ! equation of state (EOS-80)
+  !
   ! --------------------------------------------------
 
       IMPLICIT NONE
 
-      REAL, INTENT(IN)                         :: T(:,:,:),S(:,:,:)
+      REAL, INTENT(IN)                         :: T(:,:,:)      ! Potential T [degC]
+      REAL, INTENT(IN)                         :: S(:,:,:)      ! Practical S [PSU]
+
+      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: T68
+
       REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: thermo_dens0
 
       REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: dens_temp
@@ -52,13 +60,15 @@ MODULE mod_tracerf
       ! Size of array
       nx = SIZE(S,1); ny = SIZE(S,2); nz = SIZE(S,3);
 
+      ALLOCATE( dens_temp(nx,ny,nz) ,thermo_dens0(nx,ny,nz), T68(nx,ny,nz) )
 
-      ALLOCATE( dens_temp(nx,ny,nz) ,thermo_dens0(nx,ny,nz) )
+      ! Correct T to IPTS-68 standard
+      T68 = 1.00024 * T
 
-      dens_temp = a0+(a1+(a2+(a3+(a4+a5*T)*T)*T)*T)*T
+      dens_temp = a0+(a1+(a2+(a3+(a4+a5*T68)*T68)*T68)*T68)*T68
       thermo_dens0  = dens_temp &
-           + (b0+(b1+(b2+(b3+b4*T)*T)*T)*T)*S &
-           + (c0+(c1+c2*T)*T)*S*SQRT(S) + d0*S**2
+           + (b0+(b1+(b2+(b3+b4*T68)*T68)*T68)*T68)*S &
+           + (c0+(c1+c2*T68)*T68)*S*SQRT(S) + d0*S**2
 
   END FUNCTION thermo_dens0
 

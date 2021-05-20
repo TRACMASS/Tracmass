@@ -8,6 +8,7 @@ MODULE mod_diffusion
   !!          Subroutines included:
   !!              - diffuse
   !!              - displacement
+  !!              - kill_zones_diffusion
   !!
   !!---------------------------------------------------------------------------
 
@@ -16,6 +17,7 @@ MODULE mod_diffusion
   USE mod_grid
   USE mod_error
   USE mod_activevars
+  USE mod_domain
 
   IMPLICIT NONE
 
@@ -79,9 +81,9 @@ MODULE mod_diffusion
           ! North fold
           IF (jperio /= 0) THEN
 
-            IF( y1 == DBLE(JMTdom-1) .AND. jperio == 1) THEN
+            IF( tmpY + jmindom - 1 >= DBLE(JMTdom-1) .AND. jperio == 1) THEN
                tmpX = DBLE(IMT+2) - tmpX
-               tmpY = JMTdom
+               tmpY = 2*(JMTdom - jmindom) - tmpY
             END IF
 
           END IF
@@ -99,15 +101,13 @@ MODULE mod_diffusion
           ! Check that particle is within column
           ! If False then a new position for the particle
           ! has been found.
-          IF( 1<=tmpi .AND. tmpi<=IMT .AND. 1<=tmpj .AND. tmpj<=JMT &
-                      .AND. kmt(tmpi,tmpj)>0 .AND. tmpk > km - kmt(tmpi,tmpj) .AND. tmpk<=km) THEN
-              tryAgain = .FALSE.
+          IF( 1<=tmpi .AND. tmpi<=IMT .AND. 1<=tmpj .AND. tmpj<=JMT .AND. tmpk<=km &
+              .AND. kmt(tmpi,tmpj)>0 .AND. tmpk > km - kmt(tmpi,tmpj)) THEN
+                  tryAgain = .FALSE.
           END IF
 
-
-          ! If trajectory is out of killing kill_zones
-          CALL kill_zones(nend)
-          IF (nend>-1) tryAgain = .TRUE.
+          ! If trajectory is out of kill_zones place the trajectory at the boundary
+          CALL kill_zones_diffusion(x1, tmpX, y1, tmpY)
 
           ! If tryAgain is still true, the particle is outside model area. The
       		! displacement is not saved, but we make a new try to displace.
@@ -176,5 +176,52 @@ MODULE mod_diffusion
 #endif
 
     END SUBROUTINE displacement
+
+    SUBROUTINE kill_zones_diffusion(xb, xa, yb, ya)
+    ! --------------------------------------------------
+    !
+    ! Purpose:
+    ! If killing zones are activated, the subroutine makes
+    ! sure that if the perturbation places the trajectory
+    ! across the killing zones, the trajectory will be
+    ! terminated correctly.
+    !
+    ! --------------------------------------------------
+
+        REAL(DP), INTENT(INOUT) :: xb, xa, yb, ya
+        INTEGER :: nexit
+
+        DO nexit = 1, 10
+
+            ! Latitude band
+            IF (jens(nexit) == jenn(nexit)) THEN
+
+              IF (ienw(nexit) <= xb .AND. ienw(nexit) <= xa .AND. &
+                    xb <= iene(nexit) .AND. xa <= iene(nexit) .AND. &
+                    ((ya > yb .AND. ya >= jens(nexit) .AND. jens(nexit) >= yb) .OR. &
+                     (yb > ya .AND. yb >= jens(nexit) .AND. jens(nexit) >= ya))) THEN
+
+                    ! Place the trajectory at the boundary
+                    ya = DBLE(jens(nexit))
+
+              END IF
+
+            ! Longitude band
+            ELSE IF (ienw(nexit) == iene(nexit)) THEN
+
+              IF (jens(nexit) <= yb .AND. jens(nexit) <= ya .AND. &
+                    yb <= jenn(nexit) .AND. ya <= jenn(nexit) .AND. &
+                    ((xb > xa .AND. xb >= ienw(nexit) .AND. ienw(nexit) >= xa) .OR. &
+                     (xa > xb .AND. xa >= ienw(nexit) .AND. ienw(nexit) >= xb))) THEN
+
+                    ! Place the trajectory at the boundary
+                    xa = DBLE(ienw(nexit))
+
+              END IF
+
+          END IF
+      END DO
+
+    END SUBROUTINE kill_zones_diffusion
 
 END MODULE mod_diffusion

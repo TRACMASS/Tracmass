@@ -50,16 +50,28 @@ MODULE mod_subdomain
                   imt = imaxdom - imindom + 1
                   jmt = jmaxdom - jmindom + 1
 
-                  ! The last 4 kill zones are reserved to the Subdomain
-                  ! 7 - south wall
-                  ienw(7) = -1; iene(7) = imtdom + 1; jens(7) = jmindom + 1; jenn(7) = jmindom + 1
-                  ! 8 - north wall
-                  ienw(8) = -1; iene(8) = imtdom + 1; jens(8) = jmaxdom - 1; jenn(8) = jmaxdom - 1
 
-                  ! 9 - east wall
-                  ienw(9) = imindom + 1; iene(9) = imindom + 1; jens(9) = -1; jenn(9) = jmtdom + 1
-                  ! 10 - west wall
-                  ienw(10) = imaxdom - 1; iene(10) = imaxdom - 1; jens(10) = - 1; jenn(10) = jmtdom + 1
+                  ! The last 4 kill zones are reserved to the Subdomain
+
+                  ! These killing zones will not be activated for hemispheric cap subdomains
+                  IF ((iperio == 1 .AND. imt == imtdom .AND. jmaxdom == 1) .EQV. .FALSE.) THEN
+                    ! 7 - south wall
+                    ienw(7) = -1; iene(7) = imtdom + 1; jens(7) = jmindom + 1; jenn(7) = jmindom + 1
+                  END IF
+
+                  IF ((iperio == 1 .AND. imt == imtdom .AND. jmaxdom == jmtdom) .EQV. .FALSE.) THEN
+                    ! 8 - north wall
+                    ienw(8) = -1; iene(8) = imtdom + 1; jens(8) = jmaxdom - 1; jenn(8) = jmaxdom - 1
+                  END IF
+
+                  ! These killing zones will not be activated if iperio = 1
+                  ! and imindom = 1 and imaxdom = imt
+                  IF ((iperio == 1 .AND. imt == imtdom) .EQV. .FALSE.) THEN
+                    ! 9 - east wall
+                    ienw(9) = imindom + 1; iene(9) = imindom + 1; jens(9) = -1; jenn(9) = jmtdom + 1
+                    ! 10 - west wall
+                    ienw(10) = imaxdom - 1; iene(10) = imaxdom - 1; jens(10) = - 1; jenn(10) = jmtdom + 1
+                  END IF
 
                   ! Redefine the killing zones in the new reference system
                   ienw = ienw - imindom + 1 ; iene = iene - imindom + 1

@@ -28,7 +28,6 @@
      	imt            = 301,                             ! number of global i points
      	jmt            = 250,                             ! number of global j points
      	km             = 42,                              ! number of global k points
-     	nst            = 2,                               ! number of time levels to use (should be = 2)
 
       iperio  = 0                                       ! zonal periodic
       jperio  = 0                                       ! meridional boundary conditions

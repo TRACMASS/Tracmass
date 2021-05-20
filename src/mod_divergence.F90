@@ -78,6 +78,11 @@ MODULE mod_divergence
                       index1f = INT(traj_x(ilooptraj,iloopsave)) + 1
                       index2f = INT(traj_y(ilooptraj,iloopsave)) + 1
 
+                      IF (zeroindx) THEN
+                          index1b = index1b + 1
+                          index1f = index1f + 1
+                      END IF
+
                       IF (index1f > imtdom .AND. iperio==1) index1f = 1
 
                 ! West wall
@@ -90,6 +95,11 @@ MODULE mod_divergence
                       ! Entering box (forward)
                       index1f = INT(traj_x(ilooptraj,iloopsave))
                       index2f = INT(traj_y(ilooptraj,iloopsave)) + 1
+
+                      IF (zeroindx) THEN
+                          index1b = index1b + 1
+                          index1f = index1f + 1
+                      END IF
 
                       IF (index1b > imtdom .AND. iperio==1) index1b = 1
 

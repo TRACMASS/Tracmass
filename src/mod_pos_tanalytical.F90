@@ -1613,11 +1613,6 @@ MODULE mod_pos
 
           END IF
 
-          ! Make sure that trajectory is inside ib,jb,kb box
-          IF (x1 /= DBLE(IDINT(x1))) ib = IDINT(x1)+1
-          IF (y1 /= DBLE(IDINT(y1))) jb = IDINT(y1)+1
-          IF (z1 /= DBLE(IDINT(z1))) kb = IDINT(z1)+1
-
           !  East-west cyclic
           IF (iperio /= 0) THEN
               IF (x1 <=  0.d0) THEN
@@ -1630,15 +1625,21 @@ MODULE mod_pos
           ! North fold
           IF (jperio /= 0) THEN
 
-            IF( y1 == DBLE(JMTdom-1) .AND. jperio == 1) THEN
+            IF( y1 + jmindom - 1 == DBLE(JMTdom-1)  .AND. jperio == 1) THEN
                x1 = DBLE(IMT+2) - x1
                ib = IDINT(x1) + 1
-               jb = JMTdom
+               jb = JMTdom - jmindom + 1
                ia=ib ; ja=jb
                x0 = x1; y0 = y1
             END IF
 
           END IF
+
+          ! Make sure that trajectory is inside ib,jb,kb box
+          IF (x1 /= DBLE(IDINT(x1))) ib = IDINT(x1)+1
+          IF (y1 /= DBLE(IDINT(y1))) jb = IDINT(y1)+1
+          IF (z1 /= DBLE(IDINT(z1))) kb = IDINT(z1)+1
+
           ! Update direction array
           CALL update_trajdir()
 

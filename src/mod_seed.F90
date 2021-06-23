@@ -114,7 +114,6 @@ MODULE mod_seed
 
                END DO jjloop
             END DO jiloop
-
             nsdMax = numsd
 
             IF (log_level>0) THEN
@@ -292,7 +291,6 @@ MODULE mod_seed
             trajectories(:)%active = .TRUE.
             trajectories(:)%lbas = -1
 
-
             ! If postprocessing is activated
             ALLOCATE( nsavewrite(ntracmax) )
             nsavewrite = 0
@@ -399,8 +397,9 @@ MODULE mod_seed
                   CASE (1) ! partQuant particles per seed gridcell
                       num = INT(partQuant)
                   CASE (2) ! particles reflect mass transport at seeding.
-													 ! set by partQuant
+											     ! set by partQuant
                       num = INT(vol/partQuant)
+                      IF (MOD(vol,partQuant) /= 0) num = num + 1
                   CASE (3) ! particle reflects air/water mass/volume at seeding
                       vol = dzt(ib,jb,kb,1)
                       num = INT(vol/partQuant)
@@ -412,7 +411,7 @@ MODULE mod_seed
                   IF (num == 1) THEN
                       ijt = 1
                       ikt = 1
-                  ELSE IF (num > 100) THEN
+                  ELSE IF (num > 500) THEN
                       PRINT *, ' num is above the limit!!'
                       PRINT *, '    num :', num
 
@@ -451,6 +450,7 @@ MODULE mod_seed
                           z1 = DBLE (kb-1) + (DBLE (jkt) - 0.5d0) / DBLE (ikt)
                           IF (nff*idir == 1) THEN
                               ib = iist+1
+                              IF (ib == IMT + 1.AND. iperio == 1) ib = 1
                           ELSE IF (nff*idir == -1) THEN
                               ib=iist
                           END IF
@@ -622,7 +622,7 @@ MODULE mod_seed
               STOP
           END IF
 
-        END SUBROUTINE
+        END SUBROUTINE read_mask
 
         SUBROUTINE split_grid()
         ! --------------------------------------------------
@@ -636,54 +636,57 @@ MODULE mod_seed
         !
         ! --------------------------------------------------
 
-            ! First 10 prime numbers
-            INTEGER, DIMENSION(25)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29,31, &
-                                    & 37,41,43,47,53,59,61,67,71, 73, 79, 83, 89, 97/)
-            INTEGER    :: nsg, isg, jsg
+            ! First prime numbers between 1 and 500
+            INTEGER, DIMENSION(95)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29,31, &
+                                    & 37,41,43,47,53,59,61,67,71, 73, 79, 83, 89, 97, &
+                                    & 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, &
+                                    & 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, &
+                                    & 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, &
+                                    & 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, &
+                                    & 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, &
+                                    & 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, &
+                                    & 443, 449, 457, 461, 463, 467, 479, 487, 491, 499/)
+            INTEGER    :: isg, jsg
 
             LOGICAL :: l_square
 
             ! Initialise l_square
             l_square = .FALSE.
 
-            DO nsg = 1, num
+            ! Is num a square number?
+            IF (FLOAT(INT(SQRT(FLOAT(num)))) == SQRT(FLOAT(num))) THEN
+                ijt    = INT (SQRT (FLOAT(num)) )
+                ikt    = ijt
 
-              ! Is num a square number?
-              IF (FLOAT(INT(SQRT(FLOAT(num)))) == SQRT(FLOAT(num))) THEN
-                  ijt    = INT (SQRT (FLOAT(num)) )
-                  ikt    = ijt
+                l_square = .TRUE.
+            END IF
 
-                  l_square = .TRUE.
-              END IF
+            IF (l_square .EQV. .FALSE.) THEN
 
-              IF (l_square .EQV. .FALSE.) THEN
-                DO isg = 1, 10
+                isg = MINLOC(ABS(num-num_prime),1)
 
-                    ! Is num a prime number?
-                    IF (num == num_prime(isg)) THEN
-                        ijt = num
-                        ikt = 1
-                        EXIT
+                ! Is num a prime number?
+                IF (num == num_prime(isg)) THEN
+                    ijt = num
+                    ikt = 1
 
-                    ! Integer factorisation of num
-                    ELSE
-                        ijt = INT (SQRT (FLOAT(num)) )
-                        ikt = NINT (FLOAT (num) / FLOAT (ijt))
+                ! Integer factorisation of num
+                ELSE
+                    ijt = INT (SQRT (FLOAT(num)) )
+                    ikt = NINT (FLOAT (num) / FLOAT (ijt))
 
-                        IF (ijt*ikt /= num) THEN
-                            DO jsg = 1, 10
-                                ijt = num_prime(jsg)
-                                ikt = num/ijt
+                    IF (ijt*ikt /= num) THEN
+                        DO jsg = 1, 23
+                            ijt = num_prime(jsg)
+                            ikt = num/ijt
 
-                                IF (ijt*ikt == num) EXIT
-                            END DO
-                        END IF
-
+                            IF (ijt*ikt == num) EXIT
+                        END DO
                     END IF
-                END DO
-              END IF
 
-            END DO
+                END IF
+
+              END IF
 
         END SUBROUTINE split_grid
 
@@ -712,6 +715,5 @@ MODULE mod_seed
           END IF
 
         END SUBROUTINE reverse
-
 
 END MODULE mod_seed

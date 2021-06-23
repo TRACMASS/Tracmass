@@ -253,6 +253,11 @@ MODULE mod_error
     !
     ! --------------------------------------------------
 
+        IF (zeroindx) THEN
+           xw = xw - 1
+           IF (xw<0.) xw = imtdom + xw
+        END IF
+
         IF (griddir(2) == -1) THEN
             yw = jmt - yw    ! Meridional reverse
         END IF

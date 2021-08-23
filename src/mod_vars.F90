@@ -44,8 +44,9 @@ END MODULE
 MODULE mod_param
   USE mod_precdef
 
-  INTEGER                                   :: write_frec     ! Writing frecuency
-  INTEGER                                   :: write_form = 0 ! Writing format
+  INTEGER                                   :: write_frec         ! Writing frecuency
+  INTEGER                                   :: write_form = 0     ! Writing format
+  INTEGER                                   :: icompresspart = 0  ! Compress part integer 
 
   INTEGER                                   :: iter       ! Number of subcycles
   INTEGER                                   :: ngcm       ! Time step in hours

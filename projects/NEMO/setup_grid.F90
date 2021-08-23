@@ -42,7 +42,7 @@ SUBROUTINE setup_grid
     WHERE (kmt>0)
       tmp2d(:,:) = 1
     END WHERE
-    IF (idir == 3) mask(:,:) = tmp2d(:,:)
+    IF (isec == 3) mask(:,:) = tmp2d(:,:)
 
     kmu(:,:)=0 ; kmv(:,:)=0
     DO jj=1,jmt
@@ -55,9 +55,9 @@ SUBROUTINE setup_grid
           kmv(ii,jj) = MIN(kmt(ii,jj), kmt(ii,jp), km)
 
           ! mask definition
-          IF (idir == 1) THEN
+          IF (isec == 1) THEN
               mask(ii,jj) = tmp2d(ii,jj)*tmp2d(ip,jj)
-          ELSE IF (idir ==2) THEN
+          ELSE IF (isec == 2) THEN
               mask(ii,jj) = tmp2d(ii,jj)*tmp2d(ii,jp)
           END IF
 

@@ -46,6 +46,7 @@ MODULE mod_write
     CHARACTER(LEN=200)    :: outDataDir, outDataFile
     CHARACTER(LEN=50)     :: psiformat, divformat
     CHARACTER(LEN=100)    :: outformat
+    CHARACTER(LEN=3)      :: partpath
     CHARACTER(LEN=*), PARAMETER                :: reform = "(I8,I3)"
 
     REAL(DP)              :: xw,yw,zw
@@ -144,7 +145,9 @@ MODULE mod_write
 
           CHARACTER(LEN=*)     :: sel
 
-          REAL(DP)  :: tout
+          REAL(DP)  :: tout, fsize
+
+          INTEGER   :: file_size, iostat
 
           SELECT CASE (TRIM(sel))
 
@@ -259,8 +262,6 @@ MODULE mod_write
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout, boxface
                       END IF
 
-                      RETURN
-
                       CASE(1)
                       ! Include time - Fraction ts
                       tout = nff*ts
@@ -274,8 +275,6 @@ MODULE mod_write
                           CALL writeformat(timeformat)
                           WRITE(51,FMT=TRIM(outformat))  ntrac, xw, yw, zw, subvol/trunit, tout, boxface
                       END IF
-
-                      RETURN
 
                       CASE(2)
                       ! Include time - YYYY MM DD HH MM SS
@@ -296,9 +295,33 @@ MODULE mod_write
                               subvol/trunit, dateYear, dateMon, dateDay, dateHour, boxface
                       END IF
 
-                      RETURN
-
                   END SELECT
+
+                  ! Check size of run file
+                  file_size = 0
+                  iostat = -1
+
+                  IF (trajectories(ntrac)%niter == niter-1)  THEN
+                      INQUIRE(FILE = TRIM(fullWritePref)//'_run.csv', SIZE= file_size, IOSTAT = iostat)
+                  END IF
+
+                  fsize = file_size/1073741824.
+
+                  !If file is larger than 2 GiB compress
+                  IF (iostat == 0 .AND. (fsize >= 2.0 .OR. fsize < 0.0)) THEN
+                      ! Close file
+                      CLOSE(51)
+
+                      ! Compress file
+                      icompresspart = icompresspart + 1
+                      CALL compress_part(icompresspart)
+
+                      ! Reopen file and continue writing
+                      OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='REPLACE')
+                  END IF
+
+                  RETURN
+
               END IF
 
           ! OUT file
@@ -715,5 +738,60 @@ MODULE mod_write
         IF (write_form == 0) rr = DBLE(INT(100.d0*rr))/100.d0
 
       END SUBROUTINE trimreal
+
+      SUBROUTINE compress_part(ipart)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Compress output file to part files
+      !
+      ! --------------------------------------------------
+
+        INTEGER :: ipart
+
+        CHARACTER(len=200) :: command
+
+        IF (ipart<10) THEN
+          WRITE(partpath,'(A2,I1)') '00',ipart
+        ELSEIF (ipart<100) THEN
+          WRITE(partpath,'(A1,I2)') '0',ipart
+        ELSE
+          WRITE(partpath,'(I3)') ipart
+        END IF
+
+        command = 'gzip -cf '//TRIM(fullWritePref)//'_run.csv > '//&
+                  & TRIM(fullWritePref)//'_run.csv.part_'//TRIM(partpath)//'.gz'
+
+        CALL system(command)
+
+      END SUBROUTINE compress_part
+
+      SUBROUTINE combine_part()
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Combine the compress files
+      !
+      ! --------------------------------------------------
+
+        CHARACTER(len=200) :: command
+
+        LOGICAL          :: l_fileexist
+
+        ! l_fileexist set to zero
+        l_fileexist = .FALSE.
+
+        INQUIRE(FILE=TRIM(fullWritePref)//'_run.csv.part_001.gz', EXIST = l_fileexist)
+
+        IF (l_fileexist) THEN
+          command = 'gzip -cf '//TRIM(fullWritePref)//'_run.csv.part_*.gz > '//&
+                    & TRIM(fullWritePref)//'_run.csv.gz'
+
+          CALL system(command)
+        END IF
+
+        CALL system('rm -rf *csv.part_*.gz')
+
+      END SUBROUTINE combine_part
 
 END MODULE mod_write

@@ -96,6 +96,10 @@ PROGRAM TRACMASS
       ! Close outfiles
       CALL close_outfiles
 
+      ! Combine part compress files
+      CALL compress_part(icompresspart+1)
+      CALL combine_part
+
   END IF
 
   ! TRACMASS (POSTPROCESSING)

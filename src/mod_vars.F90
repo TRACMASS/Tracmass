@@ -46,7 +46,7 @@ MODULE mod_param
 
   INTEGER                                   :: write_frec         ! Writing frecuency
   INTEGER                                   :: write_form = 0     ! Writing format
-  INTEGER                                   :: icompresspart = 0  ! Compress part integer 
+  INTEGER                                   :: icompresspart = 0  ! Compress part integer
 
   INTEGER                                   :: iter       ! Number of subcycles
   INTEGER                                   :: ngcm       ! Time step in hours
@@ -244,7 +244,7 @@ MODULE mod_time
   ! Variables and routines for timekeeping
 
   ! Days in month
-  INTEGER, DIMENSION(10000,12)       :: daysInMonth ! Number of days per month
+  INTEGER, DIMENSION(12,3)       :: daysInMonth ! Number of days per month
 
   !Timesteps
   INTEGER                                   :: ints=0    ! Time iteration variables
@@ -254,6 +254,7 @@ MODULE mod_time
 
   ! Date variables
   LOGICAL                                   :: noleap=.TRUE.  ! Leap year flag
+  LOGICAL                                   :: mon30day =.FALSE.
   INTEGER                                   :: startYear, startMon, startDay
   INTEGER                                   :: startHour, startMin
   REAL(DP)                                  :: startSec

@@ -21,6 +21,8 @@ MODULE mod_write
     !!               - open_outdiv
     !!               - close_outdiv
     !!               - write_outdiv
+    !!               - combine_part
+    !!               - compress_part
     !!
     !!               - reverse (P)
     !!               - writeformat (P)
@@ -309,6 +311,7 @@ MODULE mod_write
 
                   !If file is larger than 2 GiB compress
                   IF (iostat == 0 .AND. (fsize >= 2.0 .OR. fsize < 0.0)) THEN
+
                       ! Close file
                       CLOSE(51)
 
@@ -788,9 +791,11 @@ MODULE mod_write
                     & TRIM(fullWritePref)//'_run.csv.gz'
 
           CALL system(command)
+
+          CALL system('rm -rf '//TRIM(fullWritePref)//'_run.csv.part_*.gz')
+
         END IF
 
-        CALL system('rm -rf *csv.part_*.gz')
 
       END SUBROUTINE combine_part
 

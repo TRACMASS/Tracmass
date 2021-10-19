@@ -197,7 +197,7 @@ MODULE mod_loop
             dstep = tseas/dxyz
 #endif
 
-            CALL vertvel(ia, iam, ja, ka)
+            CALL update_bounce(ia, iam, ja, ka, x0, y0, z0)
 
             CALL cross_time(1,ia,ja,ka,x0,dse,dsw) ! zonal
             CALL cross_time(2,ia,ja,ka,y0,dsn,dss) ! meridional

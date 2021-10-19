@@ -122,7 +122,7 @@ jobs:
               export CC="gcc"
               export FSFLAG=-I
               sed '1 s/#ifndef time_analytical/!#ifndef time_analytical/' mod_pos_tstep.F90 > temp1.F90
-              sed '482 s/#endif/!#endif /' temp1.F90 > temp2.F90
+              sed '600 s/#endif/!#endif /' temp1.F90 > temp2.F90
               mv temp2.F90 mod_pos.F90
               rm temp1.F90 mod_pos_tstep.F90 mod_pos_tanalytical.F90
               funit mod_pos

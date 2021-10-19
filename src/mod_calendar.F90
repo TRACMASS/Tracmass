@@ -36,31 +36,16 @@ MODULE mod_calendar
      !
      ! --------------------------------------------------
 
-        INTEGER                            :: jyear
-        INTEGER                            :: currStep
+        INTEGER                            :: jcaltype
+        REAL(DP)                           :: currStep
 
         IF (log_level >= 5) THEN
            PRINT*,'* Entering init_calendar '
         END IF
 
-        IF (.not. noleap) THEN
-           DO jyear=1,10000
-              daysInMonth(jyear,:) = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
-              IF ( MOD(jyear,4) == 0 ) THEN
-                 daysInMonth(jyear,2) = 29
-                 IF ( MOD(jyear,100) == 0 .AND. MOD(jyear,400) /= 0 ) THEN
-                    daysInMonth(jyear,2) = 28
-                 END IF
-              END IF
-
-              IF (ngcm_unit == 5) daysInMonth(jyear,:) = (/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
-           END DO
-        ELSE
-           DO jyear=1,10000
-              daysInMonth(jyear,:) = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
-              IF (ngcm_unit == 5) daysInMonth(jyear,:) = (/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
-           END DO
-        END IF
+        daysInMonth(:,1) = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+        daysInMonth(:,2) = (/ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+        daysInMonth(:,3) = (/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
 
         nextSec  = startSec
         nextMin  = startMin
@@ -91,15 +76,19 @@ MODULE mod_calendar
         IF (ngcm_unit == 1) THEN ! sec
            currStep = ngcm_step
         ELSE IF (ngcm_unit == 2) THEN ! min
-           currStep = ngcm_step * 60
+           currStep = ngcm_step * 60.d0
         ELSE IF (ngcm_unit == 3) THEN ! hour
-           currStep = ngcm_step * 60 * 60
+           currStep = ngcm_step * 3600.d0
         ELSE IF (ngcm_unit == 4) THEN ! days
-           currStep = ngcm_step * 24 * 60 * 60
+           currStep = ngcm_step * 86400.d0
         ELSE IF (ngcm_unit == 5) THEN ! months
-           currStep = daysInMonth(nextYear,imon) * 24 * 60 * 60
+           currStep = ngcm_step * daysInMonth(imon, 3) * 86400.d0
         ELSE IF (ngcm_unit == 6) THEN ! years
-           currStep = SUM(daysInMonth(nextYear,:)) * 24 * 60 * 60
+           jcaltype = 1
+           IF (.not. noleap .AND. ((MOD(nextYear, 4) .EQ. 0 .AND. MOD(nextYear, 100) .NE. 0) &
+               .OR. MOD(nextYear, 400) .EQ. 0)) jcaltype = 2
+           IF (mon30day) jcaltype = 3
+           currStep = ngcm_step * SUM(daysInMonth(:, jcaltype)) * 86400.d0
         ELSE
            PRINT*," Error [init_calendar]"
            PRINT*," ================================================="
@@ -112,10 +101,10 @@ MODULE mod_calendar
         END IF
 
         ! ngcm
-        ngcm = currStep / (60*60) ! hours
+        ngcm = INT(currStep / (60*60)) ! hours
 
         ! ncgcm_seconds
-        tseas= dble(currStep)
+        tseas= DBLE(currStep)
 
         IF (log_level >=5 ) THEN
            PRINT*,' Done initialising calendar. ngcm = ',ngcm
@@ -200,7 +189,8 @@ MODULE mod_calendar
      !
      ! ---------------------------------------------------
 
-         INTEGER                            :: currStep
+         REAL(DP)                            :: currStep
+         INTEGER                             :: jcaltype
 
          IF(log_level >= 5) THEN
             PRINT*,' entering update_calendar '
@@ -231,15 +221,19 @@ MODULE mod_calendar
          IF (ngcm_unit == 1) THEN ! sec
             currStep = ngcm_step
          ELSE IF (ngcm_unit == 2) THEN ! min
-            currStep = ngcm_step * 60
+            currStep = ngcm_step * 60.d0
          ELSE IF (ngcm_unit == 3) THEN ! hour
-            currStep = ngcm_step * 60 * 60
+            currStep = ngcm_step * 3600.d0
          ELSE IF (ngcm_unit == 4) THEN ! days
-            currStep = ngcm_step * 24 * 60 * 60
+            currStep = ngcm_step * 86400.d0
          ELSE IF (ngcm_unit == 5) THEN ! months
-            currStep = daysInMonth(currYear,imon) * 24 * 60 * 60
+            currStep = ngcm_step*daysInMonth(imon, 3) * 86400.d0
          ELSE IF (ngcm_unit == 6) THEN ! years
-            currStep = SUM(daysInMonth(currYear,:)) * 24 * 60 * 60
+            jcaltype = 1
+            IF (.not. noleap .AND. ((MOD(currYear, 4) .EQ. 0 .AND. MOD(currYear, 100) .NE. 0) &
+                .OR. MOD(currYear, 400) .EQ. 0)) jcaltype = 2
+            IF (mon30day) jcaltype = 3
+            currStep = ngcm_step * SUM(daysInMonth(:, jcaltype)) * 86400.d0
          ELSE
             PRINT*," The ngcm_unit ",ngcm_unit," is not recognised "
             PRINT*," Valid units are 1 (second), 2 (minute), 3 (hour) "
@@ -250,7 +244,7 @@ MODULE mod_calendar
          END IF
 
          ! ngcm
-         ngcm = currStep / (60*60) ! hours
+         ngcm = INT(currStep / (60*60)) ! hours
 
          ! Now update the time and date
          nextSec  = currSec + currStep * nff
@@ -270,8 +264,14 @@ MODULE mod_calendar
                IF (nextHour >= 24) THEN
                   nextHour = nextHour - 24
                   nextDay  = nextDay + 1
-                  IF (nextDay > daysInMonth(nextYear,nextMon)) THEN
-                     nextDay = nextDay - daysInMonth(nextYear,nextMon)
+
+                  jcaltype = 1
+                  IF (.not. noleap .AND.((MOD(nextYear, 4) .EQ. 0 .AND. MOD(nextYear, 100) .NE. 0) &
+                      .OR. MOD(nextYear, 400) .EQ. 0)) jcaltype = 2
+                  IF (mon30day .OR. ngcm_unit == 5) jcaltype = 3
+
+                  IF (nextDay > daysInMonth(nextMon,jcaltype)) THEN
+                     nextDay = nextDay - daysInMonth(nextMon,jcaltype)
                      nextMon = nextMon + 1
                      IF (nextMon > 12) THEN
                         nextMon = nextMon - 12
@@ -281,6 +281,7 @@ MODULE mod_calendar
                   END IF
                END IF
             END IF
+
          END DO
 
          IF (loopYears) THEN
@@ -311,7 +312,13 @@ MODULE mod_calendar
                         nextYear = nextYear - 1
                         iyear = iyear + 1
                      END IF
-                     nextDay = nextDay + daysInMonth(nextYear,nextMon)
+
+                     jcaltype = 1
+                     IF (.not. noleap .AND.((MOD(nextYear, 4) .EQ. 0 .AND. MOD(nextYear, 100) .NE. 0) &
+                         .OR. MOD(nextYear, 400) .EQ. 0)) jcaltype = 2
+                     IF (mon30day .OR. ngcm_unit == 5) jcaltype = 3
+
+                     nextDay = nextDay + daysInMonth(nextMon, jcaltype)
                   END IF
                END IF
             END IF
@@ -352,6 +359,7 @@ MODULE mod_calendar
      ! ---------------------------------------------------
 
          REAL(DP), INTENT(IN)  :: tv
+         INTEGER               :: jcaltype
 
          ! Now update the time and date
          dateSec   = tv
@@ -373,8 +381,13 @@ MODULE mod_calendar
                IF (dateHour >= 24) THEN
                   dateHour = dateHour - 24
                   dateDay  = dateDay + 1
-                  IF (dateDay > daysInMonth(dateYear,dateMon)) THEN
-                     dateDay = dateDay - daysInMonth(dateYear,dateMon)
+
+                  jcaltype = 1
+                  IF (.not. noleap .AND.((MOD(dateYear, 4) .EQ. 0 .AND. MOD(dateYear, 100) .NE. 0) &
+                      .OR. MOD(dateYear, 400) .EQ. 0)) jcaltype = 2
+                  IF (mon30day .OR. ngcm_unit == 5) jcaltype = 3
+                  IF (dateDay > daysInMonth(dateMon, jcaltype)) THEN
+                     dateDay = dateDay - daysInMonth(dateMon, jcaltype)
                      dateMon = dateMon + 1
                      IF (dateMon > 12) THEN
                         dateMon = dateMon - 12
@@ -415,7 +428,13 @@ MODULE mod_calendar
                            dateYear = loopStartYear
                         END IF
                      END IF
-                     dateDay = dateDay + daysInMonth(dateYear,dateMon)
+
+                     jcaltype = 1
+                     IF (.not. noleap .AND.((MOD(dateYear, 4) .EQ. 0 .AND. MOD(dateYear, 100) .NE. 0) &
+                         .OR. MOD(dateYear, 400) .EQ. 0)) jcaltype = 2
+                     IF (mon30day .OR. ngcm_unit == 5) jcaltype = 3
+
+                     dateDay = dateDay + daysInMonth(dateMon,jcaltype)
                   END IF
                END IF
             END IF

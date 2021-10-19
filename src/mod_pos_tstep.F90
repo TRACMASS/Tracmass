@@ -16,6 +16,7 @@ MODULE mod_pos
     !!               - update_traj
     !!
     !!               - update_trajdir (P)
+    !!               - update_bounce (P)
     !!
     !!------------------------------------------------------------------------------
 
@@ -55,13 +56,14 @@ MODULE mod_pos
           REAL(DP) :: sp  ! crossing time east/north/up direction
           REAL(DP) :: sn  ! crossing time west/south/down direction
 
-          ! ijk : considered direction (i=zonal, 2=meridional, 3=vertical)
+          ! ijk : considered direction (1=zonal, 2=meridional, 3=vertical)
           IF ( ijk .EQ. 1) THEN
               ii=ia
               im=ia-1
               IF( (im .EQ. 0) .AND. (iperio .EQ. 1) ) im = IMT
               uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
               um = (intrpg*uflux(im,ja,ka,nsp) + intrpr*uflux(im,ja,ka,nsm))
+
           ELSEIF (ijk .EQ. 2) THEN
               ii=ja
               jm=ja-1
@@ -74,10 +76,10 @@ MODULE mod_pos
               uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
               um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
 #else
+              CALL vertvel(ia,iam,ja,ka)
               uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
               um = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
 #endif
-
           END IF
 
           ! East, North or Upward crossing
@@ -95,7 +97,6 @@ MODULE mod_pos
           ELSE
               sp = UNDEF
           END IF
-
           IF (sp .LE. 0.d0) sp = UNDEF
 
           ! West, South or Downward crossing
@@ -164,6 +165,7 @@ MODULE mod_pos
               uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
               um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
 #else
+              CALL vertvel(ia,iam,ja,ka)
               uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
               um = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
 #endif
@@ -171,9 +173,14 @@ MODULE mod_pos
           END IF
 
           ! New position
-          IF (um .NE. uu) THEN
-             r1 = (r0+(-DBLE(ii-1) + um/(uu-um))) * &
-                  DEXP( (uu-um)*ds ) + DBLE(ii-1) - um/(uu-um)
+          IF (ABS(um/(uu-um)) < 1.e14) THEN
+             IF ((iperio .EQ. 1)  .AND. r0 == DBLE(IMT) .AND. ii==1) THEN
+               r1 = (-DBLE(ii-1) + um/(uu-um)) * &
+                    DEXP( (uu-um)*ds ) + DBLE(ii-1) - um/(uu-um)
+             ELSE
+               r1 = (r0+(-DBLE(ii-1) + um/(uu-um))) * &
+                    DEXP( (uu-um)*ds ) + DBLE(ii-1) - um/(uu-um)
+             END IF
           ELSE
              r1 = r0 + uu*ds
           END IF
@@ -331,7 +338,7 @@ MODULE mod_pos
           ! Upward grid-cell exit
           ELSE IF (ds==dsu) THEN
              scrivi=.FALSE.
-             CALL vertvel(ia,iam,ja,ka)
+             CALL vertvel(ia, iam, ja, ka)
 #if defined w_explicit
              uu = (intrpg*wflux(ia,ja,ka,nsp) + intrpr*wflux(ia,ja,ka,nsm))
 #else
@@ -373,6 +380,7 @@ MODULE mod_pos
 
           ! Downward grid-cell exit
           ELSE IF (ds==dsd) THEN
+
              scrivi=.FALSE.
              CALL vertvel(ia, iam, ja, ka)
 #if defined w_explicit
@@ -476,6 +484,116 @@ MODULE mod_pos
           IF (z0 > z1) trajdir(3) = -1
 
       END SUBROUTINE update_trajdir
+
+      SUBROUTINE update_bounce(ia, iam, ja, ka, x0, y0, z0)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Update the indexes of the trajectory in case of
+      ! a sudden change of fluxes sign
+      !
+      ! --------------------------------------------------
+
+          ! Position indexes
+          INTEGER, INTENT(INOUT)   :: ia, iam, ja, ka
+          INTEGER                  :: tmpia, tmpiam, tmpja, tmpka
+
+          ! Real positions
+          REAL(DP), INTENT(INOUT)  :: x0, y0, z0
+
+          ! Fluxes
+          REAL(DP) :: uu, um ! Fluxes
+
+          ! Temporal storage of indexes
+          tmpia  = ia
+          tmpiam = iam
+          tmpja  = ja
+          tmpka  = ka
+
+          ! Zonal walls
+          IF (x0 == DBLE(ia)) THEN
+
+              uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
+
+              IF (uu .GT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpiam  = ia
+                  tmpia   = ia + 1
+                  IF ( (tmpia .EQ. IMT + 1) .AND. (iperio .EQ. 1)) tmpia = 1
+              END IF
+
+          ELSE IF (x0 == DBLE(iam)) THEN
+
+              um = (intrpg*uflux(iam,ja,ka,nsp) + intrpr*uflux(iam,ja,ka,nsm))
+
+              IF (um .LT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpia  = iam
+                  tmpiam = tmpia - 1
+                  IF( (tmpiam .EQ. 0) .AND. (iperio .EQ. 1) ) tmpiam = IMT
+              END IF
+
+          END IF
+
+          ! Meridional wall
+          IF (y0 == DBLE(ja)) THEN
+
+              uu = (intrpg*vflux(ia,ja,ka,nsp) + intrpr*vflux(ia,ja,ka,nsm))
+
+              IF (uu .GT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpja   = ja + 1
+              END IF
+
+          ELSE IF (y0 == DBLE(ja-1)) THEN
+
+              um = (intrpg*vflux(ia,ja-1,ka,nsp) + intrpr*vflux(ia,ja-1,ka,nsm))
+
+              IF (um .LT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpja  = ja - 1
+              END IF
+
+          END IF
+
+          ! Vertical wall
+          IF (z0 == DBLE(ka)) THEN
+
+            ! Recalculate the fluxes
+#if defined  w_explicit
+            uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
+#else
+            CALL vertvel(ia,iam,ja,ka)
+            uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
+#endif
+              IF (uu .GT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpka   = ka + 1
+              END IF
+
+          ELSE IF (z0 == DBLE(ka-1)) THEN
+
+#if defined  w_explicit
+              um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
+#else
+              CALL vertvel(ia,iam,ja,ka)
+              um = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
+#endif
+
+              IF (um .LT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpka  = ka - 1
+              END IF
+
+          END IF
+
+          ! Reassign indexes
+          ia  = tmpia
+          iam = tmpiam
+          ja  = tmpja
+          ka  = tmpka
+
+      END SUBROUTINE update_bounce
 
 END MODULE mod_pos
 

@@ -3,7 +3,6 @@
 #================================================================
 #                     TRACMASS test_suite
 #================================================================
-
 # The following test_suite is computed using fUNIT.
 # netCDF libraries are required for mod_getfile.F90
 
@@ -12,6 +11,7 @@ cd src/_funit
 cp ../*.F90 .
 
 # Test_suite for main modules funit mod_calendar
+funit mod_calendar
 funit mod_clock
 funit mod_error
 funit mod_subdomain
@@ -45,7 +45,7 @@ cp mod_pos_tstep.fun mod_pos.fun
 
 # Remove the ifndef and endif
 sed '1 s/#ifndef time_analytical/ /' mod_pos_tstep.F90 > temp1.F90
-sed '482 s/#endif/ /' temp1.F90 > temp2.F90
+sed '600 s/#endif/ /' temp1.F90 > temp2.F90
 mv temp2.F90 mod_pos.F90
 funit mod_pos
 
@@ -59,7 +59,7 @@ cp mod_pos_tanalytical.fun mod_pos.fun
 
 # Remove the ifndef and endif
 sed '1 s/#ifdef time_analytical/ /' mod_pos_tanalytical.F90 > temp1.F90
-sed '2036 s/#endif/ /' temp1.F90 > temp2.F90
+sed '2037 s/#endif/ /' temp1.F90 > temp2.F90
 mv temp2.F90 mod_pos.F90
 funit mod_pos
 

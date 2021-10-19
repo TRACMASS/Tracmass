@@ -19,10 +19,13 @@ SETUP
   ALLOCATE(vflux(10,10,10,2))
   ALLOCATE(wflux(10,2))
 
-  vflux(:,:,:,:) = 0.; wflux(:,:) = 0.
+  uflux(:,:,:,:) = 0.;
+  vflux(:,:,:,:) = 0.;
+  wflux(:,:) = 0.
 
   ! Velocities
-  dsn = 0.; dss = 0.; dsu = 0.; dsd = 0.
+  dsn = 0.; dss = 0.; dsu = 0.; dsd = 0.;
+  dsc = 0; dsmin = 0.
 
   ! No stream functions
   l_psi     = .FALSE.
@@ -31,11 +34,20 @@ SETUP
   ! jperio
   jperio = 0
 
+  ! kmt and dxdy
+  ALLOCATE(kmt(10,10), dxdy(10,10))
+  kmt(:,:) = 10
+  dxdy(:,:) = 1.
+
+  ! dzdt
+  ALLOCATE(dzdt(10,10,10,2))
+  dzdt(:,:,:,:) = 0.
+
 END SETUP
 
 TEARDOWN
   ! This code runs immediately after each test
-  DEALLOCATE(uflux, vflux, wflux)
+  DEALLOCATE(uflux, vflux, wflux, kmt, dxdy, dzdt)
 END TEARDOWN
 
 TEST test_cross_time_1
@@ -202,6 +214,7 @@ TEST test_update_traj_1
 
 
    uflux(:,:,:,:) =  1.
+   vflux(:,:,:,:) =  0.
 
    ! Original position
    x0 = 1.6d0; y0 = 5.d0; z0 = 5.d0
@@ -232,7 +245,8 @@ TEST test_update_traj_2
 
 
    uflux(:,:,:,:) =  1.
-   uflux(1,:,:,:) =  2.
+   uflux(1,:,5,:) =  2.
+   uflux(1,:,4,:) =  0.
 
    ! Original position
    x0 = 1.6d0; y0 = 5.d0; z0 = 5.d0
@@ -291,9 +305,10 @@ TEST test_update_traj_4
 
    PRINT *, ' * Test update_traj :  westward (uu /= um)'
 
-
    uflux(:,:,:,:) =  -1.
-   uflux(1,:,:,:) =  -2.
+   uflux(1,:,5,:) =  -2.
+   uflux(1,:,4,:) =  0.
+
 
    ! Original position
    x0 = 1.6d0; y0 = 5.d0; z0 = 5.d0

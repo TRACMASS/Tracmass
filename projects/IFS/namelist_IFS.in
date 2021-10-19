@@ -51,6 +51,7 @@
      startmon       = 7,
      startyear      = 2018,
      noleap         = .FALSE.,            ! don't use leap years?
+     mon30day       = .FALSE.
 /
 
 &INIT_RUN_TIME

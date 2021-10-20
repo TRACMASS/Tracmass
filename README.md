@@ -1,7 +1,6 @@
 :warning: Warning
 -----------------
-This **TRACMASS** version is a **beta** version.
-It is currently under development. The following features from older versions are not available yet in this version:
+This **TRACMASS** version is currently under development. The following features from older versions are not available yet in this version:
 
 * Subgrid turbulence parameterisations
 
@@ -9,8 +8,8 @@ Previous versions of **TRACMASS** are stored in the following repository:
 
 https://github.com/TRACMASS/Tracmass_previous.git
 
-TRACMASS v7
-===========
+TRACMASS v2021 (v7.1)
+=====================
 [![GitHubAction](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4337926.svg)](https://doi.org/10.5281/zenodo.4337926)
 
 ![Social logo](https://github.com/TRACMASS/tracmass.github.io/blob/version7/images/headers_footer/fig_socialimage.png)

@@ -1,6 +1,5 @@
-:warning: Warning
------------------
-This **TRACMASS** version is currently under development. The following features from older versions are not available yet in this version:
+
+The following features from older versions are not available yet in this version:
 
 * Subgrid turbulence parameterisations
 

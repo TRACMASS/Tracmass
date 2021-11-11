@@ -60,9 +60,13 @@ MODULE mod_pos
           IF ( ijk .EQ. 1) THEN
               ii=ia
               im=ia-1
-              IF( (im .EQ. 0) .AND. (iperio .EQ. 1) ) im = IMT
               uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
-              um = (intrpg*uflux(im,ja,ka,nsp) + intrpr*uflux(im,ja,ka,nsm))
+              IF( (im .EQ. 0) .AND. (iperio .EQ. 1) ) im = IMT
+              IF( (im .EQ. 0) .AND. (iperio .EQ. 0)) THEN
+                um = 0.d0
+              ELSE
+                um = (intrpg*uflux(im,ja,ka,nsp) + intrpr*uflux(im,ja,ka,nsm))
+              END IF
 
           ELSEIF (ijk .EQ. 2) THEN
               ii=ja
@@ -149,9 +153,13 @@ MODULE mod_pos
           IF (ijk .EQ. 1) THEN
              ii = ia
              im = ia-1
-             IF ( (im .EQ. 0) .AND. (iperio .EQ. 1)) im = IMT
              uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
-             um = (intrpg*uflux(im,ja,ka,nsp) + intrpr*uflux(im,ja,ka,nsm))
+             IF( (im .EQ. 0) .AND. (iperio .EQ. 0)) THEN
+               um = 0.d0
+             ELSE
+               IF( (im .EQ. 0) .AND. (iperio .EQ. 1)) im = IMT
+               um = (intrpg*uflux(im,ja,ka,nsp) + intrpr*uflux(im,ja,ka,nsm))
+             END IF
 
           ELSE IF (ijk .EQ. 2) THEN
              ii = ja
@@ -174,7 +182,7 @@ MODULE mod_pos
 
           ! New position
           IF (ABS(um/(uu-um)) < 1.e14) THEN
-             IF ((iperio .EQ. 1)  .AND. r0 == DBLE(IMT) .AND. ii==1) THEN
+             IF ((iperio .EQ. 1)  .AND. r0 == DBLE(IMT) .AND. ii==1 .AND. ijk==1) THEN
                r1 = (-DBLE(ii-1) + um/(uu-um)) * &
                     DEXP( (uu-um)*ds ) + DBLE(ii-1) - um/(uu-um)
              ELSE

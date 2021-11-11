@@ -1,12 +1,3 @@
-
-The following features from older versions are not available yet in this version:
-
-* Subgrid turbulence parameterisations
-
-Previous versions of **TRACMASS** are stored in the following repository:
-
-https://github.com/TRACMASS/Tracmass_previous.git
-
 TRACMASS v2021 (v7.1)
 =====================
 [![GitHubAction](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4337926.svg)](https://doi.org/10.5281/zenodo.4337926)
@@ -20,7 +11,6 @@ The code is written in FORTRAN 90 with modules and runs on UNIX platforms such a
 **TRACMASS** has been set up to run with velocities integrated with models such as NEMO or IFS-ECMWF, of satellite datasets such as AVISO.
 
 For more information check our website: https://www.tracmass.org/.
-
 
 Documentation
 =============
@@ -97,3 +87,14 @@ Run your analysis
 
 If you wish to run another case or a very specific case of the above models, you may create your own project in the projects directory.
 To run with e.g. your own IFS data, you will need to modify the projects/IFS/namelist_IFS.in namelist to suit your needs.
+
+Previous versions of TRACMASS
+=============================
+
+Previous versions of **TRACMASS** are stored in the following repository:
+
+https://github.com/TRACMASS/Tracmass_previous.git
+
+The following features from older versions are not available yet in this version:
+
+* Subgrid turbulence parameterisations

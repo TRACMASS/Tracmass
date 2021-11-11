@@ -120,9 +120,9 @@ test :
 clean:
 
 	-rm -rf *.o *.mod *.out *.dSYM *.csv fort.* *.x *.in
-	-rm runtest.sh
 	-rm -rf _build
-	-rm $(RUNFILE)
+	test -s runtest.sh && rm runtest.sh || true
+	test -s $(RUNFILE) && rm $(RUNFILE) || true
 
 .PHONY : help
 

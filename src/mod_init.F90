@@ -41,7 +41,7 @@ MODULE mod_init
 
           ! Setup namelists
           namelist /INIT_GRID_DESCRIPTION/ griddir, zeroindx, trunit, l_onestep, physDataDir, physPrefixForm, &
-                                           dateFormat, tGridName, uGridName, vGridName, &
+                                           dateFormat, tGridName, uGridName, vGridName, wGridName,&
                                            fileSuffix, hs_name, ueul_name, veul_name, &
                                            usgs_name, vsgs_name, usub_name, vsub_name, w_name
           namelist /INIT_GRID_SIZE/        imt, jmt, km, iperio, jperio, &

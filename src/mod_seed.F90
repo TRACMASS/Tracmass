@@ -272,7 +272,7 @@ MODULE mod_seed
             IF (nqua == 1) THEN
                 ntracmax = nsdMax*nsdTim*INT(partQuant)
             ELSE
-                ntracmax = nsdMax*nsdTim*100
+                ntracmax = nsdMax*nsdTim*10000
             END IF
 
             ALLOCATE ( trajectories(ntracmax) )
@@ -411,13 +411,6 @@ MODULE mod_seed
                   IF (num == 1) THEN
                       ijt = 1
                       ikt = 1
-                  ELSE IF (num > 500) THEN
-                      PRINT *, ' num is above the limit!!'
-                      PRINT *, '    num :', num
-
-                      STOP
-                      !ijt    = NINT (SQRT (FLOAT(num)) )
-                      !ikt    = NINT (FLOAT (num) / FLOAT (ijt))
                   ELSE
                       CALL split_grid()
                   END IF
@@ -624,6 +617,33 @@ MODULE mod_seed
 
         END SUBROUTINE read_mask
 
+        SUBROUTINE isNumPrime(num, l_prime)
+
+          IMPLICIT NONE
+
+          LOGICAL, INTENT(OUT):: l_prime
+          INTEGER, INTENT(IN) :: num
+          INTEGER             :: inum
+
+          IF (num < 0) THEN
+             PRINT*, num, ' is a negative number !!'
+             STOP
+          END IF
+
+          IF (num == 1) THEN
+              l_prime = .FALSE.
+          ELSE IF ( num > 1 ) THEN
+              l_prime = .TRUE.
+              primloop: DO inum = 2, num-1
+                IF (MOD(num, inum) == 0) THEN
+                   l_prime = .FALSE.
+                   CYCLE primloop
+                END IF
+              END DO primloop
+          END IF
+
+        END SUBROUTINE isNumPrime
+
         SUBROUTINE split_grid()
         ! --------------------------------------------------
         !
@@ -636,19 +656,9 @@ MODULE mod_seed
         !
         ! --------------------------------------------------
 
-            ! First prime numbers between 1 and 500
-            INTEGER, DIMENSION(95)  :: num_prime = (/2,3,5,7,11,13,17,19,23,29,31, &
-                                    & 37,41,43,47,53,59,61,67,71, 73, 79, 83, 89, 97, &
-                                    & 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, &
-                                    & 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, &
-                                    & 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, &
-                                    & 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, &
-                                    & 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, &
-                                    & 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, &
-                                    & 443, 449, 457, 461, 463, 467, 479, 487, 491, 499/)
-            INTEGER    :: isg, jsg
+            INTEGER    :: jsg
 
-            LOGICAL :: l_square
+            LOGICAL    :: l_square, l_prime
 
             ! Initialise l_square
             l_square = .FALSE.
@@ -663,10 +673,9 @@ MODULE mod_seed
 
             IF (l_square .EQV. .FALSE.) THEN
 
-                isg = MINLOC(ABS(num-num_prime),1)
-
-                ! Is num a prime number?
-                IF (num == num_prime(isg)) THEN
+               ! Is num a prime number?
+                CALL isNumPrime(num, l_prime)
+                IF (l_prime) THEN
                     ijt = num
                     ikt = 1
 
@@ -676,11 +685,15 @@ MODULE mod_seed
                     ikt = NINT (FLOAT (num) / FLOAT (ijt))
 
                     IF (ijt*ikt /= num) THEN
-                        DO jsg = 1, 23
-                            ijt = num_prime(jsg)
-                            ikt = num/ijt
+                        DO jsg = 1, num
 
-                            IF (ijt*ikt == num) EXIT
+                            CALL isNumPrime(jsg, l_prime)
+
+                            IF (l_prime) THEN
+                                ijt = jsg
+                                ikt = num/ijt
+                                IF (ijt*ikt == num) EXIT
+                            END IF
                         END DO
                     END IF
 

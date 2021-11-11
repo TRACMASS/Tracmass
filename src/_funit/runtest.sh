@@ -45,7 +45,7 @@ cp mod_pos_tstep.fun mod_pos.fun
 
 # Remove the ifndef and endif
 sed '1 s/#ifndef time_analytical/ /' mod_pos_tstep.F90 > temp1.F90
-sed '600 s/#endif/ /' temp1.F90 > temp2.F90
+sed '608 s/#endif/ /' temp1.F90 > temp2.F90
 mv temp2.F90 mod_pos.F90
 funit mod_pos
 

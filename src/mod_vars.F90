@@ -219,7 +219,7 @@ MODULE mod_grid
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: hs
 
   ! Info about input data
-  CHARACTER(LEN=50)                         :: RunID, tGridName = '', uGridName = '', vGridName = '', &
+  CHARACTER(LEN=50)                         :: RunID, tGridName = '', uGridName = '', vGridName = '', wGridName = '',&
                                                fileSuffix = '',  hs_name = '', ueul_name = '', veul_name = '', &
                                                usgs_name = '', vsgs_name = '', usub_name = '', vsub_name = '', &
                                                w_name = ''

@@ -99,14 +99,17 @@ MODULE mod_tracers
        CHARACTER(len=100)          :: tracname
        REAL(DP), DIMENSION(:,:,:)  :: var3d
 
-       ! Sigma 0 calculation (using T (degC) and S(PSU))
+       ! Sigma 0 calculation (using T (degC) and S(g/kg))
        IF (TRIM(tracname) == 'sigma0') THEN
              var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4), REAL(tracers(2)%data(:,:,:,2),4)),8)
              var3d = var3d - 1000.d0
-       ! Sigma 0 calculation (using T (K) and S(PSU))
+       ! Sigma 0 calculation (using T (K) and S(g/kg))
        ELSE IF (TRIM(tracname) == 'sigma0_K') THEN
              var3d = REAL(thermo_dens0(REAL(tracers(1)%data(:,:,:,2),4)-273.15, REAL(tracers(2)%data(:,:,:,2),4)),8)
              var3d = var3d - 1000.d0
+       ! Conservative temperatue (CTo) calculation (using T (degC) and S(g/kg))
+       ELSE IF (TRIM(tracname) == 'CTo') THEN
+             var3d = REAL(thermo_pt2ct(REAL(tracers(1)%data(:,:,:,2),4), REAL(tracers(2)%data(:,:,:,2),4)),8)
        END IF
 
     END SUBROUTINE compute_tracer

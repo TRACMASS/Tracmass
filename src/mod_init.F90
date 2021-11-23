@@ -46,7 +46,7 @@ MODULE mod_init
                                            usgs_name, vsgs_name, usub_name, vsub_name, w_name
           namelist /INIT_GRID_SIZE/        imt, jmt, km, iperio, jperio, &
                                            topoDataDir, &
-                                           hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
+                                           hgridFile, darea_name, dy_name, dyu_name, dx_name, dxv_name, &
                                            zgridFile, dzt_name, dzu_name, dzv_name, dep_name,&
                                            bathyFile, kmt_name
           namelist /INIT_GRID_SUBDOMAIN/   l_subdom, imindom, imaxdom, jmindom, jmaxdom

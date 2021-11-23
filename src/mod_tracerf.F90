@@ -72,4 +72,61 @@ MODULE mod_tracerf
 
   END FUNCTION thermo_dens0
 
+  FUNCTION thermo_pt2ct(T,S)
+  ! --------------------------------------------------
+  !
+  ! Purpose:
+  ! Compute conservative temperature from Potential
+  ! temperature
+  !
+  ! Method:
+  ! TEOS_10 method gsw_ct_fron_pt
+  !
+  ! --------------------------------------------------
+
+      IMPLICIT NONE
+
+      REAL, INTENT(IN)                         :: T(:,:,:)      ! Potential T [degC]
+      REAL, INTENT(IN)                         :: S(:,:,:)      ! Absolut S   [g/kg]
+
+      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: thermo_pt2ct
+
+      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: ct_temp, xS, xS2, yT
+
+      REAL, PARAMETER                          :: gsw_sfac = 0.0248826675584615
+      REAL, PARAMETER                          :: gsw_cp0  = 3991.86795711963
+
+      INTEGER                                  :: nx, ny, nz
+
+      ! Size of array
+      nx = SIZE(S,1); ny = SIZE(S,2); nz = SIZE(S,3);
+
+      ALLOCATE(thermo_pt2ct(nx,ny,nz), ct_temp(nx,ny,nz), xS(nx,ny,nz), xS2(nx,ny,nz), yT(nx,ny,nz))
+
+      ! Calculation
+      xS  = gsw_sfac*S
+      xS2 = SQRT(xS)
+      yT  = T*0.025        ! normalize for F03 and F08
+
+      ct_temp =  61.01362420681071 + yT*(168776.46138048015 + &
+                     yT*(-2735.2785605119625 + yT*(2574.2164453821433 + &
+                     yT*(-1536.6644434977543 + yT*(545.7340497931629 + &
+                     (-50.91091728474331 - 18.30489878927802*yT)*yT))))) + &
+                     xS2*(268.5520265845071 + yT*(-12019.028203559312 + &
+                     yT*(3734.858026725145 + yT*(-2046.7671145057618 + &
+                     yT*(465.28655623826234 + (-0.6370820302376359 - &
+                     10.650848542359153*yT)*yT)))) + &
+                     xS*(937.2099110620707 + yT*(588.1802812170108 + &
+                     yT*(248.39476522971285 + (-3.871557904936333 - &
+                     2.6268019854268356*yT)*yT)) + &
+                     xS*(-1687.914374187449 + xS*(246.9598888781377 + &
+                     xS*(123.59576582457964 - 48.5891069025409*xS)) + &
+                     yT*(936.3206544460336 + &
+                     yT*(-942.7827304544439 + yT*(369.4389437509002 + &
+                     (-33.83664947895248 - 9.987880382780322*yT)*yT))))))
+
+      thermo_pt2ct = ct_temp/gsw_cp0
+
+  END FUNCTION thermo_pt2ct
+
 END MODULE mod_tracerf

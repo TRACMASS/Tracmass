@@ -224,7 +224,7 @@ MODULE mod_grid
                                                usgs_name = '', vsgs_name = '', usub_name = '', vsub_name = '', &
                                                w_name = ''
 
-  CHARACTER(LEN=50)                         :: hgridFile, dy_name, dyu_name, dx_name, dxv_name, &
+  CHARACTER(LEN=50)                         :: hgridFile, darea_name, dy_name, dyu_name, dx_name, dxv_name, &
                                                zgridFile, dzt_name, dzu_name, dzv_name, dep_name, &
                                                bathyFile, kmt_name
 

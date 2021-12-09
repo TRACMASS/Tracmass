@@ -56,7 +56,7 @@ MODULE mod_init
                                            noleap, mon30day
           namelist /INIT_RUN_TIME/         loopYears, loopStartYear, loopEndYear, &
                                            log_level, intrun
-          namelist /INIT_WRITE_TRAJ/       write_frec, write_form, outDataDir, outDataFile, timeformat
+          namelist /INIT_WRITE_TRAJ/       write_frec, write_form, outDataDir, outDataFile, timeformat, l_compress
           namelist /INIT_SEEDING/          nff, isec, idir, nqua, partQuant,             &
                                            loneparticle, SeedType, ist1,  &
                                            ist2, jst1, jst2, kst1, kst2, tst1, tst2,&

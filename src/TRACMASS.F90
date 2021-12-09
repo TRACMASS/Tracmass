@@ -97,8 +97,10 @@ PROGRAM TRACMASS
       CALL close_outfiles
 
       ! Combine part compress files
-      IF (icompresspart > 0) CALL compress_part(icompresspart+1)
-      CALL combine_part
+      IF (l_compress) THEN
+          IF (icompresspart > 0) CALL compress_part(icompresspart+1, .TRUE.)
+          CALL combine_part
+      END IF
 
   END IF
 

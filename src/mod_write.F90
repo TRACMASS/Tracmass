@@ -21,6 +21,7 @@ MODULE mod_write
     !!               - open_outdiv
     !!               - close_outdiv
     !!               - write_outdiv
+    !!               - init_compress
     !!               - combine_part
     !!               - compress_part
     !!
@@ -147,12 +148,9 @@ MODULE mod_write
 
           CHARACTER(LEN=*)     :: sel
 
-          REAL(DP)  :: tout, fsize
-
-          INTEGER   :: file_size, iostat
+          REAL(DP)  :: tout
 
           SELECT CASE (TRIM(sel))
-
 
           ! INI file
           CASE ('ini')
@@ -299,29 +297,7 @@ MODULE mod_write
 
                   END SELECT
 
-                  ! Check size of run file
-                  file_size = 0
-                  iostat = -1
-
-                  IF (trajectories(ntrac)%niter == niter-1)  THEN
-                      INQUIRE(FILE = TRIM(fullWritePref)//'_run.csv', SIZE= file_size, IOSTAT = iostat)
-                  END IF
-
-                  fsize = file_size/1073741824.
-
-                  !If file is larger than 2 GiB compress
-                  IF (iostat == 0 .AND. (fsize >= 2.0 .OR. fsize < 0.0)) THEN
-
-                      ! Close file
-                      CLOSE(51)
-
-                      ! Compress file
-                      icompresspart = icompresspart + 1
-                      CALL compress_part(icompresspart)
-
-                      ! Reopen file and continue writing
-                      OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='REPLACE')
-                  END IF
+                  IF (l_compress) CALL init_compress()
 
                   RETURN
 
@@ -742,7 +718,46 @@ MODULE mod_write
 
       END SUBROUTINE trimreal
 
-      SUBROUTINE compress_part(ipart)
+      SUBROUTINE init_compress()
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Close the run file before compressing &
+      !  rename the file and open a new run file
+      !
+      ! --------------------------------------------------
+
+        REAL(DP)  :: fsize
+        INTEGER   :: file_size, iostat
+
+        ! Check size of run file
+        file_size = 0
+        iostat = -1
+
+        IF (trajectories(ntrac)%niter == niter-1)  THEN
+            INQUIRE(FILE = TRIM(fullWritePref)//'_run.csv', SIZE= file_size, IOSTAT = iostat)
+        END IF
+
+        fsize = file_size/1073741824.
+
+        !If file is larger than 2 GiB compress
+        IF (iostat == 0 .AND. (fsize >= 2.0 .OR. fsize < 0.0)) THEN
+
+            ! Close file
+            CLOSE(51)
+
+            ! Compress file
+            icompresspart = icompresspart + 1
+
+            CALL compress_part(icompresspart, .FALSE.)
+
+            ! Reopen file and continue writing
+            OPEN(UNIT=51, FILE = TRIM(fullWritePref)//'_run.csv', STATUS='REPLACE')
+        END IF
+
+      END SUBROUTINE init_compress
+
+      SUBROUTINE compress_part(ipart, l_remove)
       ! --------------------------------------------------
       !
       ! Purpose:
@@ -751,6 +766,8 @@ MODULE mod_write
       ! --------------------------------------------------
 
         INTEGER :: ipart
+
+        LOGICAL :: l_remove
 
         CHARACTER(len=200) :: command
 
@@ -766,6 +783,14 @@ MODULE mod_write
                   & TRIM(fullWritePref)//'_run.csv.part_'//TRIM(partpath)//'.gz'
 
         CALL system(command)
+
+        IF (l_remove) THEN
+
+          command = 'rm -rf '//TRIM(fullWritePref)//'_run.csv'
+
+          CALL system(command)
+
+        END IF
 
       END SUBROUTINE compress_part
 
@@ -787,7 +812,8 @@ MODULE mod_write
         INQUIRE(FILE=TRIM(fullWritePref)//'_run.csv.part_001.gz', EXIST = l_fileexist)
 
         IF (l_fileexist) THEN
-          command = 'gzip -cf '//TRIM(fullWritePref)//'_run.csv.part_*.gz > '//&
+          PRINT*, ' - Combining the part files'
+          command = 'cat '//TRIM(fullWritePref)//'_run.csv.part_*.gz > '//&
                     & TRIM(fullWritePref)//'_run.csv.gz'
 
           CALL system(command)

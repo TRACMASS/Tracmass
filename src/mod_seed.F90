@@ -400,6 +400,12 @@ MODULE mod_seed
 											     ! set by partQuant
                       num = INT(vol/partQuant)
                       IF (MOD(vol,partQuant) /= 0) num = num + 1
+
+                      ! For num>4, num will be assigned to a square number
+                      IF (FLOAT(INT(SQRT(FLOAT(num)))) /= SQRT(FLOAT(num)) .AND. num>4) THEN
+                          num = (INT(SQRT(FLOAT(num))) + 1)**2
+                      END IF
+
                   CASE (3) ! particle reflects air/water mass/volume at seeding
                       vol = dzt(ib,jb,kb,1)
                       num = INT(vol/partQuant)
@@ -539,8 +545,9 @@ MODULE mod_seed
 
                         ! tt - time, fractions of ints
                         ! ts - time [s] rel to start
-                        ts = DBLE (ints-1)
-                        tt = ts * tseas
+                        ts  = DBLE (ints-1)
+                        tt  = ts * tseas
+                        tss = 0.d0
 
                         ! Define the trajectories
                         trajectories(ntrac)%x1 = x1
@@ -685,17 +692,25 @@ MODULE mod_seed
                     ikt = NINT (FLOAT (num) / FLOAT (ijt))
 
                     IF (ijt*ikt /= num) THEN
-                        DO jsg = 1, num
 
-                            CALL isNumPrime(jsg, l_prime)
+                        DO jsg = ijt,1,-1
 
-                            IF (l_prime) THEN
-                                ijt = jsg
-                                ikt = num/ijt
-                                IF (ijt*ikt == num) EXIT
-                            END IF
+                          ikt = INT(FLOAT (num) / FLOAT (jsg))
+
+                          IF (jsg*ikt == num) EXIT
                         END DO
+
+                        ijt = jsg
+
                     END IF
+
+                    IF (ikt>ijt) THEN
+                        jsg = ijt
+                        ijt = ikt
+                        ikt = jsg
+                    END IF
+
+                    print*, num, ijt, ikt
 
                 END IF
 

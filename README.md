@@ -1,4 +1,4 @@
-TRACMASS v2021 (v7.1)
+TRACMASS v2022.01
 =====================
 [![GitHubAction](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)](https://github.com/AitorAldama/Tracmass/workflows/Build%20and%20Test/badge.svg)  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4337926.svg)](https://doi.org/10.5281/zenodo.4337926)
 
@@ -68,7 +68,7 @@ Download test data
 You can find some input data for testing the code on
 
 ```bash
-https://www.dropbox.com/sh/b6leim7tb99i3hm/AAA7M0mxuYTwJLKjqmLnoJuca?dl=0
+https://stockholmuniversity.box.com/s/pyc29hjumxuvf0nf84ym5zs0vrnqbswr
 ```
 
 This test data includes data from NEMO, IFS and AVISO.

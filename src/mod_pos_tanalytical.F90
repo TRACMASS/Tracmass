@@ -28,6 +28,7 @@ MODULE mod_pos
     !!               - gser (P)
     !!               - gcf (P)
     !!               - gammln (P)
+    !!               - update_bounce (P)
     !!
     !!------------------------------------------------------------------------------
 
@@ -2031,6 +2032,117 @@ MODULE mod_pos
             RETURN
 
       END FUNCTION gammln
+
+      SUBROUTINE update_bounce(ia, iam, ja, ka, x0, y0, z0)
+      ! --------------------------------------------------
+      !
+      ! Purpose:
+      ! Update the indexes of the trajectory in case of
+      ! a sudden change of fluxes sign
+      !
+      ! --------------------------------------------------
+
+          ! Position indexes
+          INTEGER, INTENT(INOUT)   :: ia, iam, ja, ka
+          INTEGER                  :: tmpia, tmpiam, tmpja, tmpka
+
+          ! Real positions
+          REAL(DP), INTENT(INOUT)  :: x0, y0, z0
+
+          ! Fluxes
+          REAL(DP) :: uu, um ! Fluxes
+
+          ! Temporal storage of indexes
+          tmpia  = ia
+          tmpiam = iam
+          tmpja  = ja
+          tmpka  = ka
+
+          ! Zonal walls
+          IF (x0 == DBLE(ia)) THEN
+
+              uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
+
+              IF (uu .GT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpiam  = ia
+                  tmpia   = ia + 1
+                  IF ( (tmpia .EQ. IMT + 1) .AND. (iperio .EQ. 1)) tmpia = 1
+              END IF
+
+          ELSE IF (x0 == DBLE(iam)) THEN
+
+              um = (intrpg*uflux(iam,ja,ka,nsp) + intrpr*uflux(iam,ja,ka,nsm))
+
+              IF (um .LT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpia  = iam
+                  tmpiam = tmpia - 1
+                  IF( (tmpiam .EQ. 0) .AND. (iperio .EQ. 1) ) tmpiam = IMT
+              END IF
+
+          END IF
+
+          ! Meridional wall
+          IF (y0 == DBLE(ja)) THEN
+
+              uu = (intrpg*vflux(ia,ja,ka,nsp) + intrpr*vflux(ia,ja,ka,nsm))
+
+              IF (uu .GT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpja   = ja + 1
+              END IF
+
+          ELSE IF (y0 == DBLE(ja-1)) THEN
+
+              um = (intrpg*vflux(ia,ja-1,ka,nsp) + intrpr*vflux(ia,ja-1,ka,nsm))
+
+              IF (um .LT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpja  = ja - 1
+              END IF
+
+          END IF
+
+          ! Vertical wall
+          IF (z0 == DBLE(ka)) THEN
+
+            ! Recalculate the fluxes
+#if defined  w_explicit
+            uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
+#else
+            CALL vertvel(ia,iam,ja,ka)
+            uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
+#endif
+              IF (uu .GT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpka   = ka + 1
+              END IF
+
+          ELSE IF (z0 == DBLE(ka-1)) THEN
+
+#if defined  w_explicit
+              um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
+#else
+              CALL vertvel(ia,iam,ja,ka)
+              um = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
+#endif
+
+              IF (um .LT. 0.d0) THEN
+                  ! Redifine the indexes
+                  tmpka  = ka - 1
+              END IF
+
+          END IF
+
+          ! Reassign indexes
+          ia  = tmpia
+          iam = tmpiam
+          ja  = tmpja
+          ka  = tmpka
+
+      END SUBROUTINE update_bounce
+      
 
 END MODULE mod_pos
 

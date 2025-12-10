@@ -5,15 +5,17 @@
 # Project and case definition
 PROJECT	          = Theoretical
 CASE              = Theoretical
-RUNFILE 	        = runtracmass
-ARCH              =
-NETCDFLIBS        = none
+RUNFILE 	      = runtracmass
+ARCH              = conda
+NETCDFLIBS        = conda
 #================================================================
 
 # Possible architectures:
 # tetralith    (Swedish HPC with intel)
+# conda 	   (gfortran compiler in conda virtual environment)
 
 # Possible netCDF settings:
+# conda        (set by nf-config in conda virtual environment)
 # automatic    (set by nc-config)
 # automatic-44 (set by nf-config, for netCDF version >4.4)
 # none         (no netCDF library)
@@ -49,7 +51,7 @@ else ifeq ($(NETCDFLIBS),automatic)
 LIB_DIR = $(shell nc-config --flibs)
 INC_DIR = -I$(shell nc-config --includedir)
 
-else ifeq ($(NETCDFLIBS),automatic-44)
+else ifeq ($(NETCDFLIBS),$(filter $(NETCDFLIBS),conda automatic-44)) 
 LIB_DIR = $(shell nf-config --flibs)
 INC_DIR = $(shell nf-config --cflags)
 
@@ -65,6 +67,10 @@ endif
 ifeq ($(ARCH),tetralith)
 FC = ifort
 FF = -g -O3 -traceback -pg
+
+else ifeq ($(ARCH),conda)
+FC = gfortran
+FF = -g -O3 -fbacktrace -fbounds-check -Wall -Wno-maybe-uninitialized -Wno-unused-dummy-argument -ftree-vectorize -funroll-loops -ffast-math
 
 else
 FC = gfortran

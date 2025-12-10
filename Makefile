@@ -6,8 +6,8 @@
 PROJECT	          = Theoretical
 CASE              = Theoretical
 RUNFILE 	      = runtracmass
-ARCH              = conda
-NETCDFLIBS        = conda
+ARCH              =
+NETCDFLIBS        = none
 #================================================================
 
 # Possible architectures:

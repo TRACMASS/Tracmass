@@ -10,90 +10,137 @@ The code is written in FORTRAN 90 with modules and runs on UNIX platforms such a
 
 **TRACMASS** has been set up to run with velocities integrated with models such as NEMO or IFS-ECMWF, of satellite datasets such as AVISO.
 
-For more information check our website: https://www.tracmass.org/.
+For more information check our website: **https://www.tracmass.org/**.
 
 Documentation
 =============
 
-You can find documentation about TRACMASS in
-
-https://www.tracmass.org/docs
+You can find documentation about TRACMASS [**here**](https://www.tracmass.org/docs)
 
 Quickstart
 ==========
 
-1. Download the code
+### 1. Download TRACMASS
 
 ```bash
 git clone https://github.com/TRACMASS/Tracmass.git
 ```
 
-2. Enter the TRACMASS directory
+### 2. Enter the TRACMASS directory
 
 ```bash
 cd Tracmass
 ```
 
-3. Modify the *Makefile* to fit your system. You will need to set ARCH, which is the name of your system, i.e. tetralith. You will also need to configure how **TRACMASS** should find the netCDF libraries, if at all. For most systems, we recommend the option **automatic-44**.
+### 3. Modify the *Makefile* to fit your system.
 
-4. Then you can run the make command
+You will need to set `ARCH` - name of your system, (i.e. tetralith) - which is used to set the Fortran compiler and flags.
+    
+You also need to configure how **TRACMASS** should find the netCDF libraries, if at all, using `NETCDFLIBS`.
+
+For most HPC systems, we recommend setting netCDF libraries using either the `NETCDFLIBS = automatic-44` option for netCDF version >4.4 or `NETCDFLIBS = automatic` otherwise.
+
+---
+#### **3.1 Using Conda:**
+
+The simplest way to get started with **TRACMASS** on a local machine or HPC system is to use a conda virtual environment.
+
+To do this:
+
+* Create a new virtual environment using [**miniforge**](https://github.com/conda-forge/miniforge) - a minimal installer for **Conda** and **Mamba**:
+    ```bash
+    conda create -n env_tracmass
+    ```
+
+* Next, install the **gfortran** and **netcdf-fortran** libraries required by **TRACMASS** from the conda-forge open-source package manager.
+    ```bash
+    conda activate env_tracmass
+
+    conda install gfortran netcdf-fortran
+    ```
+
+* Verify **gfortran** and **netCDF** libraries are available.
+    ```bash
+    which gfortran
+
+    nf-config --all
+    ```
+
+* Update the *Makefile* `ARCH` and `NETCDFLIBS` options.
+    ```bash
+    # Project and case definition
+    ...
+    ARCH              = conda
+    NETCDFLIBS        = conda
+    #=============================
+    ```
+
+---
+
+### 4. Compile TRACMASS
 
 ```bash
 make
 ```
 
-Running a first test case
+Running the First Test Case
+---------------------------
+
+We recommend testing that **TRACMASS** was properly compiled by letting `PROJECT` and `CASE` be **"Theoretical"** in the *Makefile* (which is the default).
+
+In this case, **TRACMASS** will use a simple oscillating velocity field to trace trajectories.
+
+1. Make sure in *Makefile* both `PROJECT` and `CASE` are set to `Theoretical`.
+
+    ```bash
+    # Project and case definition
+    PROJECT	          = Theoretical
+    CASE              = Theoretical
+    ...
+    ```
+
+2. Recompile **TRACMASS**
+
+    ```bash
+    make clean
+    make
+    ```
+
+3. Run **TRACMASS**
+
+    ```bash
+    ./runtracmass
+    ```
+
+Download Example Data
+---------------------
+
+You can find example input data for testing the code here: **https://stockholmuniversity.box.com/s/pyc29hjumxuvf0nf84ym5zs0vrnqbswr**
+
+This includes data from NEMO, IFS and AVISO. Before doing any analysis we recommend to download some of the test data and make sure **TRACMASS** is working properly.
+
+For example, in order to set up **TRACMASS** to run trajectories using NEMO model output data, you will need to change `PROJECT` and `CASE` to `NEMO`, and then re-compile the code.
+
+```bash
+make clean
+make
+
+./runtracmass
+```
+
+Perform Your Own Analysis
 -------------------------
 
-We recommend testing that **TRACMASS** was properly compiled by letting PROJECT and CASE be **"Theoretical"** in the *Makefile* (which is the default). In this case, TRACMASS will use a simple oscillating velocity field to trace trajectories.
+If you wish to run another case or a very specific case of the above models, you will need create your own project in the `projects` directory.
 
-1. Make sure in *Makefile* both PROJECT and CASE are set to Theoretical.
+For example, to run with your own IFS data, you will need to modify the `namelist_IFS.in` namelist in the `projects/IFS/` directory to suit your needs.
 
-2. Recompile the code
-
-```bash
-make clean
-make
-```
-
-3. Run the code by typing
-
-```bash
-./runtracmass
-```
-
-Download test data
-------------------
-
-You can find some input data for testing the code on
-
-```bash
-https://stockholmuniversity.box.com/s/pyc29hjumxuvf0nf84ym5zs0vrnqbswr
-```
-
-This test data includes data from NEMO, IFS and AVISO.
-Before doing any analysis we recommend to download some of the test data and make sure TRACMASS is working properly.
-
-In order to set up TRACMASS to run trajectories on e.g. NEMO data, you will need to change PROJECT and CASE to NEMO, and then re-compile the code.
-
-```bash
-make clean
-make
-./runtracmass
-```
-
-Run your analysis
------------------
-
-If you wish to run another case or a very specific case of the above models, you may create your own project in the projects directory.
-To run with e.g. your own IFS data, you will need to modify the projects/IFS/namelist_IFS.in namelist to suit your needs.
-
-Previous versions of TRACMASS
+Previous Versions of TRACMASS
 =============================
 
 Previous versions of **TRACMASS** are stored in the following repository:
 
-https://github.com/TRACMASS/Tracmass_previous.git
+**https://github.com/TRACMASS/Tracmass_previous.git**
 
 The following features from older versions are not available yet in this version:
 

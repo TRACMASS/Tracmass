@@ -197,7 +197,10 @@ MODULE mod_loop
             dstep = tseas/dxyz
 #endif
 
+            ! Function not needed for analytical process
+#ifndef time_analytical
             CALL update_bounce(ia, iam, ja, ka, x0, y0, z0)
+#endif
 
             CALL cross_time(1,ia,ja,ka,x0,dse,dsw) ! zonal
             CALL cross_time(2,ia,ja,ka,y0,dsn,dss) ! meridional

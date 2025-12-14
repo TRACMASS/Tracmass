@@ -146,8 +146,8 @@ MODULE mod_tracers
 
           ! The trajectory is within the grid cell
           IF (x1/=DBLE(ib) .AND. y1/=DBLE(jb) .AND. z1/=DBLE(kb)) THEN
-              tu = tracers(itrac)%data(ib,jb,kbtracer,nsp)
-              tm = tracers(itrac)%data(ib,jb,kbtracer,nsm)
+              tu = tracers(itrac)%data(ib,jb,kbtracer,nsm)
+              tm = tracers(itrac)%data(ib,jb,kbtracer,nsp)
           ! The trajectory crosses a wall
           ELSE
               tu  = 0.5*(tracers(itrac)%data(ib,jb,kbtracer,nsm) + tracers(itrac)%data(ia,ja,katracer,nsm))

@@ -116,7 +116,7 @@ TEST test_update_tracer_1
 
    CALL update_tracer(1,ia,ja,ka,ib,jb,kb,x1,y1,z1)
 
-   ASSERT_EQUAL(trajectories(1)%tracerval(1),17.5)
+   ASSERT_EQUAL(trajectories(1)%tracerval(1),12.5)
 
 
 END TEST

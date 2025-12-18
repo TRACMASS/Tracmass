@@ -348,6 +348,7 @@ TEST test_seed_7
    !partQuant
    partQuant = 10
    nqua = 2
+   nsdtraj = 10
 
    CALL init_seed
    CALL seed
@@ -376,6 +377,7 @@ TEST test_seed_8
    !partQuant
    partQuant = 1
    nqua = 2
+   nsdtraj = 10
 
    CALL init_seed
    CALL seed

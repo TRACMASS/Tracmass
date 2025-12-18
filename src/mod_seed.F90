@@ -272,7 +272,8 @@ MODULE mod_seed
             IF (nqua == 1) THEN
                 ntracmax = nsdMax*nsdTim*INT(partQuant)
             ELSE
-                ntracmax = nsdMax*nsdTim*10000
+                ! Allocate trajectories using nsdtraj trajectories per seed cell.
+                ntracmax = nsdMax*nsdTim*nsdtraj
             END IF
 
             ALLOCATE ( trajectories(ntracmax) )
@@ -406,8 +407,8 @@ MODULE mod_seed
                           num = (INT(SQRT(FLOAT(num))) + 1)**2
                       END IF
 
-                  CASE (3) ! particle reflects air/water mass/volume at seeding
-                      vol = dzt(ib,jb,kb,1)
+                  CASE (3) ! particle reflects air/water volume at seeding
+                      vol = dxdy(ib,jb) * dzt(ib,jb,kb,nsm) * zstot(ib,jb,0)
                       num = INT(vol/partQuant)
                   END SELECT
 

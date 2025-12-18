@@ -408,7 +408,7 @@ MODULE mod_seed
                       END IF
 
                   CASE (3) ! particle reflects air/water volume at seeding
-                      vol = dxdy(ib,jb) * dzt(ib,jb,kb,nsm) * zstot(ib,jb,0)
+                      vol = dxdy(ib,jb) * dzt(ib,jb,kb,nsp) * zstot(ib,jb,0)
                       num = INT(vol/partQuant)
                   END SELECT
 

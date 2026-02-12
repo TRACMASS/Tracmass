@@ -103,8 +103,10 @@
      outDataDir    = '',
      outDataFile   = '',
 
-     timeformat    = 0     ! Format of the time array
-                           ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
+     timeformat    = 0       ! Format of the time array
+                             ! 0 - tt / 1 - ts / 2 - YYYY, MM, DD, HH
+
+     l_compress = .FALSE.,   ! Compress _run.csv files on exceeding 2GB filesize using gzip
 /
 
 &INIT_SEEDING
@@ -123,10 +125,11 @@
      														   ! = 3 Each particle reflects air/water mass/volume at seeding.
      														   !     set by partQuant in m3 or kg per particle
 
+      nsdtraj        = 10,         ! number of trajectories to allocate per seeding cell (used for allocation if nqua > 1)
       partquant      = 1,          ! particles/gridcell or m3s-1/particle or m3/particle
-      loneparticle   = 0, 				 ! start only one trajectory for debugging
-      seedtype       = 1,				   ! = 1 seed using ist,jst,kst (below)
-          		      					     ! = 2 seed using file with start positions
+      loneparticle   = 0,          ! start only one trajectory for debugging
+      seedtype       = 1,          ! = 1 seed using ist,jst,kst (below)
+          		      	     ! = 2 seed using file with start positions
 
      	! when seedtype = 1
       ist1           = 65, 				    ! seed in box in range i = [ist1,ist2]
@@ -218,5 +221,7 @@
 /
 
 &INIT_ACTIVE
-
+      l_diffusion = .FALSE.         ! Apply Stochastic diffusion along particle trajectories
+      Ah = 0                        ! Horizontal diffusivity coefficient
+      Av = 0                        ! Vertical diffusivity coefficient
 /

@@ -57,13 +57,13 @@ MODULE mod_init
           namelist /INIT_RUN_TIME/         loopYears, loopStartYear, loopEndYear, &
                                            log_level, intrun
           namelist /INIT_WRITE_TRAJ/       write_frec, write_form, outDataDir, outDataFile, timeformat, l_compress
-          namelist /INIT_SEEDING/          nff, isec, idir, nqua, partQuant,             &
+          namelist /INIT_SEEDING/          nff, isec, idir, nqua, partQuant, nsdtraj, &
                                            loneparticle, SeedType, ist1,  &
-                                           ist2, jst1, jst2, kst1, kst2, tst1, tst2,&
+                                           ist2, jst1, jst2, kst1, kst2, tst1, tst2, &
                                            seedDir, seedFile, maskFile, seedTime, timeFile
           namelist /INIT_TRACERS/          l_tracers, l_swtraj, tracertrajscale, &
                                            tracername, tracershift, tracerscale, &
-                                           tracerunit, tracervarname,&
+                                           tracerunit, tracervarname, &
                                            traceraction,tracermin, tracermax, &
                                            tracerdimension
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max

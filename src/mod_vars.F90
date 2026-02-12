@@ -80,6 +80,7 @@ MODULE mod_seedvars
 
   REAL(DP)                                   :: partQuant    ! number of particles per grid to seed
 
+  INTEGER                                    :: nsdtraj      ! number of trajectories per seed cell
   INTEGER                                    :: ist1, ist2   ! Zonal seeding region
   INTEGER                                    :: jst1, jst2   ! Meridional seeding region
   INTEGER                                    :: kst1, kst2   ! Vertical seeding region

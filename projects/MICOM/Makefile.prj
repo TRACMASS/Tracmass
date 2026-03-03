@@ -1,0 +1,22 @@
+# Makefile for BLOM run
+#========================================================================
+
+# Vertical velocities
+#------------------------------------------------------------------------
+#fl01  = -Dw_2dim        # Turn off vertical velocities.
+#fl01  = -Dw_3dim       # Compute 3D vertical velocities.
+fl01  = -Dw_explicit    # Explicit 3D vertical velocities.
+
+
+# Time integration scheme
+#------------------------------------------------------------------------
+#fl02 = -Dtime_analytical
+
+# Isopycnic model
+#------------------------------------------------------------------------
+fl03 = -Disopycnic_model
+
+#========================================================================
+
+ORM_FLAGS= -D$(PROJECT) \
+$(fl01)$(fl02)$(fl03)

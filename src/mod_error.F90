@@ -76,14 +76,14 @@ MODULE mod_error
 
         CASE ('boundError')
 
-           errCode = 0
+          errCode = 0
            ! Trajectory leaving a model area
-           IF (ia<1 .OR. ia>imtdom .OR. ib<1 .OR. ib>imtdom .OR.    &
-               ja<1 .OR. ja>jmtdom .OR. jb<1 .OR. jb>jmtdom .OR.    &
-               y0<0 .OR. y0>jmtdom .OR. y1<0 .OR. y1>jmtdom .OR.    &
-               x0<0 .OR. x0>imtdom .OR. x1<0 .OR. x1>imtdom .OR.    &
-               ka<1 .OR. ka>km     .OR. kb<1 .OR. kb>km     .OR.    &
-               z0<0 .OR. z0>km     .OR. z1<0 .OR. z1>km     ) THEN
+          IF (ia<1 .OR. ia>imtdom .OR. ib<1 .OR. ib>imtdom .OR.    &
+              ja<1 .OR. ja>jmtdom .OR. jb<1 .OR. jb>jmtdom .OR.    &
+              y0<0 .OR. y0>jmtdom .OR. y1<0 .OR. y1>jmtdom .OR.    &
+              x0<0 .OR. x0>imtdom .OR. x1<0 .OR. x1>imtdom .OR.    &
+              ka<1 .OR. ka>km     .OR. kb<1 .OR. kb>km     .OR.    &
+              z0<0 .OR. z0>km     .OR. z1<0 .OR. z1>km     ) THEN
 
             nerror = nerror + 1
             errCode = 3
@@ -92,7 +92,7 @@ MODULE mod_error
 
             CALL write_error(errCode)
 
-           END IF
+          END IF
 
         CASE ('landError')
 
@@ -192,20 +192,20 @@ MODULE mod_error
              CASE(0)
              ! Include time - tt in seconds
              WRITE(53,"(I8,3(',',F13.5),2(',',F20.5),1(',  ',A100))")  ntrac, xw, yw, zw, subvol, tt, &
-                   ADJUSTL(errorType(errCode))
+                   TRIM(ADJUSTL(errorType(errCode)))
              RETURN
 
              CASE(1)
              ! Include time - Fraction ts
              WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),1(',',F13.5),1(',  ',A100))")  ntrac, xw, yw, zw, subvol, ts, &
-                   ADJUSTL(errorType(errCode))
+                   TRIM(ADJUSTL(errorType(errCode)))
              RETURN
 
              CASE(2)
              ! Include time - YYYY MM DD HH MM SS
              CALL tt_calendar(tt)
              WRITE(53,"(I8,3(',',F13.5),1(',',F20.5),(',',I5),3(',',I3),1(',  ',A100))")  ntrac, xw, yw, zw, &
-                   subvol, dateYear, dateMon, dateDay, dateHour, ADJUSTL(errorType(errCode))
+                   subvol, dateYear, dateMon, dateDay, dateHour, TRIM(ADJUSTL(errorType(errCode)))
              RETURN
 
          END SELECT

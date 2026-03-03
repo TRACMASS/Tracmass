@@ -436,7 +436,7 @@ MODULE mod_seed
                       PRINT *, '  vflux :', vflux (ib, jb, kb,nsm)
                       PRINT *, ' subvol :', subvol
                       STOP
-                  ENDIF
+                  END IF
 
                   ! Determine start position for each particle
                   ! --------------------------------------------------
@@ -588,7 +588,7 @@ MODULE mod_seed
                         END IF
 
                         CALL write_data('ini')
-                        CALL write_data('run')
+                        !CALL write_data('run')
 
                       END DO kkkLoop
                     END DO ijjLoop
@@ -711,7 +711,7 @@ MODULE mod_seed
                         ikt = jsg
                     END IF
 
-                    print*, num, ijt, ikt
+                    print*, 'num, ijt, ikt:', num, ijt, ikt
 
                 END IF
 

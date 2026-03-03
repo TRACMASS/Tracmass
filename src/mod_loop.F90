@@ -100,6 +100,16 @@ MODULE mod_loop
           niter  = trajectories(ntrac)%niter
           ts     = DBLE(trajectories(ntrac)%nts)
 
+#ifdef isopycnic_model
+          ! why nsm, not nsp? 
+          DO WHILE (dzt(ib,jb,kb,nsm) .LT. dzteps)
+            kb = kb +1
+            z1 = DBLE(kb)
+            trajectories(ntrac)%kb = kb
+            trajectories(ntrac)%z1 = z1
+          END DO
+#endif
+
           ! Error code
           errCode = 0
 
@@ -136,7 +146,6 @@ MODULE mod_loop
             ! time interpolation constant between 0 and 1
             intrpg = DMOD(ts,1.d0) ! -> gets the fractional part
             intrpr = 1.d0-intrpg
-
 
             IF(intrpg.LT.0.d0 .OR. intrpg.GT.1.d0) THEN
                PRINT *,'* intrpg = ',intrpg
@@ -201,7 +210,6 @@ MODULE mod_loop
 #ifndef time_analytical
             CALL update_bounce(ia, iam, ja, ka, x0, y0, z0)
 #endif
-
             CALL cross_time(1,ia,ja,ka,x0,dse,dsw) ! zonal
             CALL cross_time(2,ia,ja,ka,y0,dsn,dss) ! meridional
             CALL cross_time(3,ia,ja,ka,z0,dsu,dsd) ! vertical

@@ -217,7 +217,7 @@ MODULE mod_calendar
             print*,'b4 update calendar',nextYear,nextMon,nextDay,iyear,imon
          END IF
 
-         ! Find number of minutes to add
+         ! Find number of seconds(?) to add
          IF (ngcm_unit == 1) THEN ! sec
             currStep = ngcm_step
          ELSE IF (ngcm_unit == 2) THEN ! min

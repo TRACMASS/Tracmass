@@ -14,7 +14,7 @@ MODULE mod_swap
   !!------------------------------------------------------------------------------
 
   USE mod_vel,  only            : uflux, vflux, wflux
-  USE mod_grid, only            : dzt, dzu, dzv, dzdt, zstot, hs
+  USE mod_grid, only            : dzt, dzu, dzv, dzdt, zstot, hs, ke
   USE mod_tracervars, only      : l_tracers, l_swtraj, tracers, numtracers, tracertraj
   USE mod_time, only            : nff
 
@@ -51,7 +51,9 @@ MODULE mod_swap
 
         dzdt(:,:,:,1) = dzdt(:,:,:,2)
 
-
+#if defined isopycnic_model
+        ke(:,:,1) = ke(:,:,2)
+#endif
         ! Scale factors and surface variables
         zstot(:,:,-1) = zstot(:,:,0)
         zstot(:,:, 0) = zstot(:,:,1)

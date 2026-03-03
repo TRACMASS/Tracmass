@@ -128,6 +128,11 @@ MODULE mod_init
           ALLOCATE ( kmt(imt,jmt))
           kmt(:,:) = km
 
+#if defined isopycnic_model
+          ALLOCATE (ke(imt,jmt,nst))
+          ke = 0
+#endif
+
           ALLOCATE( dzt(imt,jmt,km,nst+1), dzu(imt,jmt,km,nst), dzv(imt,jmt,km,nst))
           dzt(:,:,:,:) = 0.; dzu(:,:,:,:) = 0.; dzv(:,:,:,:) = 0.
 

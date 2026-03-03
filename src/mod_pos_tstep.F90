@@ -27,7 +27,7 @@ MODULE mod_pos
     USE mod_stream
 
     USE mod_grid, only: undef, imt, jmt, km, nsm, nsp, iperio, jperio
-    USE mod_vel, only: uflux, vflux, wflux, uu, um, vv, vm
+    USE mod_vel, only: uflux, vflux, wflux, uu, um
     USE mod_time, only: dtreg, intrpr, intrpg
 
     IMPLICIT none
@@ -76,7 +76,7 @@ MODULE mod_pos
 
           ELSEIF (ijk .EQ. 3) THEN
               ii=ka
-#if defined  w_explicit
+#if defined w_explicit
               uu = (intrpg*wflux(ia,ja,ka  ,nsp) + intrpr*wflux(ia,ja,ka  ,nsm))
               um = (intrpg*wflux(ia,ja,ka-1,nsp) + intrpr*wflux(ia,ja,ka-1,nsm))
 #else
@@ -217,6 +217,10 @@ MODULE mod_pos
           REAL(DP), INTENT(INOUT)  :: x0, y0, z0  ! current position (referenced to the box)
           REAL(DP), INTENT(OUT) :: x1, y1, z1  ! future position (referenced to the box)
 
+#if defined isopycnic_model
+          INTEGER  :: ne = 0 !number of empty cells
+#endif
+
           ! New position
           scrivi  = .FALSE.
 
@@ -229,7 +233,7 @@ MODULE mod_pos
           ! Eastward grid-cell exit
           IF (ds==dse) THEN
              scrivi=.FALSE.
-             uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia ,ja,ka,nsm))
+             uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
 
              IF (uu .GT. 0.d0) THEN
                 ib=ia+1
@@ -353,9 +357,28 @@ MODULE mod_pos
              uu = (intrpg*wflux(ka,nsp) + intrpr*wflux(ka,nsm))
 #endif
 
-             IF (uu .GT. 0.d0) kb=ka+1
+             IF (uu .GT. 0.d0) THEN
+               kb = ka+1
 
-             z1=DBLE(ka)
+#if defined isopycnic_model
+               if (intrpg .LT. dtmin) then
+                 ne = max(ke(ia,ja,1),ke(ia,ja,2))
+               else
+                 ne = ke(ia,ja,2)
+               end if
+               IF(ka + ne >= KM-2) THEN !! ka or kb ???
+                 ka = KM-2
+                 kb = KM-1
+                 z1=DBLE(kb)
+               ELSE
+                 z1=DBLE(ka)
+               END IF
+#else
+               z1=DBLE(ka)
+#endif
+             ELSE
+               z1=DBLE(ka)
+             END IF
 
              IF (kb==KM+1) THEN   ! prevent particles to cross the boundaries
                 kb=KM
@@ -388,7 +411,6 @@ MODULE mod_pos
 
           ! Downward grid-cell exit
           ELSE IF (ds==dsd) THEN
-
              scrivi=.FALSE.
              CALL vertvel(ia, iam, ja, ka)
 #if defined w_explicit
@@ -397,9 +419,27 @@ MODULE mod_pos
              uu = (intrpg*wflux(ka-1,nsp) + intrpr*wflux(ka-1,nsm))
 #endif
 
-             IF (uu .LT. 0.d0) kb=ka-1
-
-             z1=DBLE(ka-1)
+             IF (uu .LT. 0.d0) THEN
+               kb = ka-1
+#if defined isopycnic_model
+               IF (intrpg .LT. dtmin) THEN
+                 ne = max(ke(ia,ja,1),ke(ia,ja,2))
+               ELSE
+                 ne = ke(ia,ja,2)
+               END IF
+               IF(kb==KM-2) THEN    !K.Doos
+                 ka = ka-ne-1
+                 kb = ka
+                 z1=DBLE(ka)
+               ELSE
+                 z1=DBLE(kb)
+               END IF
+#else
+               z1=DBLE(kb)
+#endif
+             ELSE
+               z1=DBLE(kb)
+             END IF
 
              CALL calc_pos(1,ia,ja,ka,x0,x1,ds) ! zonal position
              CALL calc_pos(2,ia,ja,ka,y0,y1,ds) ! meridional position
@@ -450,10 +490,15 @@ MODULE mod_pos
                jb = JMTdom - jmindom + 1
                ia=ib ; ja=jb
                x0 = x1; y0 = y1
+            ELSE IF( y1 + jmindom -1 == DBLE(JMTdom)  .AND. jperio == 2) THEN
+               x1 = DBLE(IMTdom+imindom) - x1 -1
+               ib = IDINT(x1) + 1
+               jb = JMTdom - jmindom + 1
+               ia=ib ; ja=jb
+               x0 = x1; y0 = y1
             END IF
 
           END IF
-
           ! Make sure that trajectory is inside ib,jb,kb box
           IF (x1 /= DBLE(IDINT(x1))) ib = IDINT(x1)+1
           IF (y1 /= DBLE(IDINT(y1))) jb = IDINT(y1)+1
@@ -512,6 +557,10 @@ MODULE mod_pos
           ! Fluxes
           REAL(DP) :: uu, um ! Fluxes
 
+#if defined isopycnic_model
+          INTEGER  :: ne = 0 !number of empty cells
+#endif
+
           ! Temporal storage of indexes
           tmpia  = ia
           tmpiam = iam
@@ -524,7 +573,7 @@ MODULE mod_pos
               uu = (intrpg*uflux(ia,ja,ka,nsp) + intrpr*uflux(ia,ja,ka,nsm))
 
               IF (uu .GT. 0.d0) THEN
-                  ! Redifine the indexes
+                  ! Redefine the indexes
                   tmpiam  = ia
                   tmpia   = ia + 1
                   IF ( (tmpia .EQ. IMT + 1) .AND. (iperio .EQ. 1)) tmpia = 1
@@ -535,7 +584,7 @@ MODULE mod_pos
               um = (intrpg*uflux(iam,ja,ka,nsp) + intrpr*uflux(iam,ja,ka,nsm))
 
               IF (um .LT. 0.d0) THEN
-                  ! Redifine the indexes
+                  ! Redefine the indexes
                   tmpia  = iam
                   tmpiam = tmpia - 1
                   IF( (tmpiam .EQ. 0) .AND. (iperio .EQ. 1) ) tmpiam = IMT
@@ -549,7 +598,7 @@ MODULE mod_pos
               uu = (intrpg*vflux(ia,ja,ka,nsp) + intrpr*vflux(ia,ja,ka,nsm))
 
               IF (uu .GT. 0.d0) THEN
-                  ! Redifine the indexes
+                  ! Redefine the indexes
                   tmpja   = ja + 1
               END IF
 
@@ -558,7 +607,7 @@ MODULE mod_pos
               um = (intrpg*vflux(ia,ja-1,ka,nsp) + intrpr*vflux(ia,ja-1,ka,nsm))
 
               IF (um .LT. 0.d0) THEN
-                  ! Redifine the indexes
+                  ! Redefine the indexes
                   tmpja  = ja - 1
               END IF
 
@@ -575,8 +624,21 @@ MODULE mod_pos
             uu = (intrpg*wflux(ka  ,nsp) + intrpr*wflux(ka  ,nsm))
 #endif
               IF (uu .GT. 0.d0) THEN
-                  ! Redifine the indexes
+                ! Redefine the indexes
+#if defined isopycnic_model
+                IF (intrpg .LT. dtmin) THEN
+                  ne = max(ke(ia,ja,1),ke(ia,ja,2))
+                ELSE
+                  ne = ke(ia,ja,2)
+                END IF
+                IF(ka + ne >= KM-2) THEN
+                  tmpka = KM-2
+                ELSE
                   tmpka   = ka + 1
+                END IF
+#else
+              tmpka   = ka + 1
+#endif
               END IF
 
           ELSE IF (z0 == DBLE(ka-1)) THEN
@@ -589,9 +651,22 @@ MODULE mod_pos
 #endif
 
               IF (um .LT. 0.d0) THEN
-                  ! Redifine the indexes
+                ! Redefine the indexes
+#if defined isopycnic_model
+                IF (intrpg .LT. dtmin) THEN
+                  ne = max(ke(ia,ja,1),ke(ia,ja,2))
+                ELSE
+                  ne = ke(ia,ja,2)
+                END IF
+                IF(ka-1==KM-2) THEN    !K.Doos
+                  tmpka = ka-ne-1
+                ELSE
                   tmpka  = ka - 1
-              END IF
+                END IF
+#else
+                tmpka  = ka - 1
+#endif
+               END IF
 
           END IF
 

@@ -67,6 +67,11 @@ MODULE mod_param
   REAL(DP), PARAMETER                       :: radian = pi/180.d0
   REAL(DP), PARAMETER                       :: deg = radius*radian
   REAL(DP), PARAMETER                       :: tday = 24.d0 * 3600.d0
+
+#ifdef isopycnic_model
+  REAL(DP), PARAMETER                       :: dzteps = 10.d0  ! rho*dz=10; dp ~ 100; rho~1e3 ->so dz~0.01m
+#endif
+
 ENDMODULE mod_param
 
 ! Seed Variables
@@ -217,6 +222,9 @@ MODULE mod_grid
 
   INTEGER, ALLOCATABLE, DIMENSION(:,:)        :: kmt, kmu, kmv
 
+#if defined isopycnic_model
+  INTEGER, ALLOCATABLE, DIMENSION(:,:,:)      :: ke             ! total empty cells
+#endif
 
   ! Sea level
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:)     :: hs

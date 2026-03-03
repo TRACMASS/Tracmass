@@ -222,6 +222,7 @@ MODULE mod_write
                    ( write_frec == 2 .AND. ABS(tss-DBLE(INT(tss)))<1e-11 .AND. ints == NINT(ts)) .OR. &
                    ( write_frec == 3 .AND. (.not.scrivi .OR. boxface>0) ) .OR. &
                    ( write_frec == 4 ) .OR. &
+                   ( write_frec == 5 .AND. (trajectories(ntrac)%niter == niter-1) .OR. (.not.scrivi .OR. boxface>0) ) .OR. &
                    ( write_frec == 2 .AND. tt == 0.d0)) THEN
 
                   ! If postprocessing is activated

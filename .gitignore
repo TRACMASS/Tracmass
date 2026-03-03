@@ -1,4 +1,8 @@
 # Build and statics
+*.csv
+*.mod
+*.o
+_build
 docs/_build
 docs/_static
 docs/_templates

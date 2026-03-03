@@ -9,6 +9,8 @@ MODULE mod_tracerf
   !!
   !!------------------------------------------------------------------------------
 
+  USE mod_precdef,      only: DP
+
   IMPLICIT NONE
 
   CONTAINS
@@ -27,14 +29,14 @@ MODULE mod_tracerf
 
       IMPLICIT NONE
 
-      REAL, INTENT(IN)                         :: T(:,:,:)      ! Potential T [degC]
-      REAL, INTENT(IN)                         :: S(:,:,:)      ! Practical S [PSU]
+      REAL(DP), INTENT(IN)                         :: T(:,:,:)      ! Potential T [degC]
+      REAL(DP), INTENT(IN)                         :: S(:,:,:)      ! Practical S [PSU]
 
-      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: T68
+      REAL(DP), ALLOCATABLE, DIMENSION (:,:,:)     :: T68
 
-      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: thermo_dens0
+      REAL(DP), ALLOCATABLE, DIMENSION (:,:,:)     :: thermo_dens0
 
-      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: dens_temp
+      REAL(DP), ALLOCATABLE, DIMENSION (:,:,:)     :: dens_temp
 
       INTEGER                                  :: nx, ny, nz
 
@@ -86,15 +88,15 @@ MODULE mod_tracerf
 
       IMPLICIT NONE
 
-      REAL, INTENT(IN)                         :: T(:,:,:)      ! Potential T [degC]
-      REAL, INTENT(IN)                         :: S(:,:,:)      ! Absolut S   [g/kg]
+      REAL(DP), INTENT(IN)                         :: T(:,:,:)      ! Potential T [degC]
+      REAL(DP), INTENT(IN)                         :: S(:,:,:)      ! Absolut S   [g/kg]
 
-      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: thermo_pt2ct
+      REAL(DP), ALLOCATABLE, DIMENSION (:,:,:)     :: thermo_pt2ct
 
-      REAL, ALLOCATABLE, DIMENSION (:,:,:)     :: ct_temp, xS, xS2, yT
+      REAL(DP), ALLOCATABLE, DIMENSION (:,:,:)     :: ct_temp, xS, xS2, yT
 
-      REAL, PARAMETER                          :: gsw_sfac = 0.0248826675584615
-      REAL, PARAMETER                          :: gsw_cp0  = 3991.86795711963
+      REAL(DP), PARAMETER                          :: gsw_sfac = 0.0248826675584615
+      REAL(DP), PARAMETER                          :: gsw_cp0  = 3991.86795711963
 
       INTEGER                                  :: nx, ny, nz
 

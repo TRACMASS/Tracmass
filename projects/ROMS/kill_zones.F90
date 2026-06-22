@@ -29,7 +29,7 @@ SUBROUTINE kill_zones
   ! Exit domain defined by the boxes [ienw, iene]x[jens, jenn]
   ! in the namelist
   CASE(1)
-      DO nexit = 1, 10
+      DO nexit = 1, SIZE(ienw)
          IF(ienw(nexit) <= x1 .AND. x1 <= iene(nexit) .AND. &
               jens(nexit) <= y1 .AND. y1 <= jenn(nexit) ) THEN
               nend = nexit +1
@@ -66,7 +66,7 @@ SUBROUTINE kill_zones
       END DO
 
       ! Next the geographical killing zone
-      DO nexit = 1, 10
+      DO nexit = 1, SIZE(ienw)
          IF(ienw(nexit) <= x1 .AND. x1 <= iene(nexit) .AND. &
               jens(nexit) <= y1 .AND. y1 <= jenn(nexit) ) THEN
               nend = nexit +1 + numexit

@@ -73,6 +73,9 @@ MODULE mod_init
                                            l_divergence, divconst
           namelist /INIT_ACTIVE/           l_diffusion, ah, av
 
+          ! Loop index for scanning geographic killing-zone slots
+          INTEGER :: izone
+
           ! Read namelist
           OPEN (8,file='namelist.in',    &
                & status='OLD', delim='APOSTROPHE')
@@ -90,6 +93,19 @@ MODULE mod_init
           READ (8,nml=INIT_POSTPROCESS)
           READ (8,nml=INIT_ACTIVE)
           CLOSE(8)
+
+          ! Detect the highest occupied geographic killing-zone slot from the
+          ! namelist, before reverse()/zeroindx mutate the arrays below. Boxes
+          ! live in up to 10 slots [ienw,iene]x[jens,jenn]; kill_zones sets
+          ! nend = slot+1, so the slot INDEX (not the count) sets the largest
+          ! geographic lbas. Undefined slots are all-zero (initialised in
+          ! mod_vars). Subdomain wall zones and the final maxlbas are added in
+          ! init_subdomain, once exitType and all killing zones are finalised.
+          ngeozones = 0
+          DO izone = 1, SIZE(ienw)
+              IF (ienw(izone) /= 0 .OR. iene(izone) /= 0 .OR. &
+                  jens(izone) /= 0 .OR. jenn(izone) /= 0) ngeozones = izone
+          END DO
 
           ! If input data is on a A grid
 #ifdef A_grid
@@ -174,7 +190,7 @@ MODULE mod_init
         INTEGER :: ii
 
         IF (griddir(2) == -1) THEN
-              DO ii = 1, 10
+              DO ii = 1, SIZE(jenn)
                 IF (isec == 2) THEN
                   jenn(ii) = jmt - jenn(ii)    ! Meridional reverse
                   jens(ii) = jmt - jens(ii)    ! Meridional reverse

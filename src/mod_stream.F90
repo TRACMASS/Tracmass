@@ -115,7 +115,8 @@ MODULE mod_stream
                     END DO
 
                     ! Tracer+tracer Streamfunctions
-                    IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2-1) - fluxes_rr(:,ilvar2,ilvar3)
+                    IF (ilvar2<=resolution .AND. l_tracers) &
+                        psi_rr(:,ilvar2) = psi_rr(:,ilvar2-1) - fluxes_rr(:,ilvar2,ilvar3)
 
                 END DO
             ELSE IF (dirpsi(ilvar1) == -1) THEN
@@ -136,7 +137,8 @@ MODULE mod_stream
                     END DO
 
                     ! Tracer+tracer Streamfunctions
-                    IF (l_tracers) psi_rr(:,ilvar2) = psi_rr(:,ilvar2+1) + fluxes_rr(:,ilvar2,ilvar3)
+                    IF (ilvar2<=resolution-1 .AND. l_tracers) &
+                        psi_rr(:,ilvar2) = psi_rr(:,ilvar2+1) + fluxes_rr(:,ilvar2,ilvar3)
 
                 END DO
             END IF

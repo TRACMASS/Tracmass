@@ -50,7 +50,7 @@ MODULE mod_stream
         IF (l_tracers) CALL open_outstream('yr')
         IF (l_tracers) CALL open_outstream('rr')
 
-        DO ilvar1 = 1, 21
+        DO ilvar1 = 1, maxlbas
 
             psi_xy(:,:) = 0.; psi_xz(:,:) = 0.; psi_yz(:,:) = 0.
             IF (l_tracers) THEN
@@ -170,7 +170,7 @@ MODULE mod_stream
 
           INTEGER :: index
 
-          index = 21
+          index = maxlbas
           IF (l_offline .EQV. .FALSE.) THEN
               index  = ntracmax
           END IF

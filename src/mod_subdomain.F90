@@ -14,6 +14,8 @@ MODULE mod_subdomain
 
     USE mod_domain
     USE mod_grid
+    USE mod_tracervars
+    USE mod_postprocessvars
 
     IMPLICIT NONE
 
@@ -26,6 +28,15 @@ MODULE mod_subdomain
       ! Redifine the size of the domain if a subdomain is chosen.
       !
       ! --------------------------------------------------
+
+          INTEGER :: ntracerkill   ! number of tracer-based killing zones
+          INTEGER :: subgeomax     ! highest subdomain wall killing-zone slot
+          INTEGER :: ngeo          ! number of geographic killing-zone slots
+
+          subgeomax = 0
+          ! Subdomain wall killing zones occupy the LAST 4 geographic slots,
+          ! leaving the lower slots for user-defined namelist zones.
+          ngeo      = SIZE(ienw)
 
           ! Make sure killing zones are on
           IF (exitType==2 .AND. l_subdom) THEN
@@ -55,22 +66,25 @@ MODULE mod_subdomain
 
                   ! These killing zones will not be activated for hemispheric cap subdomains
                   IF ((iperio == 1 .AND. imt == imtdom .AND. jmaxdom == 1) .EQV. .FALSE.) THEN
-                    ! 7 - south wall
-                    ienw(7) = -1; iene(7) = imtdom + 1; jens(7) = jmindom + 1; jenn(7) = jmindom + 1
+                    ! south wall (4th-from-last slot)
+                    ienw(ngeo-3) = -1; iene(ngeo-3) = imtdom + 1; jens(ngeo-3) = jmindom + 1; jenn(ngeo-3) = jmindom + 1
+                    subgeomax = ngeo-3
                   END IF
 
                   IF ((iperio == 1 .AND. imt == imtdom .AND. jmaxdom == jmtdom) .EQV. .FALSE.) THEN
-                    ! 8 - north wall
-                    ienw(8) = -1; iene(8) = imtdom + 1; jens(8) = jmaxdom - 1; jenn(8) = jmaxdom - 1
+                    ! north wall (3rd-from-last slot)
+                    ienw(ngeo-2) = -1; iene(ngeo-2) = imtdom + 1; jens(ngeo-2) = jmaxdom - 1; jenn(ngeo-2) = jmaxdom - 1
+                    subgeomax = ngeo-2
                   END IF
 
                   ! These killing zones will not be activated if iperio = 1
                   ! and imindom = 1 and imaxdom = imt
                   IF ((iperio == 1 .AND. imt == imtdom) .EQV. .FALSE.) THEN
-                    ! 9 - east wall
-                    ienw(9) = imindom + 1; iene(9) = imindom + 1; jens(9) = -1; jenn(9) = jmtdom + 1
-                    ! 10 - west wall
-                    ienw(10) = imaxdom - 1; iene(10) = imaxdom - 1; jens(10) = - 1; jenn(10) = jmtdom + 1
+                    ! east wall (2nd-from-last slot)
+                    ienw(ngeo-1) = imindom + 1; iene(ngeo-1) = imindom + 1; jens(ngeo-1) = -1; jenn(ngeo-1) = jmtdom + 1
+                    ! west wall (last slot)
+                    ienw(ngeo) = imaxdom - 1; iene(ngeo) = imaxdom - 1; jens(ngeo) = - 1; jenn(ngeo) = jmtdom + 1
+                    subgeomax = ngeo
                   END IF
 
                   ! Redefine the killing zones in the new reference system
@@ -89,14 +103,15 @@ MODULE mod_subdomain
                   jmt = jmaxdom - jmindom + 1
 
                   ! The last 4 kill zones are reserved to the Subdomain
-                  ! 7 - south wall
-                  ienw(7) = -1; iene(7) = imt + 1; jens(7) = jmindom + 1; jenn(7) = jmindom + 1
-                  ! 8 - north wall
-                  ienw(8) = -1; iene(8) = imt + 1; jens(8) = jmaxdom - 1; jenn(8) = jmaxdom - 1
-                  ! 9 - east wall
-                  ienw(9) = imindom + 1; iene(9) = imindom + 1; jens(9) = -1; jenn(9) = jmt + 1
-                  ! 10 - west wall
-                  ienw(10) = imaxdom - 1; iene(10) = imaxdom - 1; jens(10) = - 1; jenn(10) = jmt + 1
+                  ! south wall (4th-from-last slot)
+                  ienw(ngeo-3) = -1; iene(ngeo-3) = imt + 1; jens(ngeo-3) = jmindom + 1; jenn(ngeo-3) = jmindom + 1
+                  ! north wall (3rd-from-last slot)
+                  ienw(ngeo-2) = -1; iene(ngeo-2) = imt + 1; jens(ngeo-2) = jmaxdom - 1; jenn(ngeo-2) = jmaxdom - 1
+                  ! east wall (2nd-from-last slot)
+                  ienw(ngeo-1) = imindom + 1; iene(ngeo-1) = imindom + 1; jens(ngeo-1) = -1; jenn(ngeo-1) = jmt + 1
+                  ! west wall (last slot)
+                  ienw(ngeo) = imaxdom - 1; iene(ngeo) = imaxdom - 1; jens(ngeo) = - 1; jenn(ngeo) = jmt + 1
+                  subgeomax = ngeo
 
                   ! Redefine the killing zones in the new reference system
                   ienw = ienw - imindom + 1; iene = iene - imindom + 1;
@@ -115,6 +130,38 @@ MODULE mod_subdomain
               ! If l_subdom is false the subdomain is the entire domain
               imindom =   1; jmindom =   1
 
+          END IF
+
+          ! Finalise maxlbas now that exitType (possibly promoted above) and all
+          ! killing zones are known. Size the per-zone streamfunction/summary
+          ! arrays to the actual run. nend (lbas) encoding in the project
+          ! kill_zones.F90 routines:
+          !   nend = 0               -> time limit
+          !   nend = 1               -> reaching the surface
+          !   nend = nexit+1         -> geographic killing zone nexit
+          !   nend = nexit+1+numexit -> tracer killing zone (exitType 3)
+          ! ngeozones (highest geographic slot) was seeded from the namelist in
+          ! init_namelist; bump it for the subdomain wall zones added above.
+          ! Tracer zones are counted via the 999 sentinel default.
+          ngeozones   = MAX(ngeozones, subgeomax)
+          ntracerkill = COUNT(tracerchoice /= 999)
+
+          SELECT CASE (exitType)
+          CASE (1)        ! geographic killing zones only
+              maxlbas = 1 + ngeozones
+          CASE (2)        ! tracer-based killing zones only
+              maxlbas = 1 + ntracerkill
+          CASE (3)        ! tracer + geographic killing zones
+              maxlbas = 1 + ntracerkill + ngeozones
+          CASE DEFAULT    ! exitType 4 (hard coded) or unset: full safety
+              maxlbas = MAXZONES
+          END SELECT
+
+          IF (maxlbas > MAXZONES) THEN
+              PRINT*, 'ERROR: number of killing zones (maxlbas =', maxlbas, &
+                      ') exceeds MAXZONES =', MAXZONES
+              PRINT*, 'Increase MAXZONES in mod_precdef (src/mod_vars.F90).'
+              STOP
           END IF
 
       END SUBROUTINE init_subdomain

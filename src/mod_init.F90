@@ -94,6 +94,11 @@ MODULE mod_init
           READ (8,nml=INIT_ACTIVE)
           CLOSE(8)
 
+          ! Default the output-file prefix here, before it is first used.
+          ! read_rerun runs before open_outfiles, so applying the default only
+          ! inside open_outfiles left read_rerun looking for the wrong filename.
+          IF (TRIM(outDataFile) == '') outDataFile = 'TRACMASS'
+
           ! Detect the highest occupied geographic killing-zone slot from the
           ! namelist, before reverse()/zeroindx mutate the arrays below. Boxes
           ! live in up to 10 slots [ienw,iene]x[jens,jenn]; kill_zones sets

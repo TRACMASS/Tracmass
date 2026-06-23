@@ -20,7 +20,7 @@ MODULE mod_tracers
 
     IMPLICIT NONE
 
-    INTEGER, DIMENSION(10) :: numtracerarray = 0
+    INTEGER, DIMENSION(MAXTRACERS) :: numtracerarray = 0
 
     PRIVATE :: tracers_default
 
@@ -39,7 +39,7 @@ MODULE mod_tracers
 
         ! Calculate the number of tracers
         WHERE (tracername==' ') numtracerarray = 1
-        numtracers = 10 - SUM(numtracerarray)
+        numtracers = SIZE(numtracerarray) - SUM(numtracerarray)
 
         ! Allocate the tracer array
         ALLOCATE(tracers(numtracers), tracervalue(numtracers))

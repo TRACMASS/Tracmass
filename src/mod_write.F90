@@ -456,7 +456,10 @@ MODULE mod_write
           REWIND (34)
 
           DO ll = 1, numline
-              READ (UNIT=34, fmt="(I8,I3,I10)") ntrac, lbas, nsavewrite(ntrac)
+              ! _rerun.csv is written comma-separated (see write_data); use
+              ! list-directed input so lbas is parsed correctly (a fixed
+              ! "(I8,I3,I10)" format misreads the comma-separated fields).
+              READ (UNIT=34, fmt=*) ntrac, lbas, nsavewrite(ntrac)
               trajectories(ntrac)%lbas = lbas
           END DO
 

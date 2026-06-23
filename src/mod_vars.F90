@@ -423,6 +423,9 @@ MODULE mod_psi
   ! Streamfunctions on/off
   LOGICAL    :: l_psi     = .FALSE.
   LOGICAL    :: l_offline = .TRUE.
+  ! Memory-light online accumulation: index fluxes by killing zone (lbas)
+  ! instead of by trajectory. Requires a rerun pass so lbas is known up front.
+  LOGICAL    :: l_psi_rerun = .FALSE.
 
   ! Barotropic u(1)/v(2)
   INTEGER    :: xyflux = 1

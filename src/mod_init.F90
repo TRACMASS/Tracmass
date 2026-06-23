@@ -69,7 +69,7 @@ MODULE mod_init
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
           namelist /INIT_KILLZONES/        timax, l_nosurface, exitType, ienw, iene, jens, jenn, &
                                            tracerchoice, tracere, maxormin
-          namelist /INIT_POSTPROCESS/      l_psi, l_offline, dirpsi, xyflux, &
+          namelist /INIT_POSTPROCESS/      l_psi, l_offline, l_psi_rerun, dirpsi, xyflux, &
                                            l_divergence, divconst
           namelist /INIT_ACTIVE/           l_diffusion, ah, av
 

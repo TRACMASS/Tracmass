@@ -69,9 +69,12 @@ MODULE mod_init
           namelist /INIT_TRACERS_SEEDING/  tracer0min, tracer0max
           namelist /INIT_KILLZONES/        timax, l_nosurface, exitType, ienw, iene, jens, jenn, &
                                            tracerchoice, tracere, maxormin
-          namelist /INIT_POSTPROCESS/      l_psi, l_offline, dirpsi, xyflux, &
+          namelist /INIT_POSTPROCESS/      l_psi, l_offline, l_psi_rerun, dirpsi, xyflux, &
                                            l_divergence, divconst
           namelist /INIT_ACTIVE/           l_diffusion, ah, av
+
+          ! Loop index for scanning geographic killing-zone slots
+          INTEGER :: izone
 
           ! Read namelist
           OPEN (8,file='namelist.in',    &
@@ -90,6 +93,24 @@ MODULE mod_init
           READ (8,nml=INIT_POSTPROCESS)
           READ (8,nml=INIT_ACTIVE)
           CLOSE(8)
+
+          ! Default the output-file prefix here, before it is first used.
+          ! read_rerun runs before open_outfiles, so applying the default only
+          ! inside open_outfiles left read_rerun looking for the wrong filename.
+          IF (TRIM(outDataFile) == '') outDataFile = 'TRACMASS'
+
+          ! Detect the highest occupied geographic killing-zone slot from the
+          ! namelist, before reverse()/zeroindx mutate the arrays below. Boxes
+          ! live in up to 10 slots [ienw,iene]x[jens,jenn]; kill_zones sets
+          ! nend = slot+1, so the slot INDEX (not the count) sets the largest
+          ! geographic lbas. Undefined slots are all-zero (initialised in
+          ! mod_vars). Subdomain wall zones and the final maxlbas are added in
+          ! init_subdomain, once exitType and all killing zones are finalised.
+          ngeozones = 0
+          DO izone = 1, SIZE(ienw)
+              IF (ienw(izone) /= 0 .OR. iene(izone) /= 0 .OR. &
+                  jens(izone) /= 0 .OR. jenn(izone) /= 0) ngeozones = izone
+          END DO
 
           ! If input data is on a A grid
 #ifdef A_grid
@@ -174,7 +195,7 @@ MODULE mod_init
         INTEGER :: ii
 
         IF (griddir(2) == -1) THEN
-              DO ii = 1, 10
+              DO ii = 1, SIZE(jenn)
                 IF (isec == 2) THEN
                   jenn(ii) = jmt - jenn(ii)    ! Meridional reverse
                   jens(ii) = jmt - jens(ii)    ! Meridional reverse

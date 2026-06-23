@@ -191,7 +191,7 @@ MODULE mod_diffusion
         REAL(DP), INTENT(INOUT) :: xb, xa, yb, ya
         INTEGER :: nexit
 
-        DO nexit = 1, 10
+        DO nexit = 1, SIZE(ienw)
 
             ! Latitude band
             IF (jens(nexit) == jenn(nexit)) THEN

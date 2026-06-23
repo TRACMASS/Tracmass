@@ -31,6 +31,15 @@ MODULE mod_precdef
    INTEGER, PARAMETER                       :: PP = selected_real_kind(6 ,  37)
    INTEGER, PARAMETER                       :: DP = selected_real_kind(15, 307)
    INTEGER, PARAMETER                       :: QP = selected_real_kind(33, 4931)
+
+   ! Maximum capacities for killing zones and tracers. These statically
+   ! dimension the configuration arrays; runtime loops should derive their
+   ! bounds from SIZE() of the array, and the actual number of streamfunction
+   ! zones used is the computed variable maxlbas.
+   INTEGER, PARAMETER                       :: MAXGEOZONES = 10   ! geographic killing-zone slots (ienw/iene/jens/jenn)
+   INTEGER, PARAMETER                       :: MAXTRACERS  = 10   ! tracer slots (tracerchoice, etc.)
+   ! Max killing zones (lbas): 1 (surface) + tracer killing zones + geographic.
+   INTEGER, PARAMETER                       :: MAXZONES    = 1 + MAXTRACERS + MAXGEOZONES
 ENDMODULE mod_precdef
 
 ! Verbose options
@@ -321,7 +330,8 @@ MODULE mod_domain
   LOGICAL                                 :: l_nosurface = .FALSE.  ! Can trajectories reach the surface?
 
   INTEGER                                 :: exitType
-  INTEGER, DIMENSION(10)                  :: ienw ,iene, jens ,jenn ! Horizontal killing zones
+  INTEGER, DIMENSION(MAXGEOZONES)         :: ienw = 0, iene = 0, jens = 0, jenn = 0 ! Horizontal killing zones
+  INTEGER                                 :: ngeozones = 0          ! Highest occupied geographic killing-zone slot
 
   REAL(PP)                                :: timax                  ! Maximum time to run a trajectory
 
@@ -374,15 +384,15 @@ MODULE mod_tracervars
   INTEGER                             :: numtracers = 0
 
   ! Tracer choice
-  INTEGER, DIMENSION(10)              :: tracerchoice = 999, maxormin = 1
+  INTEGER, DIMENSION(MAXTRACERS)      :: tracerchoice = 999, maxormin = 1
 
   ! Tracer characteristics
-  CHARACTER(len=100), DIMENSION(10)   :: tracername = '', tracerunit, &
+  CHARACTER(len=100), DIMENSION(MAXTRACERS) :: tracername = '', tracerunit, &
                                          tracervarname,traceraction
 
-  CHARACTER(len=2), DIMENSION(10)     :: tracerdimension = '3D'
+  CHARACTER(len=2), DIMENSION(MAXTRACERS) :: tracerdimension = '3D'
 
-  REAL(DP), DIMENSION(10)             :: tracermin, tracermax, &
+  REAL(DP), DIMENSION(MAXTRACERS)    :: tracermin, tracermax, &
                                          tracer0min=-9999.d0, tracer0max=9999.d0, &
                                          tracershift=0.d0, tracerscale=1.d0, &
                                          tracere
@@ -413,12 +423,15 @@ MODULE mod_psi
   ! Streamfunctions on/off
   LOGICAL    :: l_psi     = .FALSE.
   LOGICAL    :: l_offline = .TRUE.
+  ! Memory-light online accumulation: index fluxes by killing zone (lbas)
+  ! instead of by trajectory. Requires a rerun pass so lbas is known up front.
+  LOGICAL    :: l_psi_rerun = .FALSE.
 
   ! Barotropic u(1)/v(2)
   INTEGER    :: xyflux = 1
 
   ! Direction integration
-  INTEGER , DIMENSION(21)   :: dirpsi = 1
+  INTEGER , DIMENSION(MAXZONES)   :: dirpsi = 1
 
   ! Barotropic streamfunction
   REAL(DP), ALLOCATABLE, DIMENSION(:,:,:) :: fluxes_xy
@@ -457,11 +470,11 @@ MODULE mod_postprocessvars
   INTEGER, DIMENSION(:),ALLOCATABLE       :: nsavewrite
   INTEGER                                 :: nsave = 0
 
-  INTEGER, DIMENSION(0:21)                :: ntrajout = 0
+  INTEGER, DIMENSION(0:MAXZONES)          :: ntrajout = 0
   INTEGER                                 :: ntrajtot = 0
-  INTEGER                                 :: maxlbas = 0
+  INTEGER                                 :: maxlbas = MAXZONES
 
-  REAL(DP), DIMENSION(0:21)               :: volout = 0
+  REAL(DP), DIMENSION(0:MAXZONES)         :: volout = 0
   REAL(DP)                                :: voltot = 0
 
   ! Temporary trajectory information
@@ -495,6 +508,6 @@ MODULE mod_divvars
   LOGICAL   :: l_divergence = .FALSE.
 
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE :: tracerdiv
-  REAL(DP), DIMENSION(10)                   :: divconst = 1.d0
+  REAL(DP), DIMENSION(MAXTRACERS)           :: divconst = 1.d0
 
 END MODULE mod_divvars

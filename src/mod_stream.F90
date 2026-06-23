@@ -50,7 +50,7 @@ MODULE mod_stream
         IF (l_tracers) CALL open_outstream('yr')
         IF (l_tracers) CALL open_outstream('rr')
 
-        DO ilvar1 = 1, 21
+        DO ilvar1 = 1, maxlbas
 
             psi_xy(:,:) = 0.; psi_xz(:,:) = 0.; psi_yz(:,:) = 0.
             IF (l_tracers) THEN
@@ -59,8 +59,10 @@ MODULE mod_stream
                psi_rr(:,:)   = 0.
             END IF
 
-            ! For online calculation - adding fluxes
-            IF (l_offline .EQV. .FALSE.) THEN
+            ! Legacy per-trajectory online calculation: sum each trajectory's
+            ! fluxes into slot 0 by killing zone. Offline and the lbas-indexed
+            ! rerun mode already have fluxes binned by zone, so they skip this.
+            IF ((l_offline .EQV. .FALSE.) .AND. (l_psi_rerun .EQV. .FALSE.)) THEN
 
               ! Cleaning of fluxes
               fluxes_xy(:,:,0) = 0.d0;   fluxes_xz(:,:,0) = 0.d0;   fluxes_yz(:,:,0) = 0.d0
@@ -94,8 +96,10 @@ MODULE mod_stream
               END DO intrajLoop
             END IF
 
+            ! Pre-binned fluxes (offline / rerun) read zone ilvar1 directly;
+            ! legacy online reads the summed slot 0.
             ilvar3 = 0
-            IF (l_offline) ilvar3 = ilvar1
+            IF (l_offline .OR. l_psi_rerun) ilvar3 = ilvar1
 
             IF (dirpsi(ilvar1) == 1) THEN
                 DO ilvar2 = 2, MAX(imtdom,jmtdom,km,resolution)
@@ -170,8 +174,11 @@ MODULE mod_stream
 
           INTEGER :: index
 
-          index = 21
-          IF (l_offline .EQV. .FALSE.) THEN
+          ! Legacy per-trajectory online accumulation needs one slot per
+          ! trajectory (lbas unknown during the run); offline and the
+          ! lbas-indexed rerun mode size to the killing-zone count maxlbas.
+          index = maxlbas
+          IF ((l_offline .EQV. .FALSE.) .AND. (l_psi_rerun .EQV. .FALSE.)) THEN
               index  = ntracmax
           END IF
 
@@ -208,8 +215,18 @@ MODULE mod_stream
         INTEGER, INTENT(IN)           :: indx1, indx2, dir
         INTEGER, INTENT(IN), OPTIONAL :: indt1, indt2
         CHARACTER(LEN=2), INTENT(IN)  :: psicase
-        INTEGER                       :: index1, index2, indm1, indm2
+        INTEGER                       :: index1, index2, indm1, indm2, ipsi
         REAL(DP)                      :: slope
+
+        ! Select the flux-array slot. Legacy online accumulation stores one
+        ! slot per trajectory (lbas not yet known); the lbas-indexed rerun
+        ! mode stores directly into the trajectory's killing-zone slot.
+        IF (l_psi_rerun) THEN
+            ipsi = trajectories(ntrac)%lbas
+            IF (ipsi <= 0) RETURN
+        ELSE
+            ipsi = ntrac
+        END IF
 
         !
         index1 = indx1
@@ -230,15 +247,15 @@ MODULE mod_stream
         END IF
 
         ! Geographical streamfunctions
-        IF (psicase=='xy') fluxes_xy(index1,index2,ntrac) = fluxes_xy(index1,index2,ntrac) + dir*subvol
-        IF (psicase=='xz') fluxes_xz(index1,index2,ntrac) = fluxes_xz(index1,index2,ntrac) + dir*subvol
-        IF (psicase=='yz') fluxes_yz(index1,index2,ntrac) = fluxes_yz(index1,index2,ntrac) + dir*subvol
+        IF (psicase=='xy') fluxes_xy(index1,index2,ipsi) = fluxes_xy(index1,index2,ipsi) + dir*subvol
+        IF (psicase=='xz') fluxes_xz(index1,index2,ipsi) = fluxes_xz(index1,index2,ipsi) + dir*subvol
+        IF (psicase=='yz') fluxes_yz(index1,index2,ipsi) = fluxes_yz(index1,index2,ipsi) + dir*subvol
 
         ! Geographical + tracer
         IF (psicase=='xr' .AND. PRESENT(indt1)) THEN
-           fluxes_xr(index1,index2,ntrac,indt1) = fluxes_xr(index1,index2,ntrac,indt1) + dir*subvol
+           fluxes_xr(index1,index2,ipsi,indt1) = fluxes_xr(index1,index2,ipsi,indt1) + dir*subvol
         ELSE IF (psicase=='yr' .AND. PRESENT(indt1)) THEN
-           fluxes_yr(index1,index2,ntrac,indt1) = fluxes_yr(index1,index2,ntrac,indt1) + dir*subvol
+           fluxes_yr(index1,index2,ipsi,indt1) = fluxes_yr(index1,index2,ipsi,indt1) + dir*subvol
         END IF
 
         ! Tracer-tracer equation
@@ -249,7 +266,7 @@ MODULE mod_stream
               slope  = (FLOAT(indm1)-FLOAT(index1))*(FLOAT(indt2)-FLOAT(indt1))/(FLOAT(index2)-FLOAT(index1))
               indm2 = NINT( slope + indt1)
 
-              fluxes_rr(indm1,indm2,ntrac) = fluxes_rr(indm1,indm2,ntrac) + subvol
+              fluxes_rr(indm1,indm2,ipsi) = fluxes_rr(indm1,indm2,ipsi) + subvol
           END DO
 
           DO indm1 = index2, index1-1
@@ -257,7 +274,7 @@ MODULE mod_stream
               slope  = (FLOAT(indm1)-FLOAT(index1))*(FLOAT(indt2)-FLOAT(indt1))/(FLOAT(index2)-FLOAT(index1))
               indm2 = NINT( slope + indt1)
 
-              fluxes_rr(indm1,indm2,ntrac) = fluxes_rr(indm1,indm2,ntrac) - subvol
+              fluxes_rr(indm1,indm2,ipsi) = fluxes_rr(indm1,indm2,ipsi) - subvol
           END DO
 
         END IF
